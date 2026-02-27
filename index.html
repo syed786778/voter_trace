@@ -608,25 +608,44 @@ async function runVoterIdOcr() {
     ilog('Ready — scanning card…', 'lok');
     setProg('idProgressBar', 'idProgressText', 10, 'Starting…');
 
-    const worker = await Tesseract.createWorker(['eng', 'hin'], 1, {
+    // Run two passes: English+Hindi first, then Kannada for regional fields
+    setProg('idProgressBar', 'idProgressText', 10, 'Starting English scan…');
+    const workerEng = await Tesseract.createWorker(['eng', 'hin'], 1, {
       logger: m => {
         if (m.status === 'recognizing text') {
-          const p = Math.round((m.progress || 0) * 80) + 12;
-          setProg('idProgressBar', 'idProgressText', p, `Scanning… ${Math.round((m.progress || 0) * 100)}%`);
+          const p = Math.round((m.progress || 0) * 40) + 10;
+          setProg('idProgressBar', 'idProgressText', p, `Reading English text… ${Math.round((m.progress||0)*100)}%`);
         }
       },
     });
+    const resultEng = await workerEng.recognize(State.idFile);
+    await workerEng.terminate();
 
-    const result = await worker.recognize(State.idFile);
-    const raw = result.data.text;
-    State.idOcrText = raw;
-    ilog(`Done — ${raw.length} characters read`, 'lok');
+    setProg('idProgressBar', 'idProgressText', 55, 'Starting Kannada scan…');
+    const workerKan = await Tesseract.createWorker(['kan', 'eng'], 1, {
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          const p = Math.round((m.progress || 0) * 35) + 55;
+          setProg('idProgressBar', 'idProgressText', p, `Reading Kannada text… ${Math.round((m.progress||0)*100)}%`);
+        }
+      },
+    });
+    const resultKan = await workerKan.recognize(State.idFile);
+    await workerKan.terminate();
+
+    // Combine both passes — English pass is primary, Kannada pass fills gaps
+    const rawEng = resultEng.data.text;
+    const rawKan = resultKan.data.text;
+    const rawCombined = rawEng + '\n---KANNADA---\n' + rawKan;
+
+    State.idOcrText = rawCombined;
+    ilog(`English: ${rawEng.length} chars, Kannada: ${rawKan.length} chars`, 'lok');
 
     setProg('idProgressBar', 'idProgressText', 95, 'Extracting details…');
-    const fields = extractIdFields(raw);
+    const fields = extractIdFields(rawEng, rawKan);
     State.idFields = fields;
 
-    renderIdFields(fields, raw);
+    renderIdFields(fields, rawEng, rawKan);
     setProg('idProgressBar', 'idProgressText', 100, 'Done!');
 
     const label = fields.name ? fields.name.split(' ')[0] : 'Done ✓';
@@ -635,7 +654,6 @@ async function runVoterIdOcr() {
 
     toast('Voter ID card scanned successfully.', 'ok');
     checkBothReady();
-    await worker.terminate();
 
   } catch (err) {
     ilog('Error: ' + err.message, 'lerr');
@@ -646,84 +664,197 @@ async function runVoterIdOcr() {
   }
 }
 
-function extractIdFields(text) {
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-  const f = { name: '', relativeName: '', age: '', dob: '', address: '', partNo: '', serialNo: '', epicNo: '' };
+// ── extractIdFields ────────────────────────────────────────────
+// Receives two OCR passes: engText (eng+hin) and kanText (kan+eng).
+// Extracts every possible field from both, merging where needed.
+function extractIdFields(engText, kanText) {
+  kanText = kanText || '';
+  const engLines = engText.split('\n').map(l => l.trim()).filter(Boolean);
+  const kanLines = kanText.split('\n').map(l => l.trim()).filter(Boolean);
+  const allLines = [...engLines, ...kanLines];
 
-  // Name
-  const namePatterns = [
-    /(?:name|voter name|elector'?s? name)[:\s]+([A-Z][A-Za-z ]{2,35})/i,
-    /^Name\s*[:\-]\s*([A-Z][A-Za-z ]{2,35})/im,
-  ];
-  for (const p of namePatterns) { const m = text.match(p); if (m) { f.name = clean(m[1]); break; } }
+  const f = {
+    name: '', nameKan: '',
+    relativeName: '', relativeNameKan: '',
+    age: '', sex: '', dob: '',
+    address: '', addressKan: '',
+    partNo: '', serialNo: '', epicNo: '',
+    houseNo: '', ward: '',
+  };
 
+  // ── EPIC No. (most reliable — unique alphanumeric pattern) ──
+  // Handles OCR noise like BCW0666909 or BCWo666909 (o vs 0)
+  const epicRaw = (engText + ' ' + kanText).match(/\b([A-Z]{3}[O0-9][0-9]{6})\b/i);
+  if (epicRaw) f.epicNo = epicRaw[1].toUpperCase().replace(/O(?=\d)/g, '0'); // normalise O→0
+
+  // ── ELECTOR NAME (English) ──────────────────────────────────
+  // Pattern 1: explicit label
+  const nameLabel = engText.match(
+    /(?:elector'?s?\s*name|voter'?s?\s*name|name\s*of\s*elector)\s*[:\-]?\s*([A-Z][A-Za-z .]{2,40})/i
+  );
+  if (nameLabel) f.name = clean(nameLabel[1]);
+
+  // Pattern 2: "Name : Syed Abdul Naseer" anywhere
   if (!f.name) {
-    for (const ln of lines) {
-      if (/^[A-Z][A-Z ]{3,30}$/.test(ln) && !/INDIA|ELECTION|COMMISSION|VOTER|CARD|IDENTITY|REPUBLIC/.test(ln)) {
-        f.name = ln; break;
+    const nm = engText.match(/\bName\s*[:\-]\s*([A-Z][A-Za-z .]{2,40})/i);
+    if (nm) f.name = clean(nm[1]);
+  }
+
+  // Pattern 3: asterisk/pipe prefix lines (common OCR artifact on voter IDs)
+  // e.g. "* | Elector's Name : Syed Abdul Naseer"
+  if (!f.name) {
+    for (const ln of engLines) {
+      const m = ln.match(/(?:\*|\|)\s*(?:elector'?s?\s*name|name)\s*[:\-]\s*([A-Z][A-Za-z .]{2,40})/i);
+      if (m) { f.name = clean(m[1]); break; }
+    }
+  }
+
+  // Pattern 4: all-caps standalone line (fallback)
+  if (!f.name) {
+    for (const ln of engLines) {
+      if (
+        /^[A-Z][A-Z .]{3,35}$/.test(ln) &&
+        !/INDIA|ELECTION|COMMISSION|VOTER|CARD|IDENTITY|REPUBLIC|MALE|FEMALE/.test(ln)
+      ) { f.name = ln; break; }
+    }
+  }
+
+  // ── RELATIVE / FATHER NAME (English) ───────────────────────
+  const relLabel = engText.match(
+    /(?:father'?s?\s*name|husband'?s?\s*name|mother'?s?\s*name|guardian'?s?\s*name|relative'?s?\s*name)\s*[:\-]?\s*([A-Z][A-Za-z .]{2,40})/i
+  );
+  if (relLabel) f.relativeName = clean(relLabel[1]);
+
+  if (!f.relativeName) {
+    const soM = engText.match(/(?:S\/O|D\/O|W\/O|C\/O)\s*[:\-.]?\s*([A-Z][A-Za-z .]{2,40})/i);
+    if (soM) f.relativeName = clean(soM[1]);
+  }
+
+  // ── AGE ─────────────────────────────────────────────────────
+  // Handles OCR corruptions: "Ageason", "Age:", "Age/DOB:", "Age 45"
+  // Also catches "Sex: M Age: 45" on same line
+  const agePatterns = [
+    /\bage\s*[:\-\/]?\s*(\d{1,3})\b/i,
+    /\bage\s*(?:as\s*on\s*\S+)?\s*[:\-]?\s*(\d{1,3})/i,
+    /\bAge[a-z]*\s+(\d{1,3})\b/i,   // catches "Ageason 45" garble
+    /Sex\s*[:\-]?\s*[MF]\s+(\d{2,3})\b/i, // "Sex: M 45"
+  ];
+  for (const p of agePatterns) {
+    const m = (engText + ' ' + kanText).match(p);
+    if (m && parseInt(m[1]) > 0 && parseInt(m[1]) < 120) { f.age = m[1]; break; }
+  }
+
+  // ── SEX / GENDER ─────────────────────────────────────────────
+  const sexM = (engText + ' ' + kanText).match(/\bsex\s*[:\-]?\s*(male|female|m|f)\b/i);
+  if (sexM) {
+    const s = sexM[1].toLowerCase();
+    f.sex = (s === 'm' || s === 'male') ? 'Male' : 'Female';
+  }
+
+  // ── DATE OF BIRTH ────────────────────────────────────────────
+  const dobPatterns = [
+    /(?:date\s*of\s*birth|dob|d\.o\.b)\s*[:\-]?\s*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/i,
+    /\b(\d{2}[\/\-\.]\d{2}[\/\-\.]\d{4})\b/,
+  ];
+  for (const p of dobPatterns) { const m = engText.match(p); if (m) { f.dob = m[1]; break; } }
+
+  // ── PART NUMBER ──────────────────────────────────────────────
+  const partM = (engText + '\n' + kanText).match(
+    /(?:part\s*(?:no\.?|number|#)?\s*[:\-]?\s*(\d{1,5}))/i
+  );
+  if (partM) f.partNo = partM[1];
+
+  // ── SERIAL NUMBER ─────────────────────────────────────────────
+  const slM = engText.match(/(?:serial\s*(?:no\.?|number)?|sl\.?\s*no\.?)\s*[:\-]?\s*(\d{1,6})/i);
+  if (slM) f.serialNo = slM[1];
+
+  // ── HOUSE / DOOR NUMBER ──────────────────────────────────────
+  const houseM = engText.match(/(?:house\s*(?:no\.?|number)?|door\s*no\.?|h\.?\s*no\.?)\s*[:\-]?\s*([A-Za-z0-9\/\-]+)/i);
+  if (houseM) f.houseNo = clean(houseM[1]);
+
+  // ── ADDRESS (English) ────────────────────────────────────────
+  // Try explicit label first
+  const addrM = engText.match(/(?:address|residential\s*address)\s*[:\-]?\s*([\s\S]{5,120}?)(?:\n(?:age|sex|dob|part|serial|epic|$)|\n\n)/i);
+  if (addrM) {
+    f.address = clean(addrM[1].replace(/\n/g, ', '));
+  } else {
+    // Build address from house + ward/village fragments
+    const parts = [];
+    if (f.houseNo) parts.push('H.No: ' + f.houseNo);
+    const wardM = engText.match(/(?:ward|village|vill\.?|mohalla|nagar|colony|layout|street)\s*[:\-]?\s*([A-Za-z0-9 .,]{3,50})/i);
+    if (wardM) parts.push(clean(wardM[1]));
+    // Also try line after "Father's Name" line as address block
+    const relIdx = engLines.findIndex(l => /father|husband|s\/o|d\/o|w\/o/i.test(l));
+    if (relIdx >= 0 && relIdx + 1 < engLines.length) {
+      const candidate = engLines[relIdx + 1];
+      if (!/sex|age|epic|part|serial|identity|commission/i.test(candidate) && candidate.length > 5) {
+        parts.push(candidate);
+      }
+    }
+    if (parts.length) f.address = parts.join(', ');
+  }
+
+  // ── KANNADA FIELDS ───────────────────────────────────────────
+  // Extract Kannada name: typically appears as the first long Kannada-script line
+  const kanScriptRegex = /[\u0C80-\u0CFF]{3,}/g;
+
+  // Kannada name — look for label like "ಮತದಾರರ ಹೆಸರು" (elector's name) or first Kannada name line
+  const kanNameLabel = kanText.match(/(?:ಮತದಾರರ\s*ಹೆಸರು|ಹೆಸರು)\s*[:\-]?\s*([\u0C80-\u0CFF ]{4,40})/);
+  if (kanNameLabel) {
+    f.nameKan = clean(kanNameLabel[1]);
+  } else {
+    // Heuristic: first line in kanText that is mostly Kannada and reasonable length
+    for (const ln of kanLines) {
+      const kanMatches = ln.match(kanScriptRegex);
+      if (kanMatches && ln.length > 5 && ln.length < 50 &&
+          !/INDIA|ELECTION|COMMISSION|IDENTITY/i.test(ln) &&
+          !f.nameKan) {
+        f.nameKan = ln;
       }
     }
   }
 
-  // Relative name
-  const relPatterns = [
-    /(?:father'?s? name|husband'?s? name|relative'?s? name)[:\s]+([A-Z][A-Za-z ]{2,35})/i,
-    /(?:S\/O|D\/O|W\/O)[:\s.]+([A-Z][A-Za-z ]{2,35})/,
-  ];
-  for (const p of relPatterns) { const m = text.match(p); if (m) { f.relativeName = clean(m[1]); break; } }
+  // Kannada relative name
+  const kanRelLabel = kanText.match(/(?:ತಂದೆ|ಪತಿ|ತಾಯಿ|ಪೋಷಕ)\s*(?:ಹೆಸರು)?\s*[:\-]?\s*([\u0C80-\u0CFF ]{4,40})/);
+  if (kanRelLabel) f.relativeNameKan = clean(kanRelLabel[1]);
 
-  // Age
-  const ageM = text.match(/(?:age|age\s*\/\s*dob)[:\s]*(\d{1,3})/i);
-  if (ageM) f.age = ageM[1];
-
-  // DOB
-  const dobPatterns = [
-    /(?:date of birth|dob|d\.o\.b)[:\s]*(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4})/i,
-    /\b(\d{2}[\/\-\.]\d{2}[\/\-\.]\d{4})\b/,
-  ];
-  for (const p of dobPatterns) { const m = text.match(p); if (m) { f.dob = m[1]; break; } }
-
-  // EPIC No.
-  const epicM = text.match(/\b([A-Z]{3}\d{7})\b/);
-  if (epicM) f.epicNo = epicM[1];
-
-  // Part No.
-  const partM = text.match(/part\s*(?:no|number|#)?\.?\s*[:\-]?\s*(\d+)/i);
-  if (partM) f.partNo = partM[1];
-
-  // Serial No.
-  const slM = text.match(/(?:serial\s*(?:no|number)?|sl\.?\s*no)[:\s.]*(\d+)/i);
-  if (slM) f.serialNo = slM[1];
-
-  // Address
-  const addrM = text.match(/(?:address|addr)[:\s]*(.+?)(?:\n(?:age|dob|date|part|serial|epic)|$|\n\n)/is);
-  if (addrM) f.address = clean(addrM[1].replace(/\n/g, ', '));
-
-  if (!f.name) {
-    f.name = lines.find(l =>
-      l.length > 3 && l.length < 40 &&
-      /[A-Za-z]/.test(l) && !/\d{4,}/.test(l) &&
-      !/election|commission|india|voter|identity|republic/i.test(l)
-    ) || '';
+  // Kannada address — lines with Kannada after name & relative
+  const kanAddrLines = [];
+  let pastNames = false;
+  for (const ln of kanLines) {
+    if (/[\u0C80-\u0CFF]{3,}/.test(ln)) {
+      if (!pastNames && (ln === f.nameKan || ln === f.relativeNameKan)) { pastNames = true; continue; }
+      if (pastNames && ln.length > 3 && !/ಮತದಾರ|ಚುನಾ|ಭಾರತ/.test(ln)) {
+        kanAddrLines.push(ln);
+        if (kanAddrLines.length >= 3) break;
+      }
+    }
   }
+  if (kanAddrLines.length) f.addressKan = kanAddrLines.join(', ');
 
   return f;
 }
 
-function renderIdFields(fields, raw) {
+function renderIdFields(fields, rawEng, rawKan) {
   const panel = document.getElementById('idFieldsPanel');
   const grid = document.getElementById('idFieldsGrid');
 
+  // Build rows — only show Kannada fields if they were found
   const rows = [
-    ['Name', fields.name],
+    ['Name (English)', fields.name],
+    fields.nameKan ? ['Name (ಕನ್ನಡ)', fields.nameKan] : null,
     ['Relative / Guardian', fields.relativeName],
+    fields.relativeNameKan ? ['Relative (ಕನ್ನಡ)', fields.relativeNameKan] : null,
     ['Age', fields.age],
+    ['Sex', fields.sex],
     ['Date of Birth', fields.dob],
     ['EPIC No.', fields.epicNo],
     ['Part Number', fields.partNo],
     ['Serial No.', fields.serialNo],
+    fields.houseNo ? ['House No.', fields.houseNo] : null,
     ['Address', fields.address],
-  ];
+    fields.addressKan ? ['Address (ಕನ್ನಡ)', fields.addressKan] : null,
+  ].filter(Boolean);
 
   grid.innerHTML = rows.map(([k, v]) => `
     <div class="field-item">
@@ -732,7 +863,9 @@ function renderIdFields(fields, raw) {
     </div>
   `).join('');
 
-  document.getElementById('idRawText').textContent = raw;
+  document.getElementById('idRawText').textContent =
+    '=== English/Hindi Pass ===\n' + rawEng +
+    '\n\n=== Kannada Pass ===\n' + (rawKan || '');
   panel.classList.add('show');
 }
 
@@ -897,7 +1030,22 @@ function parseRollPage(text, pageNum) {
 }
 
 function buildEntry(block, serial, partNo, pageNum) {
-  const e = { serial, partNo, pageNum, name: block[0] || '', relativeName: '', age: '', sex: '', address: '', rawLines: block.join(' | ') };
+  const e = {
+    serial, partNo, pageNum,
+    name: '', nameKan: '',
+    relativeName: '', relativeNameKan: '',
+    age: '', sex: '', address: '',
+    rawLines: block.join(' | ')
+  };
+
+  // Classify first line: Kannada-heavy → nameKan, else name
+  if (block[0]) {
+    if (/[\u0C80-\u0CFF]{3,}/.test(block[0])) {
+      e.nameKan = block[0];
+    } else {
+      e.name = block[0];
+    }
+  }
 
   for (let k = 1; k < block.length; k++) {
     const ln = block[k];
@@ -907,8 +1055,24 @@ function buildEntry(block, serial, partNo, pageNum) {
 
     if (ageM && !e.age) { e.age = ageM[1]; continue; }
     if (sexM && !e.sex) { e.sex = sexM[1]; continue; }
-    if (relM && !e.relativeName) { e.relativeName = clean(relM[1]); continue; }
-    if (!e.relativeName && k === 1 && !ageM && !sexM) { e.relativeName = ln; continue; }
+    if (relM && !e.relativeName && !e.relativeNameKan) {
+      const val = clean(relM[1]);
+      if (/[\u0C80-\u0CFF]{3,}/.test(val)) e.relativeNameKan = val;
+      else e.relativeName = val;
+      continue;
+    }
+
+    // Second line with no label: relative name
+    if (k === 1 && !ageM && !sexM && !relM) {
+      if (/[\u0C80-\u0CFF]{3,}/.test(ln)) {
+        // If we have a Kannada name already in slot 0, this is Kannada relative
+        if (e.nameKan && !e.relativeNameKan) { e.relativeNameKan = ln; continue; }
+        // Otherwise it fills the missing English name's Kannada counterpart
+        if (!e.nameKan) { e.nameKan = ln; continue; }
+      }
+      if (!e.relativeName) { e.relativeName = ln; continue; }
+    }
+
     if (!ageM && !sexM && !relM && ln.length > 2) {
       e.address = (e.address ? e.address + ', ' : '') + ln;
     }
@@ -961,33 +1125,36 @@ function runMatch() {
     threshold: 0.65,
     ignoreLocation: true,
     keys: [
-      { name: 'name', weight: 0.50 },
-      { name: 'relativeName', weight: 0.28 },
-      { name: 'address', weight: 0.14 },
-      { name: 'age', weight: 0.08 },
+      { name: 'name', weight: 0.40 },
+      { name: 'relativeName', weight: 0.25 },
+      { name: 'nameKan', weight: 0.15 },
+      { name: 'relativeNameKan', weight: 0.10 },
+      { name: 'address', weight: 0.06 },
+      { name: 'age', weight: 0.04 },
     ],
   });
 
-  const qParts = [fields.name, fields.relativeName].filter(Boolean);
+  const qParts = [fields.name, fields.relativeName, fields.nameKan].filter(Boolean);
   if (!qParts.length) { toast('No name found on the voter ID to search with.', 'err'); return; }
 
   const query = qParts.join(' ');
   let results = fuse.search(query);
 
   // Augment with individual field searches (deduped)
-  if (fields.name) {
-    for (const r of fuse.search({ name: fields.name })) {
-      const key = `${r.item.pageNum}-${r.item.serial}`;
-      if (!results.find(x => `${x.item.pageNum}-${x.item.serial}` === key)) results.push(r);
-    }
-  }
+  const dedup = (r) => `${r.item.pageNum}-${r.item.serial}`;
+  const seen = new Set(results.map(dedup));
 
-  if (fields.relativeName) {
-    for (const r of fuse.search({ relativeName: fields.relativeName })) {
-      const key = `${r.item.pageNum}-${r.item.serial}`;
-      if (!results.find(x => `${x.item.pageNum}-${x.item.serial}` === key)) results.push(r);
+  const augment = (moreResults) => {
+    for (const r of moreResults) {
+      const k = dedup(r);
+      if (!seen.has(k)) { seen.add(k); results.push(r); }
     }
-  }
+  };
+
+  if (fields.name) augment(fuse.search({ name: fields.name }));
+  if (fields.relativeName) augment(fuse.search({ relativeName: fields.relativeName }));
+  if (fields.nameKan) augment(fuse.search({ nameKan: fields.nameKan }));
+  if (fields.relativeNameKan) augment(fuse.search({ relativeNameKan: fields.relativeNameKan }));
 
   results.sort((a, b) => (a.score || 1) - (b.score || 1));
 
@@ -1030,9 +1197,10 @@ function renderMatches(results, query) {
         <div class="match-top">
           <div class="match-num ${i === 0 ? 'n1' : i === 1 ? 'n2' : ''}">${String(i + 1).padStart(2, '0')}</div>
           <div style="flex:1;min-width:0">
-            <div class="match-name">${e.name || '—'}</div>
+            <div class="match-name">${e.name || e.nameKan || '—'}</div>
+            ${e.nameKan && e.name ? `<div class="match-sub" style="font-size:13px;color:var(--text-muted)">${e.nameKan}</div>` : ''}
             <div class="match-sub">
-              ${e.relativeName ? `S/O · D/O · W/O: ${e.relativeName}<br>` : ''}
+              ${(e.relativeName || e.relativeNameKan) ? `S/O · D/O · W/O: ${e.relativeName || ''}${e.relativeNameKan ? ' (' + e.relativeNameKan + ')' : ''}<br>` : ''}
               ${e.address ? `${e.address}<br>` : ''}
               ${e.age ? `Age: ${e.age}${e.sex ? ' &nbsp;·&nbsp; ' + e.sex : ''}` : ''}
             </div>
