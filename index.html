@@ -302,6 +302,17 @@
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
   footer { border-top: 1px solid var(--border); padding: 20px 0; margin-top: 16px; font-family: var(--mono); font-size: 11px; color: var(--text-dim); text-align: center; }
+
+  /* FRONT / BACK UPLOAD */
+  .card-sides-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 580px) { .card-sides-grid { grid-template-columns: 1fr; } }
+  .side-block { display: flex; flex-direction: column; gap: 10px; }
+  .side-label-row { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+  .side-badge { font-family: var(--mono); font-size: 10px; font-weight: 500; padding: 2px 10px; border-radius: 4px; letter-spacing: 0.5px; }
+  .side-badge.front { background: rgba(232,255,71,0.12); border: 1px solid rgba(232,255,71,0.3); color: var(--accent); }
+  .side-badge.back { background: rgba(71,179,255,0.1); border: 1px solid rgba(71,179,255,0.25); color: var(--accent2); }
+  .side-hint { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
+  .card-preview { width: 100%; border-radius: 8px; border: 1px solid var(--border); object-fit: cover; max-height: 175px; display: block; }
 </style>
 </head>
 <body>
@@ -348,23 +359,49 @@
     <div class="tab-panel active" id="tab-id" role="tabpanel">
       <div class="section-heading">
         <h2>Upload Your Voter ID Card</h2>
-        <p>Upload a photo or scan of your voter ID card. We'll read the text and pull out your name, address, and other details automatically.</p>
+        <p>Upload both the front and back of your card for the most complete results. The front has your name and photo; the back has your address and location details.</p>
       </div>
 
-      <div class="upload-zone" id="idDropZone">
-        <input type="file" id="idFileInput" accept="image/*" aria-label="Upload voter ID card image">
-        <span class="upload-icon">🪪</span>
-        <span class="upload-label">Drop image here, or click to choose a file</span>
-        <span class="upload-sub">JPG, PNG, WEBP — any size works</span>
-        <div class="file-tag" id="idFileInfo"></div>
+      <div class="card-sides-grid">
+        <!-- FRONT -->
+        <div class="side-block">
+          <div class="side-label-row">
+            <span class="side-badge front">FRONT</span>
+            <span class="side-hint">Name · EPIC No. · Age · Father's Name</span>
+          </div>
+          <div class="upload-zone" id="idFrontZone">
+            <input type="file" id="idFrontInput" accept="image/*" aria-label="Upload voter ID front">
+            <span class="upload-icon">🪪</span>
+            <span class="upload-label">Drop or click to upload</span>
+            <span class="upload-sub">Required</span>
+            <div class="file-tag" id="idFrontInfo"></div>
+          </div>
+          <img id="idFrontPreview" class="card-preview" style="display:none" alt="Front preview">
+        </div>
+
+        <!-- BACK -->
+        <div class="side-block">
+          <div class="side-label-row">
+            <span class="side-badge back">BACK</span>
+            <span class="side-hint">Address · Taluk · District</span>
+          </div>
+          <div class="upload-zone" id="idBackZone">
+            <input type="file" id="idBackInput" accept="image/*" aria-label="Upload voter ID back">
+            <span class="upload-icon">🏠</span>
+            <span class="upload-label">Drop or click to upload</span>
+            <span class="upload-sub">Recommended for address details</span>
+            <div class="file-tag" id="idBackInfo"></div>
+          </div>
+          <img id="idBackPreview" class="card-preview" style="display:none" alt="Back preview">
+        </div>
       </div>
 
-      <div class="progress-wrap" id="idProgressWrap">
+      <div class="progress-wrap" id="idProgressWrap" style="margin-top:16px">
         <div class="progress-track"><div class="progress-fill" id="idProgressBar"></div></div>
-        <div class="progress-text" id="idProgressText">Reading card…</div>
+        <div class="progress-text" id="idProgressText">Ready to scan…</div>
       </div>
 
-      <button class="btn btn-primary btn-full" id="runIdBtn" disabled>
+      <button class="btn btn-primary btn-full" id="runIdBtn" disabled style="margin-top:4px">
         <span class="spinner" id="idSpinner" style="display:none"></span>
         Read Voter ID Card
       </button>
@@ -384,7 +421,7 @@
       </div>
     </div>
 
-    <!-- TAB 2: ELECTORAL ROLL -->
+        <!-- TAB 2: ELECTORAL ROLL -->
     <div class="tab-panel" id="tab-roll" role="tabpanel">
       <div class="section-heading">
         <h2>Upload the Electoral Roll</h2>
