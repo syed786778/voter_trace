@@ -427,87 +427,175 @@ async function scanId() {
 
 function extractId(fe, fk, be, bk) {
   be=be||''; bk=bk||''; fk=fk||'';
-  const f={name:'',nameKan:'',rel:'',relKan:'',age:'',sex:'',epic:'',addr:'',taluk:'',dist:'',part:'',serial:''};
+  const f={name:'',nameKan:'',rel:'',relKan:'',age:'',ageNote:'',sex:'',epic:'',addr:'',taluk:'',dist:'',part:'',serial:''};
 
-  // EPIC
+  // ── EPIC ─────────────────────────────────────────────────────────────────
   const em = (fe+be).match(/\b([A-Z]{3}[O0][0-9]{6,7})\b/i) || (fe+be).match(/IDENTITY\s+CARD\s+([A-Z0-9]{9,10})/i);
   if (em) f.epic = em[1].toUpperCase().replace(/O(?=[0-9])/g,'0');
 
-  // Name English
+  // ── NAME (English) ────────────────────────────────────────────────────────
   const nm = fe.match(/elector'?s?\s*name\s*[:\-]\s*([A-Z][A-Za-z .'-]{2,45})/i)
            || fe.match(/voter'?s?\s*name\s*[:\-]\s*([A-Z][A-Za-z .'-]{2,45})/i)
            || fe.match(/\bname\s*[:\-]\s*([A-Z][A-Za-z .'-]{4,45})/i);
   if (nm) f.name = clean(nm[1]);
 
-  // Name Kannada
-  const knm = fk.match(/(?:ಮತದಾರರ\s*ಹೆಸರು|ಹೆಸರು)\s*[:\-]?\s*([\u0C80-\u0CFF][\u0C80-\u0CFF\s.'-]{3,50})/);
-  if (knm) { f.nameKan = clean(knm[1]); }
-  else {
-    const kl = fk.split('\n').map(s=>s.trim()).filter(Boolean);
-    for (const ln of kl) {
-      if (/^[\u0C80-\u0CFF]/.test(ln) && /[\u0C80-\u0CFF]{5,}/.test(ln) && ln.length>6 && ln.length<55 && !/ಭಾರತ|ಚುನಾ|ಗುರುತಿನ|ಆಯೋಗ/.test(ln)) {
-        if (!f.nameKan) f.nameKan=ln;
-        else if (!f.relKan && ln!==f.nameKan) f.relKan=ln;
+  // ── NAME & RELATIVE (Kannada) ─────────────────────────────────────────────
+  // Strategy: find the two labelled lines using the Kannada label strings.
+  // The card layout is always:
+  //   ಮತದಾರರ ಹೆಸರು : <full-Kannada-name>       ← elector name label
+  //   ತಂದೆಯ ಹೆಸರು / ಪತಿ : <full-Kannada-rel>   ← father/husband label
+  //
+  // OCR often breaks a multi-word name across lines, so we collect all
+  // Kannada-script words that follow a label until the next label or blank.
+
+  function collectKannadaAfterLabel(text, labelPattern) {
+    // Find label line, then grab the Kannada content on the same line and
+    // any continuation lines that are purely Kannada script.
+    const lines = text.split('\n').map(l => l.trim());
+    for (let i = 0; i < lines.length; i++) {
+      if (labelPattern.test(lines[i])) {
+        // Extract content after the colon on the same line
+        const inline = lines[i].replace(labelPattern, '').replace(/^[\s:–\-]+/, '').trim();
+        const parts = inline ? [inline] : [];
+        // Continue grabbing next lines that are purely Kannada (no English labels)
+        for (let j = i+1; j < lines.length && j < i+4; j++) {
+          const nx = lines[j];
+          if (!nx) break;
+          // Stop if next line starts a new English or Kannada label
+          if (/elector|voter|father|husband|sex|age|name|s\/o|d\/o/i.test(nx)) break;
+          if (/ತಂದೆ|ಪತಿ|ಮತದಾರ|ಲಿಂಗ|ವಯ/.test(nx) && /[\u0C80-\u0CFF]{3,}/.test(nx) && /:/.test(nx)) break;
+          if (/[\u0C80-\u0CFF]{2,}/.test(nx)) parts.push(nx);
+          else break;
+        }
+        const result = parts.join(' ').trim();
+        if (result.length > 2) return result;
+      }
+    }
+    return '';
+  }
+
+  // Try labelled extraction first (most accurate)
+  f.nameKan = collectKannadaAfterLabel(fk, /ಮತದಾರರ\s*ಹೆಸರು/);
+  f.relKan  = collectKannadaAfterLabel(fk, /ತಂದೆಯ\s*ಹೆಸರು|ತಂದೆ\s*[:\-]|ಪತಿ\s*[:\-]/);
+
+  // Fallback: if labels not found, use positional heuristic
+  // Voter ID card structure in Kannada pass:
+  //   Line N   = elector name (Kannada)
+  //   Line N+1 = elector name continuation OR relative name
+  //   Line N+2 = relative name
+  // We know English name & relative, so we use word count to separate them.
+  if (!f.nameKan || !f.relKan) {
+    const kanLines = fk.split('\n').map(l => l.trim()).filter(l =>
+      /[\u0C80-\u0CFF]{3,}/.test(l) &&
+      l.length > 4 && l.length < 70 &&
+      !/ಭಾರತ|ಚುನಾ|ಗುರುತಿನ|ಆಯೋಗ|ಭಾರತ/.test(l)
+    );
+
+    // The English name has N words → the Kannada name should also have ~N words
+    const engNameWords = f.name ? f.name.trim().split(/\s+/).length : 3;
+    const engRelWords  = f.rel  ? f.rel.trim().split(/\s+/).length  : 2;
+
+    let accumulated = [];
+    let phase = 'name'; // collecting name, then rel
+
+    for (const ln of kanLines) {
+      const words = ln.trim().split(/\s+/).filter(w => /[\u0C80-\u0CFF]/.test(w));
+      accumulated.push(...words);
+
+      if (phase === 'name' && !f.nameKan) {
+        if (accumulated.length >= engNameWords) {
+          f.nameKan = accumulated.slice(0, engNameWords).join(' ');
+          accumulated = accumulated.slice(engNameWords);
+          phase = 'rel';
+          if (accumulated.length >= engRelWords) {
+            f.relKan = accumulated.slice(0, engRelWords).join(' ');
+            break;
+          }
+        }
+      } else if (phase === 'rel' && !f.relKan) {
+        if (accumulated.length >= engRelWords) {
+          f.relKan = accumulated.slice(0, engRelWords).join(' ');
+          break;
+        }
       }
     }
   }
 
-  // Relative English
+  // ── RELATIVE NAME (English) ───────────────────────────────────────────────
   const rm = fe.match(/father'?s?\s*name\s*[:\-]\s*([A-Z][A-Za-z .'-]{2,45})/i)
            || fe.match(/husband'?s?\s*name\s*[:\-]\s*([A-Z][A-Za-z .'-]{2,45})/i)
            || fe.match(/(?:S\/O|D\/O|W\/O)\s*[:\-.]?\s*([A-Z][A-Za-z .'-]{2,45})/i);
   if (rm) f.rel = clean(rm[1]);
 
-  // Relative Kannada
-  const krm = fk.match(/(?:ತಂದೆಯ\s*ಹೆಸರು|ತಂದೆ|ಪತಿ)\s*[:\-]?\s*([\u0C80-\u0CFF][\u0C80-\u0CFF\s.'-]{3,45})/);
-  if (krm) f.relKan = clean(krm[1]);
+  // ── AGE ───────────────────────────────────────────────────────────────────
+  // Primary: "Age as on D.M.YYYY : N" → calculate current age
+  // The boxed number N was age on reference date YYYY, so:
+  //   currentAge ≈ N + (currentYear - referenceYear)
+  const ageAsOnM = (fe+' '+fk).match(/age\s+as\s+on\s+[\d.]*(\d{4})\s*[:\-]\s*(\d{1,3})/i)
+                || (fe+' '+fk).match(/age\s+as\s+on\s+\d{1,2}[./]\d{1,2}[./](\d{4})\s*[:\-]?\s*(\d{1,3})/i);
+  if (ageAsOnM) {
+    const refYear = parseInt(ageAsOnM[1]);
+    const ageAtRef = parseInt(ageAsOnM[2]);
+    if (refYear > 1950 && refYear < 2030 && ageAtRef > 0 && ageAtRef < 120) {
+      const currentYear = new Date().getFullYear();
+      const approxAge = ageAtRef + (currentYear - refYear);
+      f.age = String(approxAge);
+      f.ageNote = `(was ${ageAtRef} as on 1.1.${refYear})`;
+    }
+  }
 
-  // Age — handles "Age as on 1.1.2002 : 25"
-  const ag = (fe+' '+fk).match(/age\s+as\s+on\s+[\d.]+\s*[:\-]\s*(\d{1,3})/i)
-           || (fe+' '+fk).match(/age\s+as\s+on[^:]*:\s*\[?\s*(\d{1,3})\s*\]?/i)
-           || (fe+' '+fk).match(/\bage\s*[:\-]\s*(\d{1,3})\b/i)
-           || (fe+' '+fk).match(/\bage[a-z]*\s+(\d{1,3})\b/i)
-           || (fe+' '+fk).match(/sex\s*[:\-]?\s*[MF]\s+(\d{2,3})\b/i);
-  if (ag) { const n=parseInt(ag[1]); if(n>0&&n<120) f.age=String(n); }
+  // Fallback: plain "Age: N"
+  if (!f.age) {
+    const ag = (fe+' '+fk).match(/\bage\s*[:\-]\s*(\d{1,3})\b/i)
+             || (fe+' '+fk).match(/\bage[a-z]*\s+(\d{1,3})\b/i);
+    if (ag) { const n=parseInt(ag[1]); if(n>0&&n<120) f.age=String(n); }
+  }
 
-  // Sex
+  // ── SEX ───────────────────────────────────────────────────────────────────
   const sx = (fe+' '+fk).match(/\bsex\s*[:\-]?\s*(male|female|m|f)\b/i);
   if (sx) { const s=sx[1].toLowerCase(); f.sex=(s==='m'||s==='male')?'Male':'Female'; }
 
-  // Address from back
-  const as = be||fe;
-  const am = as.match(/address\s*[:\-]\s*([^\n]{5,80})/i);
-  if (am) f.addr = clean(am[1]);
-  const tm = as.match(/taluk\s*[:\-]\s*([A-Za-z ()\-]{3,50})/i);
-  if (tm) f.taluk = clean(tm[1]);
-  const dm = as.match(/district\s*[:\-]\s*([A-Za-z ]{3,40})/i);
-  if (dm) f.dist = clean(dm[1]);
+  // ── ADDRESS (from back side only) ─────────────────────────────────────────
+  if (be) {
+    const am = be.match(/address\s*[:\-]\s*([^\n]{5,80})/i);
+    if (am) f.addr = clean(am[1]);
+    const tm = be.match(/taluk\s*[:\-]\s*([A-Za-z ()\-]{3,50})/i);
+    if (tm) f.taluk = clean(tm[1]);
+    const dm = be.match(/district\s*[:\-]\s*([A-Za-z ]{3,40})/i);
+    if (dm) f.dist = clean(dm[1]);
+    const pts = [];
+    if (f.addr) pts.push(f.addr);
+    if (f.taluk) pts.push(f.taluk + ' Taluk');
+    if (f.dist)  pts.push(f.dist + ' District');
+    if (pts.length) f.addr = pts.join(', ');
 
-  const pts = [];
-  if (f.addr) pts.push(f.addr);
-  if (f.taluk) pts.push(f.taluk+' Taluk');
-  if (f.dist) pts.push(f.dist+' District');
-  if (pts.length) f.addr = pts.join(', ');
-
-  // Serial/Part from back "238 / 882"
-  const slm = (be||'').match(/\b(\d{1,4})\s*\/\s*(\d{1,4})\b/);
-  if (slm) { if(!f.serial) f.serial=slm[1]; if(!f.part) f.part=slm[2]; }
+    // Serial/Part ONLY from back side "238 / 882" style
+    // Use strict pattern: must be at end of back page, not inline with address
+    const slm = be.match(/\b(\d{1,3})\s*\/\s*(\d{1,4})\s*$/m);
+    if (slm) { f.serial = slm[1]; f.part = slm[2]; }
+  }
+  // If no back uploaded → no part/serial (front-only card never shows these)
 
   return f;
 }
 
+
 function renderIdFields(f, raw) {
+  // Age display: show calculated age + reference note if available
+  const ageDisplay = f.age ? (f.ageNote ? `${f.age} ${f.ageNote}` : f.age) : '';
+
   const rows = [
-    {k:'Name (English)',    v:f.name,    w:false},
-    {k:'Name (Kannada)',    v:f.nameKan, w:false, h:!f.nameKan},
-    {k:'Father / Husband', v:f.rel,     w:false},
-    {k:'Relative (Kannada)',v:f.relKan, w:false, h:!f.relKan},
-    {k:'Age',              v:f.age,     w:false},
-    {k:'Sex',              v:f.sex,     w:false},
-    {k:'EPIC No.',         v:f.epic,    w:false},
-    {k:'Address',          v:f.addr,    w:true},
-    {k:'Part No.',         v:f.part,    w:false},
-    {k:'Serial No.',       v:f.serial,  w:false},
+    {k:'Name (English)',     v:f.name,       w:false},
+    {k:'Name (Kannada)',     v:f.nameKan,    w:false, h:!f.nameKan},
+    {k:'Father / Husband',  v:f.rel,        w:false},
+    {k:'Relative (Kannada)',v:f.relKan,     w:false, h:!f.relKan},
+    {k:'Age',               v:ageDisplay,   w:false},
+    {k:'Sex',               v:f.sex,        w:false},
+    {k:'EPIC No.',          v:f.epic,       w:false},
+    {k:'Address',           v:f.addr,       w:true,  h:!f.addr},
+    // Only show Part/Serial if actually found (back side uploaded + data present)
+    {k:'Part No.',          v:f.part,       w:false, h:!f.part},
+    {k:'Serial No.',        v:f.serial,     w:false, h:!f.serial},
   ].filter(r=>!r.h);
 
   document.getElementById('id-fields').innerHTML = rows.map(r=>`
@@ -519,6 +607,7 @@ function renderIdFields(f, raw) {
   document.getElementById('id-out').style.display = 'block';
   document.getElementById('id-out').scrollIntoView({behavior:'smooth',block:'start'});
 }
+
 
 /* ============================================================
    PDF — SCAN
