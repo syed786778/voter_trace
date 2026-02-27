@@ -14,7 +14,6 @@
     --border: #252a35;
     --accent: #e8ff47;
     --accent2: #47b3ff;
-    --accent3: #ff6b47;
     --text: #e8eaf0;
     --text-muted: #6b7280;
     --text-dim: #3d4452;
@@ -27,7 +26,6 @@
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   html { scroll-behavior: smooth; }
 
   body {
@@ -38,703 +36,272 @@
     overflow-x: hidden;
   }
 
-  /* Background grid */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
     background-image:
-      linear-gradient(rgba(232,255,71,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(232,255,71,0.03) 1px, transparent 1px);
+      linear-gradient(rgba(232,255,71,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232,255,71,0.025) 1px, transparent 1px);
     background-size: 40px 40px;
     pointer-events: none;
     z-index: 0;
   }
 
   .container {
-    max-width: 1100px;
+    max-width: 860px;
     margin: 0 auto;
     padding: 0 24px;
     position: relative;
     z-index: 1;
   }
 
-  /* ─── HEADER ─── */
-  header {
-    padding: 32px 0 24px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 48px;
-  }
+  /* HEADER */
+  header { padding: 28px 0 0; }
 
   .header-inner {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 16px;
+    padding-bottom: 24px;
   }
 
   .logo-mark {
-    width: 48px;
-    height: 48px;
+    width: 44px; height: 44px;
     background: var(--accent);
     border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .logo-mark svg { width: 28px; height: 28px; }
-
-  .logo-text h1 {
-    font-size: 24px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    color: var(--text);
-  }
-
-  .logo-text p {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-family: var(--mono);
-    font-weight: 300;
-    margin-top: 2px;
-  }
-
-  .header-badge {
-    margin-left: auto;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--accent);
-    background: rgba(232,255,71,0.08);
-    border: 1px solid rgba(232,255,71,0.2);
-    padding: 4px 12px;
-    border-radius: 20px;
-  }
-
-  /* ─── WORKFLOW STEPS ─── */
-  .workflow {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-bottom: 40px;
-  }
-
-  @media (max-width: 720px) {
-    .workflow { grid-template-columns: 1fr; }
-  }
-
-  .step-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-    transition: border-color 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .step-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: var(--accent);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.4s ease;
-  }
-
-  .step-card.active::before { transform: scaleX(1); }
-  .step-card.active { border-color: rgba(232,255,71,0.2); }
-  .step-card.done { border-color: rgba(74,222,128,0.2); }
-  .step-card.done::before { background: var(--success); transform: scaleX(1); }
-
-  .step-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-
-  .step-num {
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-muted);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    width: 28px; height: 28px;
-    border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
 
-  .step-card.done .step-num {
+  .logo-mark svg { width: 26px; height: 26px; }
+
+  .logo-text h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo-text p { font-size: 12px; color: var(--text-muted); font-family: var(--mono); font-weight: 300; margin-top: 1px; }
+
+  .header-pill {
+    margin-left: auto;
+    font-family: var(--mono); font-size: 10px;
+    color: var(--accent);
+    background: rgba(232,255,71,0.07);
+    border: 1px solid rgba(232,255,71,0.18);
+    padding: 3px 10px; border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  /* TABS */
+  .tab-bar {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    padding: 14px 22px;
+    font-family: var(--sans); font-size: 13px; font-weight: 700;
+    color: var(--text-muted);
+    background: none; border: none; cursor: pointer;
+    position: relative; transition: color 0.15s;
+    letter-spacing: -0.2px;
+    display: flex; align-items: center; gap: 8px;
+    white-space: nowrap; flex-shrink: 0;
+  }
+
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); }
+
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 2px 2px 0 0;
+  }
+
+  .tab-badge {
+    font-family: var(--mono); font-size: 10px;
+    padding: 2px 8px; border-radius: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-dim); transition: all 0.2s;
+  }
+
+  .tab-btn.active .tab-badge {
+    background: rgba(232,255,71,0.1);
+    border-color: rgba(232,255,71,0.25);
+    color: var(--accent);
+  }
+
+  .tab-btn.done .tab-badge {
     background: rgba(74,222,128,0.1);
     border-color: rgba(74,222,128,0.3);
     color: var(--success);
   }
 
-  .step-title {
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: -0.2px;
-  }
+  /* PANELS */
+  .tab-panel { display: none; padding: 36px 0 48px; }
+  .tab-panel.active { display: block; }
 
-  .step-desc {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-family: var(--mono);
-    font-weight: 300;
-    line-height: 1.5;
-    margin-bottom: 16px;
-  }
+  .section-heading { margin-bottom: 24px; }
+  .section-heading h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.4px; margin-bottom: 5px; }
+  .section-heading p { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
 
-  /* ─── UPLOAD ZONES ─── */
+  /* UPLOAD ZONE */
   .upload-zone {
     border: 1.5px dashed var(--border);
-    border-radius: 8px;
-    padding: 28px 20px;
+    border-radius: var(--radius);
+    padding: 36px 24px;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
-    background: var(--surface2);
+    background: var(--surface);
+    margin-bottom: 16px;
   }
 
-  .upload-zone:hover,
-  .upload-zone.dragover {
+  .upload-zone:hover, .upload-zone.dragover {
     border-color: var(--accent);
-    background: rgba(232,255,71,0.04);
+    background: rgba(232,255,71,0.03);
   }
 
   .upload-zone input {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    cursor: pointer;
-    width: 100%;
-    height: 100%;
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer;
+    width: 100%; height: 100%;
   }
 
-  .upload-icon {
-    font-size: 28px;
-    margin-bottom: 8px;
-    display: block;
-  }
+  .upload-icon { font-size: 32px; margin-bottom: 10px; display: block; }
+  .upload-label { font-size: 14px; font-weight: 700; display: block; }
+  .upload-sub { font-size: 12px; color: var(--text-muted); font-family: var(--mono); margin-top: 5px; display: block; }
 
-  .upload-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    display: block;
-  }
+  .upload-zone.has-file { border-color: rgba(71,179,255,0.35); background: rgba(71,179,255,0.03); }
 
-  .upload-sub {
-    font-size: 11px;
-    color: var(--text-muted);
-    font-family: var(--mono);
-    margin-top: 4px;
-    display: block;
-  }
-
-  .upload-zone.has-file {
-    border-color: rgba(71,179,255,0.4);
-    background: rgba(71,179,255,0.04);
-  }
-
-  .file-info {
+  .file-tag {
     display: none;
-    margin-top: 10px;
-    font-family: var(--mono);
-    font-size: 11px;
+    margin-top: 12px;
+    font-family: var(--mono); font-size: 11px;
     color: var(--accent2);
     background: rgba(71,179,255,0.08);
     border: 1px solid rgba(71,179,255,0.2);
-    border-radius: 6px;
-    padding: 6px 10px;
-    text-align: left;
-    word-break: break-all;
+    border-radius: 6px; padding: 6px 12px;
+    text-align: left; word-break: break-all;
   }
 
-  .upload-zone.has-file .file-info { display: block; }
+  .upload-zone.has-file .file-tag { display: block; }
 
-  /* ─── PROGRESS ─── */
-  .progress-area {
-    display: none;
-    margin-top: 12px;
-  }
+  /* PROGRESS */
+  .progress-wrap { display: none; margin-bottom: 16px; }
+  .progress-wrap.show { display: block; }
+  .progress-track { height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 3px; transition: width 0.25s ease; width: 0%; }
+  .progress-text { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
 
-  .progress-area.visible { display: block; }
-
-  .progress-bar-track {
-    height: 4px;
-    background: var(--surface2);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-bottom: 6px;
-  }
-
-  .progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    border-radius: 2px;
-    transition: width 0.3s ease;
-    width: 0%;
-  }
-
-  .progress-label {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-muted);
-  }
-
-  /* ─── BUTTONS ─── */
+  /* BUTTONS */
   .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-family: var(--sans);
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    border: none;
-    transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 22px; border-radius: 8px;
+    font-family: var(--sans); font-size: 13px; font-weight: 700;
+    cursor: pointer; border: none; transition: all 0.15s;
     letter-spacing: -0.2px;
   }
 
-  .btn-primary {
-    background: var(--accent);
-    color: #0a0c10;
-  }
-
+  .btn-primary { background: var(--accent); color: #0a0c10; }
   .btn-primary:hover { background: #d4eb30; transform: translateY(-1px); }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
-  .btn-secondary {
-    background: var(--surface2);
-    color: var(--text);
-    border: 1px solid var(--border);
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-full { width: 100%; justify-content: center; }
+
+  /* FIELDS PANEL */
+  .fields-panel { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-top: 24px; }
+  .fields-panel.show { display: block; }
+
+  .panel-label {
+    font-family: var(--mono); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-muted); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
   }
 
-  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .panel-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  .btn-full { width: 100%; justify-content: center; margin-top: 12px; }
+  .fields-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
 
-  /* ─── EXTRACTED FIELDS ─── */
-  .fields-panel {
-    display: none;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 32px;
-  }
+  .field-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .field-key { font-family: var(--mono); font-size: 10px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .field-val { font-size: 14px; font-weight: 600; color: var(--text); word-break: break-word; }
+  .field-val.empty { color: var(--text-dim); font-style: italic; font-weight: 400; font-size: 12px; }
 
-  .fields-panel.visible { display: block; }
+  details.raw { margin-top: 16px; }
+  details.raw summary { font-family: var(--mono); font-size: 11px; color: var(--text-muted); cursor: pointer; user-select: none; padding: 4px 0; }
+  details.raw pre { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: var(--mono); font-size: 10px; color: var(--text-muted); white-space: pre-wrap; word-break: break-word; max-height: 200px; overflow-y: auto; margin-top: 8px; }
 
-  .panel-title {
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text-muted);
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+  /* MATCH TAB */
+  .match-sources { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+  @media (max-width: 560px) { .match-sources { grid-template-columns: 1fr; } }
 
-  .panel-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
+  .source-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; display: flex; gap: 14px; align-items: flex-start; }
+  .source-card.ready { border-color: rgba(74,222,128,0.25); }
+  .source-card.missing { border-color: rgba(248,113,113,0.2); }
+  .source-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+  .source-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .source-detail { font-family: var(--mono); font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+  .source-status { margin-left: auto; flex-shrink: 0; font-family: var(--mono); font-size: 10px; padding: 3px 9px; border-radius: 6px; height: fit-content; }
+  .source-status.ok { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: var(--success); }
+  .source-status.no { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); color: var(--error); }
 
-  .fields-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 12px;
-  }
+  /* MATCH RESULTS */
+  .results-heading { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 4px; }
+  .results-sub { font-family: var(--mono); font-size: 11px; color: var(--text-muted); margin-bottom: 20px; }
 
-  .field-item {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-  }
+  .match-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 14px; transition: border-color 0.2s; position: relative; }
+  .match-card:hover { border-color: rgba(232,255,71,0.15); }
 
-  .field-key {
-    font-family: var(--mono);
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-  }
+  .match-card.top { border-color: rgba(232,255,71,0.28); background: linear-gradient(135deg, rgba(232,255,71,0.03) 0%, var(--surface) 55%); }
+  .match-card.top::before { content: 'BEST MATCH'; position: absolute; top: 14px; right: 14px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.5px; color: var(--accent); background: rgba(232,255,71,0.1); border: 1px solid rgba(232,255,71,0.25); padding: 2px 8px; border-radius: 4px; }
 
-  .field-value {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text);
-    word-break: break-word;
-  }
+  .match-top { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; }
+  .match-num { font-family: var(--mono); font-size: 22px; font-weight: 300; color: var(--text-dim); line-height: 1; flex-shrink: 0; min-width: 26px; }
+  .match-num.n1 { color: var(--accent); }
+  .match-num.n2 { color: var(--accent2); }
+  .match-name { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 4px; }
+  .match-sub { font-size: 12px; color: var(--text-muted); font-family: var(--mono); line-height: 1.7; }
+  .match-score-wrap { margin-left: auto; flex-shrink: 0; text-align: right; }
+  .score-ring { width: 60px; height: 60px; margin-left: auto; margin-bottom: 4px; }
+  .score-lbl { font-family: var(--mono); font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
 
-  .field-value.empty {
-    color: var(--text-dim);
-    font-style: italic;
-    font-weight: 400;
-    font-size: 12px;
-  }
+  .meta-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { font-family: var(--mono); font-size: 11px; padding: 3px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface2); color: var(--text-muted); }
+  .chip.hi { border-color: rgba(232,255,71,0.28); background: rgba(232,255,71,0.06); color: var(--accent); }
+  .chip span { color: var(--text); font-weight: 500; }
+  .chip.hi span { color: var(--accent); }
 
-  /* Raw OCR text area */
-  .raw-ocr {
-    margin-top: 16px;
-  }
+  /* LOG */
+  .log-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; margin-top: 20px; }
+  .log-title { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 8px; }
+  .log-out { font-family: var(--mono); font-size: 11px; color: var(--text-muted); max-height: 120px; overflow-y: auto; line-height: 1.8; }
+  .ll { display: block; }
+  .lok { color: var(--success); }
+  .lerr { color: var(--error); }
 
-  .raw-ocr summary {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-muted);
-    cursor: pointer;
-    user-select: none;
-    padding: 6px 0;
-  }
+  /* TOAST */
+  #toast { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
+  .toast-msg { font-family: var(--mono); font-size: 12px; padding: 10px 16px; border-radius: 8px; border-left: 3px solid; max-width: 300px; animation: tin 0.2s ease; }
+  .toast-msg.info { background: rgba(71,179,255,0.1); border-color: var(--accent2); color: var(--accent2); }
+  .toast-msg.ok { background: rgba(74,222,128,0.1); border-color: var(--success); color: var(--success); }
+  .toast-msg.err { background: rgba(248,113,113,0.1); border-color: var(--error); color: var(--error); }
+  @keyframes tin { from { transform: translateX(16px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-  .raw-ocr pre {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text-muted);
-    white-space: pre-wrap;
-    word-break: break-word;
-    max-height: 180px;
-    overflow-y: auto;
-    margin-top: 8px;
-  }
-
-  /* ─── ACTION ROW ─── */
-  .action-row {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 40px;
-  }
-
-  .action-row .status-chip {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-muted);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 4px 12px;
-    border-radius: 20px;
-  }
-
-  /* ─── RESULTS ─── */
-  .results-section {
-    display: none;
-  }
-
-  .results-section.visible { display: block; }
-
-  .results-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .results-title {
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-  }
-
-  .results-subtitle {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-top: 2px;
-  }
-
-  .match-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 24px;
-    margin-bottom: 16px;
-    transition: border-color 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .match-card:hover { border-color: rgba(232,255,71,0.2); }
-
-  .match-card.rank-1 {
-    border-color: rgba(232,255,71,0.3);
-    background: linear-gradient(135deg, rgba(232,255,71,0.04) 0%, var(--surface) 60%);
-  }
-
-  .match-card.rank-1::after {
-    content: 'BEST MATCH';
-    position: absolute;
-    top: 16px; right: 16px;
-    font-family: var(--mono);
-    font-size: 9px;
-    font-weight: 500;
-    color: var(--accent);
-    background: rgba(232,255,71,0.1);
-    border: 1px solid rgba(232,255,71,0.3);
-    padding: 2px 8px;
-    border-radius: 4px;
-    letter-spacing: 0.5px;
-  }
-
-  .match-top {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    margin-bottom: 14px;
-    flex-wrap: wrap;
-  }
-
-  .match-rank {
-    font-family: var(--mono);
-    font-size: 28px;
-    font-weight: 300;
-    color: var(--text-dim);
-    line-height: 1;
-    flex-shrink: 0;
-    min-width: 28px;
-  }
-
-  .match-rank-1 { color: var(--accent); }
-  .match-rank-2 { color: var(--accent2); }
-
-  .match-name {
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
-    margin-bottom: 4px;
-  }
-
-  .match-rel {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-family: var(--mono);
-    margin-bottom: 2px;
-  }
-
-  .match-addr {
-    font-size: 12px;
-    color: var(--text-muted);
-    line-height: 1.5;
-  }
-
-  .match-score-bar {
-    margin-left: auto;
-    text-align: right;
-    flex-shrink: 0;
-  }
-
-  .score-value {
-    font-family: var(--mono);
-    font-size: 26px;
-    font-weight: 300;
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-
-  .score-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-  }
-
-  .score-ring {
-    width: 64px;
-    height: 64px;
-    margin-left: auto;
-    margin-bottom: 6px;
-  }
-
-  .match-meta {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .meta-chip {
-    font-family: var(--mono);
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    color: var(--text-muted);
-  }
-
-  .meta-chip span {
-    color: var(--text);
-    font-weight: 500;
-  }
-
-  .meta-chip.highlight {
-    border-color: rgba(232,255,71,0.3);
-    background: rgba(232,255,71,0.06);
-    color: var(--accent);
-  }
-
-  .meta-chip.highlight span { color: var(--accent); }
-
-  /* ─── SCORE COLOR ─── */
-  .score-hi { color: var(--success); }
-  .score-mid { color: var(--warning); }
-  .score-lo { color: var(--error); }
-
-  /* ─── TOAST ─── */
-  #toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .toast-item {
-    font-family: var(--mono);
-    font-size: 12px;
-    padding: 10px 16px;
-    border-radius: 8px;
-    border-left: 3px solid;
-    backdrop-filter: blur(12px);
-    animation: slideIn 0.2s ease;
-    max-width: 320px;
-  }
-
-  .toast-item.info {
-    background: rgba(71,179,255,0.12);
-    border-color: var(--accent2);
-    color: var(--accent2);
-  }
-
-  .toast-item.success {
-    background: rgba(74,222,128,0.12);
-    border-color: var(--success);
-    color: var(--success);
-  }
-
-  .toast-item.error {
-    background: rgba(248,113,113,0.12);
-    border-color: var(--error);
-    color: var(--error);
-  }
-
-  @keyframes slideIn {
-    from { transform: translateX(20px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-
-  /* ─── DIVIDER ─── */
-  .section-divider {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin: 40px 0;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .section-divider::before,
-  .section-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  /* ─── LOG PANEL ─── */
-  .log-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px 20px;
-    margin-bottom: 32px;
-    display: none;
-  }
-
-  .log-panel.visible { display: block; }
-
-  .log-panel h3 {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 10px;
-  }
-
-  #logOutput {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-muted);
-    max-height: 140px;
-    overflow-y: auto;
-    line-height: 1.8;
-  }
-
-  #logOutput .log-line { display: block; }
-  #logOutput .log-ok { color: var(--success); }
-  #logOutput .log-warn { color: var(--warning); }
-  #logOutput .log-err { color: var(--error); }
-
-  /* ─── FOOTER ─── */
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 24px 0;
-    margin-top: 60px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-dim);
-    text-align: center;
-  }
-
-  /* ─── LOADER SPINNER ─── */
-  .spinner {
-    display: inline-block;
-    width: 14px; height: 14px;
-    border: 2px solid rgba(232,255,71,0.2);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-  }
-
+  .spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(10,12,16,0.25); border-top-color: #0a0c10; border-radius: 50%; animation: spin 0.5s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* scrollbar */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: var(--surface2); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 
-  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  footer { border-top: 1px solid var(--border); padding: 20px 0; margin-top: 16px; font-family: var(--mono); font-size: 11px; color: var(--text-dim); text-align: center; }
 </style>
 </head>
 <body>
@@ -743,18 +310,33 @@
   <div class="container">
     <div class="header-inner">
       <div class="logo-mark">
-        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="2" y="4" width="24" height="20" rx="3" stroke="#0a0c10" stroke-width="2"/>
-          <path d="M7 9h14M7 13h10M7 17h7" stroke="#0a0c10" stroke-width="2" stroke-linecap="round"/>
-          <circle cx="22" cy="20" r="5" fill="#0a0c10"/>
-          <path d="M20 20l1.5 1.5L24 18" stroke="#e8ff47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg viewBox="0 0 26 26" fill="none">
+          <rect x="2" y="3" width="22" height="20" rx="3" stroke="#0a0c10" stroke-width="2"/>
+          <path d="M6 8h14M6 12h10M6 17h7" stroke="#0a0c10" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="21" cy="19" r="4.5" fill="#0a0c10"/>
+          <path d="M19.5 19l1.2 1.2L23 17.5" stroke="#e8ff47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
       <div class="logo-text">
         <h1>VoterTrace</h1>
-        <p>Electoral Roll OCR Matcher — Kannada Support</p>
+        <p>Find your entry in the electoral roll — everything runs on your device</p>
       </div>
-      <div class="header-badge">CLIENT-SIDE ONLY</div>
+      <div class="header-pill">100% Offline</div>
+    </div>
+
+    <div class="tab-bar" role="tablist">
+      <button class="tab-btn active" data-tab="tab-id" role="tab" aria-selected="true">
+        🪪 Voter ID Card
+        <span class="tab-badge" id="badge-id">Step 1</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-roll" role="tab" aria-selected="false">
+        📋 Electoral Roll
+        <span class="tab-badge" id="badge-roll">Step 2</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-match" role="tab" aria-selected="false">
+        🔍 Find My Entry
+        <span class="tab-badge" id="badge-match">Step 3</span>
+      </button>
     </div>
   </div>
 </header>
@@ -762,422 +344,379 @@
 <main>
   <div class="container">
 
-    <!-- WORKFLOW CARDS -->
-    <div class="workflow">
-      <!-- STEP 1 -->
-      <div class="step-card" id="card1">
-        <div class="step-header">
-          <div class="step-num" id="stepNum1">01</div>
-          <div class="step-title">Upload Voter ID Card</div>
-        </div>
-        <p class="step-desc">Upload an image of the voter ID card. Tesseract.js will extract structured fields using OCR.</p>
-        <div class="upload-zone" id="idDropZone">
-          <input type="file" id="idFileInput" accept="image/*" aria-label="Upload voter ID card image">
-          <span class="upload-icon">🪪</span>
-          <span class="upload-label">Drop image or click to browse</span>
-          <span class="upload-sub">JPG, PNG, WEBP, TIFF — max 20MB</span>
-          <div class="file-info" id="idFileInfo"></div>
-        </div>
-        <div class="progress-area" id="idProgress">
-          <div class="progress-bar-track"><div class="progress-bar-fill" id="idProgressBar"></div></div>
-          <div class="progress-label" id="idProgressLabel">Initializing OCR engine…</div>
-        </div>
-        <button class="btn btn-primary btn-full" id="runIdOcrBtn" disabled>
-          <span class="spinner" id="idSpinner" style="display:none"></span>
-          Run OCR on Voter ID
-        </button>
+    <!-- TAB 1: VOTER ID -->
+    <div class="tab-panel active" id="tab-id" role="tabpanel">
+      <div class="section-heading">
+        <h2>Upload Your Voter ID Card</h2>
+        <p>Upload a photo or scan of your voter ID card. We'll read the text and pull out your name, address, and other details automatically.</p>
       </div>
 
-      <!-- STEP 2 -->
-      <div class="step-card" id="card2">
-        <div class="step-header">
-          <div class="step-num" id="stepNum2">02</div>
-          <div class="step-title">Upload Electoral Roll PDF</div>
-        </div>
-        <p class="step-desc">Upload a Kannada electoral roll PDF. PDF.js renders each page; Tesseract OCR extracts voter entries.</p>
-        <div class="upload-zone" id="pdfDropZone">
-          <input type="file" id="pdfFileInput" accept="application/pdf" aria-label="Upload electoral roll PDF">
-          <span class="upload-icon">📋</span>
-          <span class="upload-label">Drop PDF or click to browse</span>
-          <span class="upload-sub">Kannada electoral roll PDF — any size</span>
-          <div class="file-info" id="pdfFileInfo"></div>
-        </div>
-        <div class="progress-area" id="pdfProgress">
-          <div class="progress-bar-track"><div class="progress-bar-fill" id="pdfProgressBar"></div></div>
-          <div class="progress-label" id="pdfProgressLabel">Initializing PDF renderer…</div>
-        </div>
-        <button class="btn btn-primary btn-full" id="runPdfOcrBtn" disabled>
-          <span class="spinner" id="pdfSpinner" style="display:none"></span>
-          Process Electoral Roll
-        </button>
+      <div class="upload-zone" id="idDropZone">
+        <input type="file" id="idFileInput" accept="image/*" aria-label="Upload voter ID card image">
+        <span class="upload-icon">🪪</span>
+        <span class="upload-label">Drop image here, or click to choose a file</span>
+        <span class="upload-sub">JPG, PNG, WEBP — any size works</span>
+        <div class="file-tag" id="idFileInfo"></div>
       </div>
-    </div>
 
-    <!-- EXTRACTED ID FIELDS -->
-    <div class="fields-panel" id="idFieldsPanel">
-      <div class="panel-title">Extracted Voter ID Fields</div>
-      <div class="fields-grid" id="idFieldsGrid"></div>
-      <details class="raw-ocr">
-        <summary>View raw OCR text</summary>
-        <pre id="idRawOcr"></pre>
-      </details>
-    </div>
+      <div class="progress-wrap" id="idProgressWrap">
+        <div class="progress-track"><div class="progress-fill" id="idProgressBar"></div></div>
+        <div class="progress-text" id="idProgressText">Reading card…</div>
+      </div>
 
-    <!-- ROLL PARSE PANEL -->
-    <div class="fields-panel" id="rollFieldsPanel">
-      <div class="panel-title">Parsed Electoral Roll Entries</div>
-      <div id="rollSummary" style="font-family:var(--mono);font-size:12px;color:var(--text-muted);margin-bottom:12px;"></div>
-      <details class="raw-ocr">
-        <summary>View parsed entries (JSON)</summary>
-        <pre id="rollRawData"></pre>
-      </details>
-    </div>
-
-    <!-- LOG -->
-    <div class="log-panel" id="logPanel">
-      <h3>Processing Log</h3>
-      <div id="logOutput"></div>
-    </div>
-
-    <!-- MATCH ACTION -->
-    <div class="action-row" id="matchRow" style="display:none">
-      <button class="btn btn-primary" id="runMatchBtn">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 1 1 12 0A6 6 0 0 1 2 8zm6-7a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm1 4H7v3l2.5 1.5.75-1.25L8 7V5z" fill="currentColor"/></svg>
-        Find Matches in Roll
+      <button class="btn btn-primary btn-full" id="runIdBtn" disabled>
+        <span class="spinner" id="idSpinner" style="display:none"></span>
+        Read Voter ID Card
       </button>
-      <div class="status-chip" id="matchStatusChip">Ready to match</div>
-    </div>
 
-    <!-- RESULTS -->
-    <div class="results-section" id="resultsSection">
-      <div class="results-header">
-        <div>
-          <div class="results-title">Top Matches</div>
-          <div class="results-subtitle" id="resultsSubtitle"></div>
-        </div>
-        <button class="btn btn-secondary" id="clearBtn">Clear All</button>
+      <div class="fields-panel" id="idFieldsPanel">
+        <div class="panel-label">Details we found on your card</div>
+        <div class="fields-grid" id="idFieldsGrid"></div>
+        <details class="raw">
+          <summary>View all scanned text</summary>
+          <pre id="idRawText"></pre>
+        </details>
       </div>
-      <div id="matchCards"></div>
+
+      <div class="log-wrap" id="idLog" style="display:none">
+        <div class="log-title">Activity</div>
+        <div class="log-out" id="idLogOut"></div>
+      </div>
     </div>
 
-    <footer style="border-top:1px solid var(--border);padding:24px 0;margin-top:60px;font-family:var(--mono);font-size:11px;color:var(--text-dim);text-align:center;">
-      VoterTrace — All processing is done entirely in your browser. No data leaves your device.
-    </footer>
+    <!-- TAB 2: ELECTORAL ROLL -->
+    <div class="tab-panel" id="tab-roll" role="tabpanel">
+      <div class="section-heading">
+        <h2>Upload the Electoral Roll</h2>
+        <p>Upload the electoral roll PDF. We'll go through every page, read all the voter entries, and prepare them for matching. Larger PDFs take a few minutes — you'll see progress as we go.</p>
+      </div>
+
+      <div class="upload-zone" id="pdfDropZone">
+        <input type="file" id="pdfFileInput" accept="application/pdf" aria-label="Upload electoral roll PDF">
+        <span class="upload-icon">📋</span>
+        <span class="upload-label">Drop the PDF here, or click to choose a file</span>
+        <span class="upload-sub">Electoral roll PDF — Kannada or English</span>
+        <div class="file-tag" id="pdfFileInfo"></div>
+      </div>
+
+      <div class="progress-wrap" id="pdfProgressWrap">
+        <div class="progress-track"><div class="progress-fill" id="pdfProgressBar"></div></div>
+        <div class="progress-text" id="pdfProgressText">Getting ready…</div>
+      </div>
+
+      <button class="btn btn-primary btn-full" id="runPdfBtn" disabled>
+        <span class="spinner" id="pdfSpinner" style="display:none"></span>
+        Scan Electoral Roll
+      </button>
+
+      <div class="fields-panel" id="rollPanel">
+        <div class="panel-label">Scan results</div>
+        <div id="rollSummaryText" style="font-family:var(--mono);font-size:13px;color:var(--text-muted);margin-bottom:14px;"></div>
+        <details class="raw">
+          <summary>Preview a few entries</summary>
+          <pre id="rollRawData"></pre>
+        </details>
+      </div>
+
+      <div class="log-wrap" id="pdfLog" style="display:none">
+        <div class="log-title">Activity</div>
+        <div class="log-out" id="pdfLogOut"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: MATCH -->
+    <div class="tab-panel" id="tab-match" role="tabpanel">
+      <div class="section-heading">
+        <h2>Find Your Entry</h2>
+        <p>We'll compare your voter ID details against every entry in the electoral roll and show you the closest matches with a confidence score.</p>
+      </div>
+
+      <div class="match-sources">
+        <div class="source-card missing" id="srcIdCard">
+          <div class="source-icon">🪪</div>
+          <div style="flex:1">
+            <div class="source-title">Voter ID Card</div>
+            <div class="source-detail" id="srcIdDetail">Not scanned yet — go to Step 1</div>
+          </div>
+          <div class="source-status no" id="srcIdStatus">Missing</div>
+        </div>
+        <div class="source-card missing" id="srcRollCard">
+          <div class="source-icon">📋</div>
+          <div style="flex:1">
+            <div class="source-title">Electoral Roll</div>
+            <div class="source-detail" id="srcRollDetail">Not uploaded yet — go to Step 2</div>
+          </div>
+          <div class="source-status no" id="srcRollStatus">Missing</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" id="runMatchBtn" disabled>
+        🔍 Find My Entry in the Roll
+      </button>
+
+      <div id="matchResults" style="display:none; margin-top:32px;">
+        <div class="results-heading">Closest Matches</div>
+        <div class="results-sub" id="matchSubtitle"></div>
+        <div id="matchCards"></div>
+      </div>
+    </div>
 
   </div>
 </main>
 
+<footer>
+  <div class="container">
+    VoterTrace — Your files never leave your device. All processing happens locally in your browser.
+  </div>
+</footer>
+
 <div id="toast"></div>
 
-<!-- ===== LIBRARIES ===== -->
+<!-- LIBRARIES -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/7.0.0/fuse.min.js"></script>
 <script>
-// ╔══════════════════════════════════════════════════════════════╗
-// ║              VoterTrace — Core Application                  ║
-// ╚══════════════════════════════════════════════════════════════╝
-
 'use strict';
 
-// ── PDF.js worker config ──────────────────────────────────────
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// ── App State ─────────────────────────────────────────────────
+// ─────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────
 const State = {
   idFile: null,
   pdfFile: null,
+  idFields: null,
   idOcrText: '',
-  idFields: null,          // { name, relativeName, age, dob, address, partNo, serialNo }
-  rollEntries: [],         // Array of parsed voter objects
-  matchResults: [],        // Fuse results
-  tesseractWorker: null,
-  tesseractKannadaWorker: null,
+  rollEntries: [],
 };
 
-// ── Tesseract.js Loader (CDN) ─────────────────────────────────
-// Load Tesseract.js dynamically so we can use latest
-function loadTesseract() {
-  return new Promise((resolve, reject) => {
-    if (window.Tesseract) { resolve(window.Tesseract); return; }
-    const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js';
-    s.onload = () => resolve(window.Tesseract);
-    s.onerror = () => reject(new Error('Failed to load Tesseract.js'));
-    document.head.appendChild(s);
+// ─────────────────────────────────────────
+//  TABS
+// ─────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => activateTab(btn.dataset.tab));
+});
+
+function activateTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === id);
+    b.setAttribute('aria-selected', b.dataset.tab === id ? 'true' : 'false');
   });
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.classList.toggle('active', p.id === id);
+  });
+  if (id === 'tab-match') refreshMatchTab();
 }
 
-// ╔══════════════════════════════════════════════════════════════╗
-// ║                    UTILITY FUNCTIONS                        ║
-// ╚══════════════════════════════════════════════════════════════╝
-
-function toast(msg, type = 'info', duration = 4000) {
+// ─────────────────────────────────────────
+//  UTILITIES
+// ─────────────────────────────────────────
+function toast(msg, type = 'info', ms = 4500) {
   const el = document.createElement('div');
-  el.className = `toast-item ${type}`;
+  el.className = `toast-msg ${type}`;
   el.textContent = msg;
   document.getElementById('toast').appendChild(el);
-  setTimeout(() => el.remove(), duration);
+  setTimeout(() => el.remove(), ms);
 }
 
-function log(msg, cls = '') {
-  const panel = document.getElementById('logPanel');
-  const out = document.getElementById('logOutput');
-  panel.classList.add('visible');
+function addLog(targetId, msg, cls = '') {
+  const el = document.getElementById(targetId);
+  if (!el) return;
+  const wrap = el.closest('.log-wrap');
+  if (wrap) wrap.style.display = 'block';
   const line = document.createElement('span');
-  line.className = `log-line${cls ? ' ' + cls : ''}`;
+  line.className = `ll${cls ? ' ' + cls : ''}`;
   line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-  out.appendChild(line);
-  out.scrollTop = out.scrollHeight;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
 }
 
-function setProgress(barId, labelId, pct, label) {
-  document.getElementById(barId).style.width = pct + '%';
-  if (label !== undefined) document.getElementById(labelId).textContent = label;
+function ilog(msg, cls) { addLog('idLogOut', msg, cls); }
+function rlog(msg, cls) { addLog('pdfLogOut', msg, cls); }
+
+function setProg(barId, textId, pct, label) {
+  const b = document.getElementById(barId);
+  const t = document.getElementById(textId);
+  if (b) b.style.width = pct + '%';
+  if (t && label !== undefined) t.textContent = label;
 }
 
-function showProgress(areaId) {
-  document.getElementById(areaId).classList.add('visible');
+function fmtSize(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+  return (b / 1048576).toFixed(1) + ' MB';
 }
 
-function hideProgress(areaId) {
-  document.getElementById(areaId).classList.remove('visible');
+function clean(s) { return (s || '').replace(/\s+/g, ' ').trim(); }
+
+// ─────────────────────────────────────────
+//  TESSERACT LOADER
+// ─────────────────────────────────────────
+let _tesseractPromise = null;
+function loadTesseract() {
+  if (_tesseractPromise) return _tesseractPromise;
+  _tesseractPromise = new Promise((res, rej) => {
+    if (window.Tesseract) { res(window.Tesseract); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js';
+    s.onload = () => res(window.Tesseract);
+    s.onerror = () => rej(new Error('Could not load the text recognition library.'));
+    document.head.appendChild(s);
+  });
+  return _tesseractPromise;
 }
 
-function setCardState(cardId, state) {
-  const card = document.getElementById(cardId);
-  card.classList.remove('active', 'done');
-  if (state) card.classList.add(state);
-}
-
-function setStepNum(numId, icon) {
-  document.getElementById(numId).textContent = icon;
-}
-
-function formatFileSize(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-}
-
-function cleanText(str) {
-  return (str || '').replace(/\s+/g, ' ').trim();
-}
-
-// ╔══════════════════════════════════════════════════════════════╗
-// ║              FILE INPUT / DRAG-DROP SETUP                   ║
-// ╚══════════════════════════════════════════════════════════════╝
-
-function setupDropZone(zoneId, inputId, fileInfoId, btnId, acceptFn, onFileReady) {
+// ─────────────────────────────────────────
+//  DROP ZONES
+// ─────────────────────────────────────────
+function setupDrop(zoneId, inputId, infoId, btnId, acceptFn, onFile) {
   const zone = document.getElementById(zoneId);
   const input = document.getElementById(inputId);
-  const info = document.getElementById(fileInfoId);
+  const info = document.getElementById(infoId);
   const btn = document.getElementById(btnId);
 
-  const handleFile = (file) => {
-    if (!file) return;
-    if (!acceptFn(file)) {
-      toast('Unsupported file type.', 'error');
-      return;
-    }
+  const handle = file => {
+    if (!file || !acceptFn(file)) { toast('Unsupported file type.', 'err'); return; }
     zone.classList.add('has-file');
-    info.textContent = `${file.name} — ${formatFileSize(file.size)}`;
+    info.textContent = `${file.name}  ·  ${fmtSize(file.size)}`;
     btn.disabled = false;
-    onFileReady(file);
+    onFile(file);
   };
 
-  input.addEventListener('change', () => handleFile(input.files[0]));
-
-  zone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    zone.classList.add('dragover');
-  });
-
+  input.addEventListener('change', () => handle(input.files[0]));
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
   zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-
-  zone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    zone.classList.remove('dragover');
-    handleFile(e.dataTransfer.files[0]);
-  });
+  zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('dragover'); handle(e.dataTransfer.files[0]); });
 }
 
-// ╔══════════════════════════════════════════════════════════════╗
-// ║              OCR — VOTER ID (English + Hindi)               ║
-// ╚══════════════════════════════════════════════════════════════╝
-
+// ─────────────────────────────────────────
+//  VOTER ID OCR
+// ─────────────────────────────────────────
 async function runVoterIdOcr() {
-  if (!State.idFile) { toast('No file selected.', 'error'); return; }
-
-  const btn = document.getElementById('runIdOcrBtn');
-  const spinner = document.getElementById('idSpinner');
+  if (!State.idFile) return;
+  const btn = document.getElementById('runIdBtn');
+  const spin = document.getElementById('idSpinner');
   btn.disabled = true;
-  spinner.style.display = 'inline-block';
-  showProgress('idProgress');
-  setCardState('card1', 'active');
-  log('Starting Voter ID OCR…');
+  spin.style.display = 'inline-block';
+  document.getElementById('idProgressWrap').classList.add('show');
+  ilog('Loading text recognition…');
 
   try {
     const Tesseract = await loadTesseract();
-    log('Tesseract.js loaded');
+    ilog('Ready — scanning card…', 'lok');
+    setProg('idProgressBar', 'idProgressText', 10, 'Starting…');
 
-    setProgress('idProgressBar', 'idProgressLabel', 10, 'Creating OCR worker…');
-
-    // Use multiple languages: English + Hindi for standard Indian voter IDs
     const worker = await Tesseract.createWorker(['eng', 'hin'], 1, {
-      logger: (m) => {
+      logger: m => {
         if (m.status === 'recognizing text') {
-          const pct = Math.round((m.progress || 0) * 80) + 10;
-          setProgress('idProgressBar', 'idProgressLabel', pct,
-            `Recognizing text… ${Math.round((m.progress || 0) * 100)}%`);
+          const p = Math.round((m.progress || 0) * 80) + 12;
+          setProg('idProgressBar', 'idProgressText', p, `Scanning… ${Math.round((m.progress || 0) * 100)}%`);
         }
       },
     });
 
-    State.tesseractWorker = worker;
-    log('Worker initialized, running recognition…');
-
-    setProgress('idProgressBar', 'idProgressLabel', 15, 'Running OCR recognition…');
-
     const result = await worker.recognize(State.idFile);
-    const rawText = result.data.text;
+    const raw = result.data.text;
+    State.idOcrText = raw;
+    ilog(`Done — ${raw.length} characters read`, 'lok');
 
-    setProgress('idProgressBar', 'idProgressLabel', 95, 'Parsing fields…');
-
-    State.idOcrText = rawText;
-    log(`OCR complete. Extracted ${rawText.length} characters.`, 'log-ok');
-
-    const fields = extractVoterIdFields(rawText);
+    setProg('idProgressBar', 'idProgressText', 95, 'Extracting details…');
+    const fields = extractIdFields(raw);
     State.idFields = fields;
 
-    renderIdFields(fields, rawText);
+    renderIdFields(fields, raw);
+    setProg('idProgressBar', 'idProgressText', 100, 'Done!');
 
-    setProgress('idProgressBar', 'idProgressLabel', 100, 'Done!');
-    setCardState('card1', 'done');
-    setStepNum('stepNum1', '✓');
-    toast('Voter ID OCR complete!', 'success');
+    const label = fields.name ? fields.name.split(' ')[0] : 'Done ✓';
+    document.getElementById('badge-id').textContent = label;
+    document.querySelector('[data-tab="tab-id"]').classList.add('done');
 
-    checkMatchReady();
+    toast('Voter ID card scanned successfully.', 'ok');
+    checkBothReady();
     await worker.terminate();
+
   } catch (err) {
-    log('OCR Error: ' + err.message, 'log-err');
-    toast('OCR failed: ' + err.message, 'error');
-    setCardState('card1', '');
+    ilog('Error: ' + err.message, 'lerr');
+    toast('Scan failed — try a clearer image.', 'err');
   } finally {
     btn.disabled = false;
-    spinner.style.display = 'none';
+    spin.style.display = 'none';
   }
 }
 
-// ── Field Extraction from Voter ID OCR Text ───────────────────
-function extractVoterIdFields(text) {
-  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-  const fullText = text;
+function extractIdFields(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const f = { name: '', relativeName: '', age: '', dob: '', address: '', partNo: '', serialNo: '', epicNo: '' };
 
-  const fields = {
-    name: '',
-    relativeName: '',
-    age: '',
-    dob: '',
-    address: '',
-    partNo: '',
-    serialNo: '',
-    epicNo: '',
-  };
-
-  // ── Name patterns ────────────────────────────────────────────
+  // Name
   const namePatterns = [
-    /(?:name|voter name|holder name)[:\s]*([A-Z][A-Za-z\s]+)/i,
-    /(?:elector's name|elector name)[:\s]*([A-Z][A-Za-z\s]+)/i,
-    /(?:^|\n)\s*Name\s*[:\-]?\s*([A-Z][A-Za-z ]{2,30})/im,
+    /(?:name|voter name|elector'?s? name)[:\s]+([A-Z][A-Za-z ]{2,35})/i,
+    /^Name\s*[:\-]\s*([A-Z][A-Za-z ]{2,35})/im,
   ];
-  for (const p of namePatterns) {
-    const m = fullText.match(p);
-    if (m) { fields.name = cleanText(m[1]); break; }
-  }
+  for (const p of namePatterns) { const m = text.match(p); if (m) { f.name = clean(m[1]); break; } }
 
-  // Heuristic: if no match, look for a standalone ALL-CAPS line after EPIC or photo area
-  if (!fields.name) {
-    for (const line of lines) {
-      if (/^[A-Z][A-Z\s]{3,30}$/.test(line) && !/INDIA|ELECTION|COMMISSION|VOTER|CARD|IDENTITY/.test(line)) {
-        fields.name = line;
-        break;
+  if (!f.name) {
+    for (const ln of lines) {
+      if (/^[A-Z][A-Z ]{3,30}$/.test(ln) && !/INDIA|ELECTION|COMMISSION|VOTER|CARD|IDENTITY|REPUBLIC/.test(ln)) {
+        f.name = ln; break;
       }
     }
   }
 
-  // ── Relative Name ────────────────────────────────────────────
+  // Relative name
   const relPatterns = [
-    /(?:father's name|husband's name|father name|husband name|s\/o|d\/o|w\/o)[:\s]*([A-Z][A-Za-z\s]+)/i,
-    /(?:relative's name|relation name)[:\s]*([A-Z][A-Za-z\s]+)/i,
-    /(?:S\/O|D\/O|W\/O)[:\s.]*([A-Z][A-Za-z\s]+)/,
+    /(?:father'?s? name|husband'?s? name|relative'?s? name)[:\s]+([A-Z][A-Za-z ]{2,35})/i,
+    /(?:S\/O|D\/O|W\/O)[:\s.]+([A-Z][A-Za-z ]{2,35})/,
   ];
-  for (const p of relPatterns) {
-    const m = fullText.match(p);
-    if (m) { fields.relativeName = cleanText(m[1]); break; }
-  }
+  for (const p of relPatterns) { const m = text.match(p); if (m) { f.relativeName = clean(m[1]); break; } }
 
-  // ── Age ──────────────────────────────────────────────────────
-  const ageM = fullText.match(/(?:age|age\s*\/\s*dob)[:\s]*(\d{1,3})/i);
-  if (ageM) fields.age = ageM[1];
+  // Age
+  const ageM = text.match(/(?:age|age\s*\/\s*dob)[:\s]*(\d{1,3})/i);
+  if (ageM) f.age = ageM[1];
 
-  // ── DOB ──────────────────────────────────────────────────────
+  // DOB
   const dobPatterns = [
     /(?:date of birth|dob|d\.o\.b)[:\s]*(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4})/i,
-    /\b(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{4})\b/,
+    /\b(\d{2}[\/\-\.]\d{2}[\/\-\.]\d{4})\b/,
   ];
-  for (const p of dobPatterns) {
-    const m = fullText.match(p);
-    if (m) { fields.dob = m[1]; break; }
-  }
+  for (const p of dobPatterns) { const m = text.match(p); if (m) { f.dob = m[1]; break; } }
 
-  // ── EPIC Number ──────────────────────────────────────────────
-  const epicM = fullText.match(/(?:epic\s*no|voter\s*id|epic)[:\s.]*([A-Z]{3}\d{7})/i)
-    || fullText.match(/\b([A-Z]{3}\d{7})\b/);
-  if (epicM) fields.epicNo = epicM[1];
+  // EPIC No.
+  const epicM = text.match(/\b([A-Z]{3}\d{7})\b/);
+  if (epicM) f.epicNo = epicM[1];
 
-  // ── Part Number ──────────────────────────────────────────────
-  const partM = fullText.match(/(?:part\s*(?:no|number|#))[:\s.]*(\d+)/i)
-    || fullText.match(/part\s*[:\-]?\s*(\d+)/i);
-  if (partM) fields.partNo = partM[1];
+  // Part No.
+  const partM = text.match(/part\s*(?:no|number|#)?\.?\s*[:\-]?\s*(\d+)/i);
+  if (partM) f.partNo = partM[1];
 
-  // ── Serial Number ────────────────────────────────────────────
-  const serialM = fullText.match(/(?:serial\s*(?:no|number|#)|sl\.?\s*no)[:\s.]*(\d+)/i)
-    || fullText.match(/\bsl\s*no\s*[:\-]?\s*(\d+)/i);
-  if (serialM) fields.serialNo = serialM[1];
+  // Serial No.
+  const slM = text.match(/(?:serial\s*(?:no|number)?|sl\.?\s*no)[:\s.]*(\d+)/i);
+  if (slM) f.serialNo = slM[1];
 
-  // ── Address ──────────────────────────────────────────────────
-  const addrPatterns = [
-    /(?:address|addr)[:\s]*(.+?)(?:\n(?:age|dob|date|part|serial|epic|$)|\n\n)/is,
-    /(?:house|door|flat|plot|vill|village|ward|district|state|pin)[:\s]*(.{10,120})/i,
-  ];
-  for (const p of addrPatterns) {
-    const m = fullText.match(p);
-    if (m) { fields.address = cleanText(m[1].replace(/\n/g, ', ')); break; }
-  }
+  // Address
+  const addrM = text.match(/(?:address|addr)[:\s]*(.+?)(?:\n(?:age|dob|date|part|serial|epic)|$|\n\n)/is);
+  if (addrM) f.address = clean(addrM[1].replace(/\n/g, ', '));
 
-  // If name still empty, try first few non-trivial lines
-  if (!fields.name) {
-    const candidates = lines.filter(l =>
+  if (!f.name) {
+    f.name = lines.find(l =>
       l.length > 3 && l.length < 40 &&
-      /[A-Za-z]/.test(l) &&
-      !/\d{4,}/.test(l) &&
-      !/election|commission|india|voter|identity|card/i.test(l)
-    );
-    if (candidates.length > 0) fields.name = candidates[0];
+      /[A-Za-z]/.test(l) && !/\d{4,}/.test(l) &&
+      !/election|commission|india|voter|identity|republic/i.test(l)
+    ) || '';
   }
 
-  return fields;
+  return f;
 }
 
-function renderIdFields(fields, rawText) {
+function renderIdFields(fields, raw) {
   const panel = document.getElementById('idFieldsPanel');
   const grid = document.getElementById('idFieldsGrid');
-  const rawEl = document.getElementById('idRawOcr');
 
-  const entries = [
+  const rows = [
     ['Name', fields.name],
-    ['Relative Name', fields.relativeName],
+    ['Relative / Guardian', fields.relativeName],
     ['Age', fields.age],
     ['Date of Birth', fields.dob],
     ['EPIC No.', fields.epicNo],
@@ -1186,507 +725,361 @@ function renderIdFields(fields, rawText) {
     ['Address', fields.address],
   ];
 
-  grid.innerHTML = entries.map(([k, v]) => `
+  grid.innerHTML = rows.map(([k, v]) => `
     <div class="field-item">
       <div class="field-key">${k}</div>
-      <div class="field-value ${v ? '' : 'empty'}">${v || '—not detected—'}</div>
+      <div class="field-val ${v ? '' : 'empty'}">${v || 'Not found'}</div>
     </div>
   `).join('');
 
-  rawEl.textContent = rawText;
-  panel.classList.add('visible');
+  document.getElementById('idRawText').textContent = raw;
+  panel.classList.add('show');
 }
 
-// ╔══════════════════════════════════════════════════════════════╗
-// ║       PDF PROCESSING — Electoral Roll (Kannada)             ║
-// ╚══════════════════════════════════════════════════════════════╝
+// ─────────────────────────────────────────
+//  PDF PROCESSING
+// ─────────────────────────────────────────
+
+// Render a single PDF page to a canvas at given scale
+async function renderPage(page, scale) {
+  const vp = page.getViewport({ scale });
+  const canvas = document.createElement('canvas');
+  canvas.width = vp.width;
+  canvas.height = vp.height;
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+  return canvas;
+}
+
+// Run one batch of pages through a single Tesseract worker
+async function runBatch(worker, pdf, pageNums, onPageDone) {
+  const entries = [];
+  for (const pn of pageNums) {
+    const page = await pdf.getPage(pn);
+    // Scale 1.5 — good balance of speed and accuracy
+    const canvas = await renderPage(page, 1.5);
+    const { data: { text } } = await worker.recognize(canvas);
+    const parsed = parseRollPage(text, pn);
+    entries.push(...parsed);
+    onPageDone(pn, parsed.length);
+  }
+  return entries;
+}
 
 async function processPdfRoll() {
-  if (!State.pdfFile) { toast('No PDF selected.', 'error'); return; }
-
-  const btn = document.getElementById('runPdfOcrBtn');
-  const spinner = document.getElementById('pdfSpinner');
+  if (!State.pdfFile) return;
+  const btn = document.getElementById('runPdfBtn');
+  const spin = document.getElementById('pdfSpinner');
   btn.disabled = true;
-  spinner.style.display = 'inline-block';
-  showProgress('pdfProgress');
-  setCardState('card2', 'active');
-  log('Starting PDF processing…');
+  spin.style.display = 'inline-block';
+  document.getElementById('pdfProgressWrap').classList.add('show');
+  document.getElementById('pdfLog').style.display = 'block';
+
+  rlog('Opening PDF…');
 
   try {
     const Tesseract = await loadTesseract();
 
-    // ── Load PDF ──────────────────────────────────────────────
-    const arrayBuffer = await State.pdfFile.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    const totalPages = pdf.numPages;
-    log(`PDF loaded — ${totalPages} page(s)`);
-    setProgress('pdfProgressBar', 'pdfProgressLabel', 5, `PDF loaded (${totalPages} pages). Creating Kannada OCR worker…`);
+    const buf = await State.pdfFile.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    const total = pdf.numPages;
+    rlog(`${total} page(s) found — starting scan`, 'lok');
+    setProg('pdfProgressBar', 'pdfProgressText', 5, `${total} pages found. Scanning now…`);
 
-    // ── Create Tesseract worker with Kannada + English ────────
-    let ocrProgress = 0;
-    const worker = await Tesseract.createWorker(['kan', 'eng'], 1, {
-      logger: (m) => {
-        if (m.status === 'recognizing text') {
-          // We handle progress per-page externally
-        }
-      },
-    });
-    State.tesseractKannadaWorker = worker;
-    log('Kannada OCR worker ready');
+    // Use 2 parallel workers for ~2x speed on multi-page PDFs
+    const WORKERS = Math.min(2, total);
+    const allPages = Array.from({ length: total }, (_, i) => i + 1);
+    const chunks = Array.from({ length: WORKERS }, (_, w) => allPages.filter((_, i) => i % WORKERS === w));
 
-    const allEntries = [];
+    rlog(`Scanning with ${WORKERS} worker${WORKERS > 1 ? 's' : ''} in parallel…`);
 
-    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-      const basePct = 10 + Math.round(((pageNum - 1) / totalPages) * 85);
-      setProgress('pdfProgressBar', 'pdfProgressLabel', basePct,
-        `Rendering page ${pageNum}/${totalPages}…`);
-      log(`Processing page ${pageNum}/${totalPages}…`);
+    const workers = await Promise.all(chunks.map(() =>
+      Tesseract.createWorker(['kan', 'eng'], 1)
+    ));
 
-      // Render PDF page to canvas
-      const page = await pdf.getPage(pageNum);
-      const viewport = page.getViewport({ scale: 2.0 }); // 2x for better OCR accuracy
+    let done = 0;
+    const onPageDone = (pn, count) => {
+      done++;
+      const pct = 8 + Math.round((done / total) * 87);
+      setProg('pdfProgressBar', 'pdfProgressText', pct, `Scanned ${done} of ${total} pages…`);
+      rlog(`Page ${pn} — ${count} voter entr${count === 1 ? 'y' : 'ies'} found`);
+    };
 
-      const canvas = document.createElement('canvas');
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-      const ctx = canvas.getContext('2d');
+    const batchResults = await Promise.all(
+      workers.map((w, i) => runBatch(w, pdf, chunks[i], onPageDone))
+    );
 
-      await page.render({ canvasContext: ctx, viewport }).promise;
+    await Promise.all(workers.map(w => w.terminate()));
 
-      setProgress('pdfProgressBar', 'pdfProgressLabel', basePct + 2,
-        `Running Kannada OCR on page ${pageNum}…`);
-
-      // OCR the canvas image
-      const result = await worker.recognize(canvas);
-      const pageText = result.data.text;
-
-      log(`Page ${pageNum} — ${pageText.length} chars extracted`, 'log-ok');
-
-      // Parse voter entries from this page
-      const entries = parseKannadaRollPage(pageText, pageNum);
-      allEntries.push(...entries);
-
-      log(`Page ${pageNum} — ${entries.length} voter entries parsed`);
-    }
-
-    await worker.terminate();
+    // Flatten and sort by original page + serial order
+    const allEntries = batchResults.flat().sort((a, b) =>
+      (a.pageNum - b.pageNum) || (parseInt(a.serial) - parseInt(b.serial))
+    );
 
     State.rollEntries = allEntries;
+    setProg('pdfProgressBar', 'pdfProgressText', 100, `All done — ${allEntries.length} entries found`);
+    rlog(`Scan complete. ${allEntries.length} voter entries in total`, 'lok');
 
-    setProgress('pdfProgressBar', 'pdfProgressLabel', 100, `Done! ${allEntries.length} entries parsed.`);
-    log(`Total entries parsed from roll: ${allEntries.length}`, 'log-ok');
-    toast(`Parsed ${allEntries.length} voter entries from ${totalPages} page(s)`, 'success');
+    // Render summary
+    document.getElementById('rollSummaryText').textContent =
+      `${allEntries.length} voter entries found across ${total} page(s).`;
+    document.getElementById('rollRawData').textContent =
+      JSON.stringify(allEntries.slice(0, 15), null, 2) + (allEntries.length > 15 ? `\n\n…and ${allEntries.length - 15} more` : '');
+    document.getElementById('rollPanel').classList.add('show');
 
-    renderRollSummary(allEntries, totalPages);
+    document.getElementById('badge-roll').textContent = `${allEntries.length} entries`;
+    document.querySelector('[data-tab="tab-roll"]').classList.add('done');
 
-    setCardState('card2', 'done');
-    setStepNum('stepNum2', '✓');
-    checkMatchReady();
+    toast(`Found ${allEntries.length} voter entries across ${total} page(s).`, 'ok');
+    checkBothReady();
 
   } catch (err) {
-    log('PDF processing error: ' + err.message, 'log-err');
-    toast('PDF processing failed: ' + err.message, 'error');
-    setCardState('card2', '');
+    rlog('Error: ' + err.message, 'lerr');
+    toast('Something went wrong while scanning the PDF.', 'err');
     console.error(err);
   } finally {
     btn.disabled = false;
-    spinner.style.display = 'none';
+    spin.style.display = 'none';
   }
 }
 
-// ── Kannada Electoral Roll Parser ─────────────────────────────
-// Standard Karnataka electoral roll format has numbered voter blocks:
-//   <serial>. <Kannada name>
-//   <father/husband name>
-//   <house number / address>
-//   Age: XX   Sex: M/F
-
-function parseKannadaRollPage(text, pageNum) {
+// ─────────────────────────────────────────
+//  ROLL PARSER
+// ─────────────────────────────────────────
+function parseRollPage(text, pageNum) {
   const entries = [];
-  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
 
-  // Attempt to detect part number from page header
+  // Detect part number from header area
   let partNo = '';
-  for (const line of lines.slice(0, 10)) {
-    const pm = line.match(/(?:part|भाग|ಭಾಗ)\s*(?:no|number|#|:)?\s*(\d+)/i);
-    if (pm) { partNo = pm[1]; break; }
+  for (const ln of lines.slice(0, 12)) {
+    const m = ln.match(/(?:part|ಭಾಗ|भाग)\s*[:\-#]?\s*(\d+)/i);
+    if (m) { partNo = m[1]; break; }
   }
 
-  // Pattern 1: Numbered blocks (serial. name / relation / address / age sex)
-  // This is the most common Karnataka format
-  const blockPattern = /^(\d{1,4})\.\s*(.+)$/;
-
+  // Primary: numbered entries  "1. Name..."
   let i = 0;
   while (i < lines.length) {
-    const line = lines[i];
-    const match = line.match(blockPattern);
-    if (match) {
-      const serial = match[1];
-      const nameLine = cleanText(match[2]);
-
-      // Collect next up to 5 lines for this entry
-      const entryLines = [nameLine];
+    const m = lines[i].match(/^(\d{1,4})[.)]\s*(.+)$/);
+    if (m) {
+      const serial = m[1];
+      const block = [clean(m[2])];
       let j = i + 1;
-      while (j < lines.length && j < i + 6) {
-        const nextLine = lines[j];
-        // Stop if next numbered entry starts
-        if (/^\d{1,4}\./.test(nextLine)) break;
-        entryLines.push(cleanText(nextLine));
+      while (j < lines.length && j < i + 7 && !/^\d{1,4}[.)]/.test(lines[j])) {
+        block.push(clean(lines[j]));
         j++;
       }
-
-      const entry = parseVoterBlock(entryLines, serial, partNo, pageNum);
-      entries.push(entry);
+      entries.push(buildEntry(block, serial, partNo, pageNum));
       i = j;
     } else {
       i++;
     }
   }
 
-  // Fallback Pattern 2: Look for age/sex markers to segment entries
+  // Fallback: detect by Age labels
   if (entries.length === 0) {
-    entries.push(...parseRollFallback(lines, partNo, pageNum));
-  }
-
-  return entries;
-}
-
-function parseVoterBlock(lines, serial, partNo, pageNum) {
-  const entry = {
-    serial,
-    partNo,
-    pageNum,
-    name: '',
-    relativeName: '',
-    age: '',
-    sex: '',
-    address: '',
-    rawLines: lines.join(' | '),
-  };
-
-  // Line 0 is typically the voter's name
-  if (lines[0]) entry.name = lines[0];
-
-  // Scan remaining lines for age, sex, relative name, address
-  for (let k = 1; k < lines.length; k++) {
-    const line = lines[k];
-
-    // Age detection (handles Kannada and English)
-    const ageM = line.match(/(?:age|Age|ವಯಸ್ಸು|ವಯ)[:\s]*(\d{1,3})/i)
-      || line.match(/(?:age|Age)[:\s]*(\d{1,3})/i)
-      || line.match(/\b(\d{2,3})\s*(?:yrs?|years?|ವರ್ಷ)?/i);
-    if (ageM && !entry.age) entry.age = ageM[1];
-
-    // Sex detection
-    const sexM = line.match(/(?:sex|Sex|ಲಿಂಗ)[:\s]*(male|female|m|f|ಪುರುಷ|ಮಹಿಳ)/i);
-    if (sexM && !entry.sex) entry.sex = sexM[1];
-
-    // Relative name (father/husband)
-    const relM = line.match(/(?:s\/o|d\/o|w\/o|father|husband|ತಂದೆ|ಪತಿ)[:\s]*(.+)/i);
-    if (relM && !entry.relativeName) entry.relativeName = cleanText(relM[1]);
-
-    // If line looks like a house number or address
-    if (!entry.address && k > 0 && !ageM && !sexM && !relM && line.length > 3) {
-      if (!entry.relativeName && k === 1) {
-        // Second line is often relative name
-        entry.relativeName = line;
-      } else {
-        entry.address = (entry.address ? entry.address + ', ' : '') + line;
+    for (let k = 0; k < lines.length; k++) {
+      const am = lines[k].match(/(?:age|Age|ವಯ)[:\s]*(\d{2,3})/i);
+      if (am) {
+        const name = clean(lines[Math.max(0, k - 2)] || '');
+        const rel = clean(lines[Math.max(0, k - 1)] || '');
+        const sexM = (lines[k + 1] || '').match(/(?:sex|Sex)[:\s]*(male|female|m|f)/i);
+        entries.push({
+          serial: String(entries.length + 1), partNo, pageNum,
+          name, relativeName: rel, age: am[1],
+          sex: sexM ? sexM[1] : '', address: '',
+          rawLines: [name, rel, lines[k]].join(' | '),
+        });
       }
     }
   }
 
-  return entry;
-}
-
-// Fallback: try to find voter entries without numbered prefixes
-function parseRollFallback(lines, partNo, pageNum) {
-  const entries = [];
-  // Look for lines that look like names (mix of Kannada/English letters, no digits)
-  // followed by age markers
-  for (let i = 0; i < lines.length; i++) {
-    const ageM = lines[i].match(/(?:age|Age)[:\s]*(\d{2,3})/i);
-    if (ageM) {
-      // The entry goes a few lines back
-      const nameLine = lines[Math.max(0, i - 2)] || '';
-      const relLine = lines[Math.max(0, i - 1)] || '';
-      const sexM = (lines[i + 1] || '').match(/(?:sex|Sex)[:\s]*(male|female|m|f)/i);
-      entries.push({
-        serial: String(entries.length + 1),
-        partNo,
-        pageNum,
-        name: cleanText(nameLine),
-        relativeName: cleanText(relLine),
-        age: ageM[1],
-        sex: sexM ? sexM[1] : '',
-        address: '',
-        rawLines: [nameLine, relLine, lines[i]].join(' | '),
-      });
-    }
-  }
   return entries;
 }
 
-function renderRollSummary(entries, totalPages) {
-  const panel = document.getElementById('rollFieldsPanel');
-  const summary = document.getElementById('rollSummary');
-  const raw = document.getElementById('rollRawData');
+function buildEntry(block, serial, partNo, pageNum) {
+  const e = { serial, partNo, pageNum, name: block[0] || '', relativeName: '', age: '', sex: '', address: '', rawLines: block.join(' | ') };
 
-  summary.textContent = `${entries.length} voter entries extracted from ${totalPages} page(s).`;
-  raw.textContent = JSON.stringify(entries.slice(0, 20), null, 2) + (entries.length > 20 ? '\n…and more' : '');
-  panel.classList.add('visible');
+  for (let k = 1; k < block.length; k++) {
+    const ln = block[k];
+    const ageM = ln.match(/(?:age|Age|ವಯ)[:\s]*(\d{1,3})/i) || ln.match(/\b(\d{2,3})\s*(?:yrs?|years?|ವರ್ಷ)/i);
+    const sexM = ln.match(/(?:sex|Sex|ಲಿಂಗ)[:\s]*(male|female|m|f|ಪುರುಷ|ಮಹಿಳ)/i);
+    const relM = ln.match(/(?:s\/o|d\/o|w\/o|father|husband|ತಂದೆ|ಪತಿ)[:\s]*(.+)/i);
+
+    if (ageM && !e.age) { e.age = ageM[1]; continue; }
+    if (sexM && !e.sex) { e.sex = sexM[1]; continue; }
+    if (relM && !e.relativeName) { e.relativeName = clean(relM[1]); continue; }
+    if (!e.relativeName && k === 1 && !ageM && !sexM) { e.relativeName = ln; continue; }
+    if (!ageM && !sexM && !relM && ln.length > 2) {
+      e.address = (e.address ? e.address + ', ' : '') + ln;
+    }
+  }
+  return e;
 }
 
-// ╔══════════════════════════════════════════════════════════════╗
-// ║                   FUZZY MATCHING ENGINE                     ║
-// ╚══════════════════════════════════════════════════════════════╝
-
-function checkMatchReady() {
-  const matchRow = document.getElementById('matchRow');
-  const chip = document.getElementById('matchStatusChip');
-  const idReady = !!State.idFields;
-  const rollReady = State.rollEntries.length > 0;
-
-  if (idReady && rollReady) {
-    matchRow.style.display = 'flex';
-    chip.textContent = `${State.rollEntries.length} roll entries ready`;
-    toast('Both sources ready! Click "Find Matches" to proceed.', 'info');
-  } else if (idReady) {
-    chip.textContent = 'Waiting for electoral roll…';
-    matchRow.style.display = 'flex';
-    document.getElementById('runMatchBtn').disabled = true;
-  } else if (rollReady) {
-    chip.textContent = 'Waiting for voter ID OCR…';
-    matchRow.style.display = 'flex';
-    document.getElementById('runMatchBtn').disabled = true;
+// ─────────────────────────────────────────
+//  MATCH TAB
+// ─────────────────────────────────────────
+function checkBothReady() {
+  if (State.idFields && State.rollEntries.length > 0) {
+    document.getElementById('badge-match').textContent = 'Ready!';
+    toast('Both done — go to "Find My Entry" to see your matches!', 'ok', 6000);
   }
-
-  document.getElementById('runMatchBtn').disabled = !(idReady && rollReady);
 }
 
-function runFuzzyMatch() {
-  if (!State.idFields || State.rollEntries.length === 0) {
-    toast('Both voter ID and electoral roll must be processed first.', 'error');
-    return;
-  }
+function refreshMatchTab() {
+  const idOk = !!State.idFields;
+  const rollOk = State.rollEntries.length > 0;
 
-  log('Starting fuzzy match…');
+  const idCard = document.getElementById('srcIdCard');
+  idCard.className = 'source-card ' + (idOk ? 'ready' : 'missing');
+  document.getElementById('srcIdStatus').className = 'source-status ' + (idOk ? 'ok' : 'no');
+  document.getElementById('srcIdStatus').textContent = idOk ? 'Ready' : 'Missing';
+  document.getElementById('srcIdDetail').textContent = idOk
+    ? (State.idFields.name || 'Name not detected') + (State.idFields.epicNo ? '  ·  ' + State.idFields.epicNo : '')
+    : 'Not scanned yet — go to Step 1';
+
+  const rollCard = document.getElementById('srcRollCard');
+  rollCard.className = 'source-card ' + (rollOk ? 'ready' : 'missing');
+  document.getElementById('srcRollStatus').className = 'source-status ' + (rollOk ? 'ok' : 'no');
+  document.getElementById('srcRollStatus').textContent = rollOk ? 'Ready' : 'Missing';
+  document.getElementById('srcRollDetail').textContent = rollOk
+    ? `${State.rollEntries.length} entries loaded`
+    : 'Not uploaded yet — go to Step 2';
+
+  document.getElementById('runMatchBtn').disabled = !(idOk && rollOk);
+}
+
+function runMatch() {
   const fields = State.idFields;
-
-  // Build Fuse.js index over roll entries
-  const fuseOptions = {
-    includeScore: true,
-    threshold: 0.6,
-    keys: [
-      { name: 'name', weight: 0.5 },
-      { name: 'relativeName', weight: 0.25 },
-      { name: 'address', weight: 0.15 },
-      { name: 'age', weight: 0.1 },
-    ],
-  };
-
-  const fuse = new Fuse(State.rollEntries, fuseOptions);
-
-  // Build a composite query from available fields
-  const queryParts = [];
-  if (fields.name) queryParts.push(fields.name);
-  if (fields.relativeName) queryParts.push(fields.relativeName);
-
-  const query = queryParts.join(' ');
-  if (!query.trim()) {
-    toast('Could not extract a name from voter ID to search with.', 'error');
+  if (!fields || !State.rollEntries.length) {
+    toast('Please complete Steps 1 and 2 first.', 'err');
     return;
   }
 
-  log(`Fuzzy query: "${query}"`);
+  const fuse = new Fuse(State.rollEntries, {
+    includeScore: true,
+    threshold: 0.65,
+    ignoreLocation: true,
+    keys: [
+      { name: 'name', weight: 0.50 },
+      { name: 'relativeName', weight: 0.28 },
+      { name: 'address', weight: 0.14 },
+      { name: 'age', weight: 0.08 },
+    ],
+  });
 
-  // Multi-field search
+  const qParts = [fields.name, fields.relativeName].filter(Boolean);
+  if (!qParts.length) { toast('No name found on the voter ID to search with.', 'err'); return; }
+
+  const query = qParts.join(' ');
   let results = fuse.search(query);
 
-  // Also do individual field searches and merge
+  // Augment with individual field searches (deduped)
   if (fields.name) {
-    const nameResults = fuse.search({ name: fields.name });
-    // Merge with lower weight
-    for (const nr of nameResults) {
-      const existing = results.find(r => r.item.serial === nr.item.serial);
-      if (!existing) results.push(nr);
+    for (const r of fuse.search({ name: fields.name })) {
+      const key = `${r.item.pageNum}-${r.item.serial}`;
+      if (!results.find(x => `${x.item.pageNum}-${x.item.serial}` === key)) results.push(r);
     }
   }
 
   if (fields.relativeName) {
-    const relResults = fuse.search({ relativeName: fields.relativeName });
-    for (const rr of relResults) {
-      const existing = results.find(r => r.item.serial === rr.item.serial);
-      if (!existing) results.push(rr);
+    for (const r of fuse.search({ relativeName: fields.relativeName })) {
+      const key = `${r.item.pageNum}-${r.item.serial}`;
+      if (!results.find(x => `${x.item.pageNum}-${x.item.serial}` === key)) results.push(r);
     }
   }
 
-  // Sort by score (lower Fuse score = better match)
   results.sort((a, b) => (a.score || 1) - (b.score || 1));
 
-  // Apply age/partNo bonus scoring
+  // Bonus scoring for exact matches on structured fields
   results = results.map(r => {
     let bonus = 0;
-    if (fields.age && r.item.age && fields.age === r.item.age) bonus += 0.05;
-    if (fields.partNo && r.item.partNo && fields.partNo === r.item.partNo) bonus += 0.05;
-    if (fields.serialNo && r.item.serial && fields.serialNo === r.item.serial) bonus += 0.08;
-    return { ...r, adjustedScore: Math.max(0, (r.score || 0.5) - bonus) };
+    if (fields.age && r.item.age === fields.age) bonus += 0.06;
+    if (fields.partNo && r.item.partNo === fields.partNo) bonus += 0.05;
+    if (fields.serialNo && r.item.serial === fields.serialNo) bonus += 0.09;
+    return { ...r, adj: Math.max(0, (r.score || 0.5) - bonus) };
   });
 
-  results.sort((a, b) => (a.adjustedScore || 1) - (b.adjustedScore || 1));
-
-  const top5 = results.slice(0, 5);
-  State.matchResults = top5;
-
-  log(`Match complete — top ${top5.length} results`, 'log-ok');
-  renderMatchResults(top5, query);
+  results.sort((a, b) => a.adj - b.adj);
+  renderMatches(results.slice(0, 5), query);
 }
 
-function confidencePct(fuseScore) {
-  // Fuse score 0 = perfect, 1 = no match. Convert to 0-100%
-  return Math.max(0, Math.round((1 - (fuseScore || 0)) * 100));
-}
-
-function scoreClass(pct) {
-  if (pct >= 75) return 'score-hi';
-  if (pct >= 50) return 'score-mid';
-  return 'score-lo';
-}
-
-function renderMatchResults(results, query) {
-  const section = document.getElementById('resultsSection');
+function renderMatches(results, query) {
+  const wrap = document.getElementById('matchResults');
   const cards = document.getElementById('matchCards');
-  const subtitle = document.getElementById('resultsSubtitle');
+  document.getElementById('matchSubtitle').textContent =
+    `Searched for "${query}" across ${State.rollEntries.length} entries in the roll`;
 
-  subtitle.textContent = `Fuzzy search for "${query}" across ${State.rollEntries.length} entries`;
+  wrap.style.display = 'block';
 
-  if (results.length === 0) {
-    cards.innerHTML = `<div style="text-align:center;padding:40px;font-family:var(--mono);color:var(--text-muted);">No matches found in the electoral roll.</div>`;
-    section.classList.add('visible');
+  if (!results.length) {
+    cards.innerHTML = `<div style="text-align:center;padding:40px;font-family:var(--mono);color:var(--text-muted);">No close matches found. Try rescanning with a clearer image.</div>`;
     return;
   }
 
-  cards.innerHTML = results.map((r, idx) => {
-    const entry = r.item;
-    const pct = confidencePct(r.adjustedScore !== undefined ? r.adjustedScore : r.score);
-    const rankClass = idx === 0 ? 'rank-1' : idx === 1 ? 'rank-2' : '';
-    const numClass = idx === 0 ? 'match-rank-1' : idx === 1 ? 'match-rank-2' : '';
-    const sc = scoreClass(pct);
+  const R = 24, C = +(2 * Math.PI * R).toFixed(2);
 
-    // Build SVG ring for score
-    const radius = 24;
-    const circ = 2 * Math.PI * radius;
-    const offset = circ - (pct / 100) * circ;
-    const ringColor = pct >= 75 ? 'var(--success)' : pct >= 50 ? 'var(--warning)' : 'var(--error)';
+  cards.innerHTML = results.map((r, i) => {
+    const e = r.item;
+    const pct = Math.max(0, Math.round((1 - (r.adj || r.score || 0)) * 100));
+    const color = pct >= 75 ? 'var(--success)' : pct >= 50 ? 'var(--warning)' : 'var(--error)';
+    const offset = (C - (pct / 100) * C).toFixed(2);
 
     return `
-      <div class="match-card ${rankClass}">
+      <div class="match-card${i === 0 ? ' top' : ''}">
         <div class="match-top">
-          <div class="match-rank ${numClass}">${String(idx + 1).padStart(2, '0')}</div>
-          <div style="flex:1">
-            <div class="match-name">${entry.name || '—'}</div>
-            ${entry.relativeName ? `<div class="match-rel">S/O or D/O: ${entry.relativeName}</div>` : ''}
-            ${entry.address ? `<div class="match-addr">${entry.address}</div>` : ''}
-            ${entry.age ? `<div class="match-rel" style="margin-top:4px">Age: ${entry.age}${entry.sex ? ' · ' + entry.sex : ''}</div>` : ''}
+          <div class="match-num ${i === 0 ? 'n1' : i === 1 ? 'n2' : ''}">${String(i + 1).padStart(2, '0')}</div>
+          <div style="flex:1;min-width:0">
+            <div class="match-name">${e.name || '—'}</div>
+            <div class="match-sub">
+              ${e.relativeName ? `S/O · D/O · W/O: ${e.relativeName}<br>` : ''}
+              ${e.address ? `${e.address}<br>` : ''}
+              ${e.age ? `Age: ${e.age}${e.sex ? ' &nbsp;·&nbsp; ' + e.sex : ''}` : ''}
+            </div>
           </div>
-          <div class="match-score-bar">
+          <div class="match-score-wrap">
             <svg class="score-ring" viewBox="0 0 64 64">
-              <circle cx="32" cy="32" r="${radius}" stroke="var(--border)" stroke-width="4" fill="none"/>
-              <circle cx="32" cy="32" r="${radius}" stroke="${ringColor}" stroke-width="4" fill="none"
-                stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}"
-                stroke-linecap="round" transform="rotate(-90 32 32)" style="transition:stroke-dashoffset 0.8s ease"/>
-              <text x="32" y="37" text-anchor="middle" font-family="DM Mono,monospace" font-size="12" fill="${ringColor}" font-weight="500">${pct}%</text>
+              <circle cx="32" cy="32" r="${R}" stroke="var(--border)" stroke-width="4" fill="none"/>
+              <circle cx="32" cy="32" r="${R}" stroke="${color}" stroke-width="4" fill="none"
+                stroke-dasharray="${C}" stroke-dashoffset="${offset}"
+                stroke-linecap="round" transform="rotate(-90 32 32)"
+                style="transition:stroke-dashoffset 0.8s ease"/>
+              <text x="32" y="37" text-anchor="middle" font-family="DM Mono,monospace"
+                font-size="12" fill="${color}" font-weight="500">${pct}%</text>
             </svg>
-            <div class="score-label">confidence</div>
+            <div class="score-lbl">match</div>
           </div>
         </div>
-        <div class="match-meta">
-          ${entry.partNo ? `<div class="meta-chip highlight">Part <span>${entry.partNo}</span></div>` : ''}
-          ${entry.serial ? `<div class="meta-chip highlight">Serial <span>${entry.serial}</span></div>` : ''}
-          <div class="meta-chip">Page <span>${entry.pageNum}</span></div>
-          <div class="meta-chip">Score <span class="${sc}">${pct}%</span></div>
-          <div class="meta-chip">Fuse Δ <span>${(r.adjustedScore || r.score || 0).toFixed(3)}</span></div>
+        <div class="meta-row">
+          ${e.partNo ? `<div class="chip hi">Part <span>${e.partNo}</span></div>` : ''}
+          ${e.serial ? `<div class="chip hi">Serial No. <span>${e.serial}</span></div>` : ''}
+          <div class="chip">Page <span>${e.pageNum}</span></div>
+          <div class="chip">Confidence <span style="color:${color}">${pct}%</span></div>
         </div>
       </div>
     `;
   }).join('');
 
-  section.classList.add('visible');
-  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// ╔══════════════════════════════════════════════════════════════╗
-// ║                       CLEAR / RESET                         ║
-// ╚══════════════════════════════════════════════════════════════╝
-
-function clearAll() {
-  // Reset state
-  State.idFile = null;
-  State.pdfFile = null;
-  State.idOcrText = '';
-  State.idFields = null;
-  State.rollEntries = [];
-  State.matchResults = [];
-
-  // Reset UI
-  ['idFieldsPanel', 'rollFieldsPanel', 'logPanel', 'resultsSection'].forEach(id => {
-    document.getElementById(id).classList.remove('visible');
-  });
-
-  document.getElementById('matchRow').style.display = 'none';
-
-  ['card1', 'card2'].forEach(id => setCardState(id, ''));
-  document.getElementById('stepNum1').textContent = '01';
-  document.getElementById('stepNum2').textContent = '02';
-
-  ['idDropZone', 'pdfDropZone'].forEach(id => {
-    document.getElementById(id).classList.remove('has-file', 'dragover');
-  });
-
-  ['idFileInfo', 'pdfFileInfo'].forEach(id => {
-    document.getElementById(id).textContent = '';
-  });
-
-  ['idProgress', 'pdfProgress'].forEach(id => hideProgress(id));
-  ['idProgressBar', 'pdfProgressBar'].forEach(id => {
-    document.getElementById(id).style.width = '0%';
-  });
-
-  document.getElementById('runIdOcrBtn').disabled = true;
-  document.getElementById('runPdfOcrBtn').disabled = true;
-  document.getElementById('idFileInput').value = '';
-  document.getElementById('pdfFileInput').value = '';
-  document.getElementById('matchCards').innerHTML = '';
-  document.getElementById('logOutput').innerHTML = '';
-
-  toast('Reset complete.', 'info');
-}
-
-// ╔══════════════════════════════════════════════════════════════╗
-// ║                     INITIALIZATION                          ║
-// ╚══════════════════════════════════════════════════════════════╝
-
+// ─────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────
 (function init() {
-  // Setup drop zones
-  setupDropZone(
-    'idDropZone', 'idFileInput', 'idFileInfo', 'runIdOcrBtn',
-    (f) => f.type.startsWith('image/'),
-    (f) => { State.idFile = f; log(`Voter ID image selected: ${f.name}`); }
+  setupDrop('idDropZone', 'idFileInput', 'idFileInfo', 'runIdBtn',
+    f => f.type.startsWith('image/'),
+    f => { State.idFile = f; ilog(`Selected: ${f.name}`); }
   );
 
-  setupDropZone(
-    'pdfDropZone', 'pdfFileInput', 'pdfFileInfo', 'runPdfOcrBtn',
-    (f) => f.type === 'application/pdf',
-    (f) => { State.pdfFile = f; log(`Electoral roll PDF selected: ${f.name}`); }
+  setupDrop('pdfDropZone', 'pdfFileInput', 'pdfFileInfo', 'runPdfBtn',
+    f => f.type === 'application/pdf',
+    f => { State.pdfFile = f; rlog(`Selected: ${f.name}`); }
   );
 
-  // Button events
-  document.getElementById('runIdOcrBtn').addEventListener('click', runVoterIdOcr);
-  document.getElementById('runPdfOcrBtn').addEventListener('click', processPdfRoll);
-  document.getElementById('runMatchBtn').addEventListener('click', runFuzzyMatch);
-  document.getElementById('clearBtn').addEventListener('click', clearAll);
-
-  log('VoterTrace initialized. Select files to begin.', 'log-ok');
+  document.getElementById('runIdBtn').addEventListener('click', runVoterIdOcr);
+  document.getElementById('runPdfBtn').addEventListener('click', processPdfRoll);
+  document.getElementById('runMatchBtn').addEventListener('click', runMatch);
 })();
 </script>
 </body>
