@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoterTrace — Electoral Roll Matcher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #252a35;
+    --accent: #e8ff47;
+    --accent2: #47b3ff;
+    --accent3: #ff6b47;
+    --text: #e8eaf0;
+    --text-muted: #6b7280;
+    --text-dim: #3d4452;
+    --success: #4ade80;
+    --warning: #fbbf24;
+    --error: #f87171;
+    --radius: 12px;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(232,255,71,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232,255,71,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .logo-mark {
+    width: 48px;
+    height: 48px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logo-mark svg { width: 28px; height: 28px; }
+
+  .logo-text h1 {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+
+  .logo-text p {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-weight: 300;
+    margin-top: 2px;
+  }
+
+  .header-badge {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(232,255,71,0.08);
+    border: 1px solid rgba(232,255,71,0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+
+  /* ─── WORKFLOW STEPS ─── */
+  .workflow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+
+  @media (max-width: 720px) {
+    .workflow { grid-template-columns: 1fr; }
+  }
+
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    transition: border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .step-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+
+  .step-card.active::before { transform: scaleX(1); }
+  .step-card.active { border-color: rgba(232,255,71,0.2); }
+  .step-card.done { border-color: rgba(74,222,128,0.2); }
+  .step-card.done::before { background: var(--success); transform: scaleX(1); }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .step-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step-card.done .step-num {
+    background: rgba(74,222,128,0.1);
+    border-color: rgba(74,222,128,0.3);
+    color: var(--success);
+  }
+
+  .step-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+
+  .step-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-weight: 300;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  /* ─── UPLOAD ZONES ─── */
+  .upload-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: 8px;
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    background: var(--surface2);
+  }
+
+  .upload-zone:hover,
+  .upload-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(232,255,71,0.04);
+  }
+
+  .upload-zone input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .upload-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .upload-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    display: block;
+  }
+
+  .upload-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    margin-top: 4px;
+    display: block;
+  }
+
+  .upload-zone.has-file {
+    border-color: rgba(71,179,255,0.4);
+    background: rgba(71,179,255,0.04);
+  }
+
+  .file-info {
+    display: none;
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent2);
+    background: rgba(71,179,255,0.08);
+    border: 1px solid rgba(71,179,255,0.2);
+    border-radius: 6px;
+    padding: 6px 10px;
+    text-align: left;
+    word-break: break-all;
+  }
+
+  .upload-zone.has-file .file-info { display: block; }
+
+  /* ─── PROGRESS ─── */
+  .progress-area {
+    display: none;
+    margin-top: 12px;
+  }
+
+  .progress-area.visible { display: block; }
+
+  .progress-bar-track {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+
+  .progress-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* ─── BUTTONS ─── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    letter-spacing: -0.2px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #0a0c10;
+  }
+
+  .btn-primary:hover { background: #d4eb30; transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-full { width: 100%; justify-content: center; margin-top: 12px; }
+
+  /* ─── EXTRACTED FIELDS ─── */
+  .fields-panel {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  .fields-panel.visible { display: block; }
+
+  .panel-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .fields-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+
+  .field-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+
+  .field-key {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .field-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    word-break: break-word;
+  }
+
+  .field-value.empty {
+    color: var(--text-dim);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 12px;
+  }
+
+  /* Raw OCR text area */
+  .raw-ocr {
+    margin-top: 16px;
+  }
+
+  .raw-ocr summary {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+    padding: 6px 0;
+  }
+
+  .raw-ocr pre {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 180px;
+    overflow-y: auto;
+    margin-top: 8px;
+  }
+
+  /* ─── ACTION ROW ─── */
+  .action-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+  }
+
+  .action-row .status-chip {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+
+  /* ─── RESULTS ─── */
+  .results-section {
+    display: none;
+  }
+
+  .results-section.visible { display: block; }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .results-title {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .results-subtitle {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .match-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .match-card:hover { border-color: rgba(232,255,71,0.2); }
+
+  .match-card.rank-1 {
+    border-color: rgba(232,255,71,0.3);
+    background: linear-gradient(135deg, rgba(232,255,71,0.04) 0%, var(--surface) 60%);
+  }
+
+  .match-card.rank-1::after {
+    content: 'BEST MATCH';
+    position: absolute;
+    top: 16px; right: 16px;
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--accent);
+    background: rgba(232,255,71,0.1);
+    border: 1px solid rgba(232,255,71,0.3);
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  .match-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .match-rank {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--text-dim);
+    line-height: 1;
+    flex-shrink: 0;
+    min-width: 28px;
+  }
+
+  .match-rank-1 { color: var(--accent); }
+  .match-rank-2 { color: var(--accent2); }
+
+  .match-name {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin-bottom: 4px;
+  }
+
+  .match-rel {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    margin-bottom: 2px;
+  }
+
+  .match-addr {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .match-score-bar {
+    margin-left: auto;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .score-value {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 300;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .score-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .score-ring {
+    width: 64px;
+    height: 64px;
+    margin-left: auto;
+    margin-bottom: 6px;
+  }
+
+  .match-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .meta-chip {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-muted);
+  }
+
+  .meta-chip span {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .meta-chip.highlight {
+    border-color: rgba(232,255,71,0.3);
+    background: rgba(232,255,71,0.06);
+    color: var(--accent);
+  }
+
+  .meta-chip.highlight span { color: var(--accent); }
+
+  /* ─── SCORE COLOR ─── */
+  .score-hi { color: var(--success); }
+  .score-mid { color: var(--warning); }
+  .score-lo { color: var(--error); }
+
+  /* ─── TOAST ─── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .toast-item {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border-left: 3px solid;
+    backdrop-filter: blur(12px);
+    animation: slideIn 0.2s ease;
+    max-width: 320px;
+  }
+
+  .toast-item.info {
+    background: rgba(71,179,255,0.12);
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+
+  .toast-item.success {
+    background: rgba(74,222,128,0.12);
+    border-color: var(--success);
+    color: var(--success);
+  }
+
+  .toast-item.error {
+    background: rgba(248,113,113,0.12);
+    border-color: var(--error);
+    color: var(--error);
+  }
+
+  @keyframes slideIn {
+    from { transform: translateX(20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  /* ─── DIVIDER ─── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 40px 0;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ─── LOG PANEL ─── */
+  .log-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 32px;
+    display: none;
+  }
+
+  .log-panel.visible { display: block; }
+
+  .log-panel h3 {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+
+  #logOutput {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    max-height: 140px;
+    overflow-y: auto;
+    line-height: 1.8;
+  }
+
+  #logOutput .log-line { display: block; }
+  #logOutput .log-ok { color: var(--success); }
+  #logOutput .log-warn { color: var(--warning); }
+  #logOutput .log-err { color: var(--error); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 0;
+    margin-top: 60px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+  }
+
+  /* ─── LOADER SPINNER ─── */
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(232,255,71,0.2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--surface2); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <div class="logo-mark">
+        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="4" width="24" height="20" rx="3" stroke="#0a0c10" stroke-width="2"/>
+          <path d="M7 9h14M7 13h10M7 17h7" stroke="#0a0c10" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="22" cy="20" r="5" fill="#0a0c10"/>
+          <path d="M20 20l1.5 1.5L24 18" stroke="#e8ff47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <h1>VoterTrace</h1>
+        <p>Electoral Roll OCR Matcher — Kannada Support</p>
+      </div>
+      <div class="header-badge">CLIENT-SIDE ONLY</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <!-- WORKFLOW CARDS -->
+    <div class="workflow">
+      <!-- STEP 1 -->
+      <div class="step-card" id="card1">
+        <div class="step-header">
+          <div class="step-num" id="stepNum1">01</div>
+          <div class="step-title">Upload Voter ID Card</div>
+        </div>
+        <p class="step-desc">Upload an image of the voter ID card. Tesseract.js will extract structured fields using OCR.</p>
+        <div class="upload-zone" id="idDropZone">
+          <input type="file" id="idFileInput" accept="image/*" aria-label="Upload voter ID card image">
+          <span class="upload-icon">🪪</span>
+          <span class="upload-label">Drop image or click to browse</span>
+          <span class="upload-sub">JPG, PNG, WEBP, TIFF — max 20MB</span>
+          <div class="file-info" id="idFileInfo"></div>
+        </div>
+        <div class="progress-area" id="idProgress">
+          <div class="progress-bar-track"><div class="progress-bar-fill" id="idProgressBar"></div></div>
+          <div class="progress-label" id="idProgressLabel">Initializing OCR engine…</div>
+        </div>
+        <button class="btn btn-primary btn-full" id="runIdOcrBtn" disabled>
+          <span class="spinner" id="idSpinner" style="display:none"></span>
+          Run OCR on Voter ID
+        </button>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step-card" id="card2">
+        <div class="step-header">
+          <div class="step-num" id="stepNum2">02</div>
+          <div class="step-title">Upload Electoral Roll PDF</div>
+        </div>
+        <p class="step-desc">Upload a Kannada electoral roll PDF. PDF.js renders each page; Tesseract OCR extracts voter entries.</p>
+        <div class="upload-zone" id="pdfDropZone">
+          <input type="file" id="pdfFileInput" accept="application/pdf" aria-label="Upload electoral roll PDF">
+          <span class="upload-icon">📋</span>
+          <span class="upload-label">Drop PDF or click to browse</span>
+          <span class="upload-sub">Kannada electoral roll PDF — any size</span>
+          <div class="file-info" id="pdfFileInfo"></div>
+        </div>
+        <div class="progress-area" id="pdfProgress">
+          <div class="progress-bar-track"><div class="progress-bar-fill" id="pdfProgressBar"></div></div>
+          <div class="progress-label" id="pdfProgressLabel">Initializing PDF renderer…</div>
+        </div>
+        <button class="btn btn-primary btn-full" id="runPdfOcrBtn" disabled>
+          <span class="spinner" id="pdfSpinner" style="display:none"></span>
+          Process Electoral Roll
+        </button>
+      </div>
+    </div>
+
+    <!-- EXTRACTED ID FIELDS -->
+    <div class="fields-panel" id="idFieldsPanel">
+      <div class="panel-title">Extracted Voter ID Fields</div>
+      <div class="fields-grid" id="idFieldsGrid"></div>
+      <details class="raw-ocr">
+        <summary>View raw OCR text</summary>
+        <pre id="idRawOcr"></pre>
+      </details>
+    </div>
+
+    <!-- ROLL PARSE PANEL -->
+    <div class="fields-panel" id="rollFieldsPanel">
+      <div class="panel-title">Parsed Electoral Roll Entries</div>
+      <div id="rollSummary" style="font-family:var(--mono);font-size:12px;color:var(--text-muted);margin-bottom:12px;"></div>
+      <details class="raw-ocr">
+        <summary>View parsed entries (JSON)</summary>
+        <pre id="rollRawData"></pre>
+      </details>
+    </div>
+
+    <!-- LOG -->
+    <div class="log-panel" id="logPanel">
+      <h3>Processing Log</h3>
+      <div id="logOutput"></div>
+    </div>
+
+    <!-- MATCH ACTION -->
+    <div class="action-row" id="matchRow" style="display:none">
+      <button class="btn btn-primary" id="runMatchBtn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 1 1 12 0A6 6 0 0 1 2 8zm6-7a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm1 4H7v3l2.5 1.5.75-1.25L8 7V5z" fill="currentColor"/></svg>
+        Find Matches in Roll
+      </button>
+      <div class="status-chip" id="matchStatusChip">Ready to match</div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results-section" id="resultsSection">
+      <div class="results-header">
+        <div>
+          <div class="results-title">Top Matches</div>
+          <div class="results-subtitle" id="resultsSubtitle"></div>
+        </div>
+        <button class="btn btn-secondary" id="clearBtn">Clear All</button>
+      </div>
+      <div id="matchCards"></div>
+    </div>
+
+    <footer style="border-top:1px solid var(--border);padding:24px 0;margin-top:60px;font-family:var(--mono);font-size:11px;color:var(--text-dim);text-align:center;">
+      VoterTrace — All processing is done entirely in your browser. No data leaves your device.
+    </footer>
+
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<!-- ===== LIBRARIES ===== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/7.0.0/fuse.min.js"></script>
+<script>
+// ╔══════════════════════════════════════════════════════════════╗
+// ║              VoterTrace — Core Application                  ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+'use strict';
+
+// ── PDF.js worker config ──────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── App State ─────────────────────────────────────────────────
+const State = {
+  idFile: null,
+  pdfFile: null,
+  idOcrText: '',
+  idFields: null,          // { name, relativeName, age, dob, address, partNo, serialNo }
+  rollEntries: [],         // Array of parsed voter objects
+  matchResults: [],        // Fuse results
+  tesseractWorker: null,
+  tesseractKannadaWorker: null,
+};
+
+// ── Tesseract.js Loader (CDN) ─────────────────────────────────
+// Load Tesseract.js dynamically so we can use latest
+function loadTesseract() {
+  return new Promise((resolve, reject) => {
+    if (window.Tesseract) { resolve(window.Tesseract); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js';
+    s.onload = () => resolve(window.Tesseract);
+    s.onerror = () => reject(new Error('Failed to load Tesseract.js'));
+    document.head.appendChild(s);
+  });
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║                    UTILITY FUNCTIONS                        ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+function toast(msg, type = 'info', duration = 4000) {
+  const el = document.createElement('div');
+  el.className = `toast-item ${type}`;
+  el.textContent = msg;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(() => el.remove(), duration);
+}
+
+function log(msg, cls = '') {
+  const panel = document.getElementById('logPanel');
+  const out = document.getElementById('logOutput');
+  panel.classList.add('visible');
+  const line = document.createElement('span');
+  line.className = `log-line${cls ? ' ' + cls : ''}`;
+  line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  out.appendChild(line);
+  out.scrollTop = out.scrollHeight;
+}
+
+function setProgress(barId, labelId, pct, label) {
+  document.getElementById(barId).style.width = pct + '%';
+  if (label !== undefined) document.getElementById(labelId).textContent = label;
+}
+
+function showProgress(areaId) {
+  document.getElementById(areaId).classList.add('visible');
+}
+
+function hideProgress(areaId) {
+  document.getElementById(areaId).classList.remove('visible');
+}
+
+function setCardState(cardId, state) {
+  const card = document.getElementById(cardId);
+  card.classList.remove('active', 'done');
+  if (state) card.classList.add(state);
+}
+
+function setStepNum(numId, icon) {
+  document.getElementById(numId).textContent = icon;
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function cleanText(str) {
+  return (str || '').replace(/\s+/g, ' ').trim();
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║              FILE INPUT / DRAG-DROP SETUP                   ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+function setupDropZone(zoneId, inputId, fileInfoId, btnId, acceptFn, onFileReady) {
+  const zone = document.getElementById(zoneId);
+  const input = document.getElementById(inputId);
+  const info = document.getElementById(fileInfoId);
+  const btn = document.getElementById(btnId);
+
+  const handleFile = (file) => {
+    if (!file) return;
+    if (!acceptFn(file)) {
+      toast('Unsupported file type.', 'error');
+      return;
+    }
+    zone.classList.add('has-file');
+    info.textContent = `${file.name} — ${formatFileSize(file.size)}`;
+    btn.disabled = false;
+    onFileReady(file);
+  };
+
+  input.addEventListener('change', () => handleFile(input.files[0]));
+
+  zone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    zone.classList.add('dragover');
+  });
+
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+
+  zone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    handleFile(e.dataTransfer.files[0]);
+  });
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║              OCR — VOTER ID (English + Hindi)               ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+async function runVoterIdOcr() {
+  if (!State.idFile) { toast('No file selected.', 'error'); return; }
+
+  const btn = document.getElementById('runIdOcrBtn');
+  const spinner = document.getElementById('idSpinner');
+  btn.disabled = true;
+  spinner.style.display = 'inline-block';
+  showProgress('idProgress');
+  setCardState('card1', 'active');
+  log('Starting Voter ID OCR…');
+
+  try {
+    const Tesseract = await loadTesseract();
+    log('Tesseract.js loaded');
+
+    setProgress('idProgressBar', 'idProgressLabel', 10, 'Creating OCR worker…');
+
+    // Use multiple languages: English + Hindi for standard Indian voter IDs
+    const worker = await Tesseract.createWorker(['eng', 'hin'], 1, {
+      logger: (m) => {
+        if (m.status === 'recognizing text') {
+          const pct = Math.round((m.progress || 0) * 80) + 10;
+          setProgress('idProgressBar', 'idProgressLabel', pct,
+            `Recognizing text… ${Math.round((m.progress || 0) * 100)}%`);
+        }
+      },
+    });
+
+    State.tesseractWorker = worker;
+    log('Worker initialized, running recognition…');
+
+    setProgress('idProgressBar', 'idProgressLabel', 15, 'Running OCR recognition…');
+
+    const result = await worker.recognize(State.idFile);
+    const rawText = result.data.text;
+
+    setProgress('idProgressBar', 'idProgressLabel', 95, 'Parsing fields…');
+
+    State.idOcrText = rawText;
+    log(`OCR complete. Extracted ${rawText.length} characters.`, 'log-ok');
+
+    const fields = extractVoterIdFields(rawText);
+    State.idFields = fields;
+
+    renderIdFields(fields, rawText);
+
+    setProgress('idProgressBar', 'idProgressLabel', 100, 'Done!');
+    setCardState('card1', 'done');
+    setStepNum('stepNum1', '✓');
+    toast('Voter ID OCR complete!', 'success');
+
+    checkMatchReady();
+    await worker.terminate();
+  } catch (err) {
+    log('OCR Error: ' + err.message, 'log-err');
+    toast('OCR failed: ' + err.message, 'error');
+    setCardState('card1', '');
+  } finally {
+    btn.disabled = false;
+    spinner.style.display = 'none';
+  }
+}
+
+// ── Field Extraction from Voter ID OCR Text ───────────────────
+function extractVoterIdFields(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const fullText = text;
+
+  const fields = {
+    name: '',
+    relativeName: '',
+    age: '',
+    dob: '',
+    address: '',
+    partNo: '',
+    serialNo: '',
+    epicNo: '',
+  };
+
+  // ── Name patterns ────────────────────────────────────────────
+  const namePatterns = [
+    /(?:name|voter name|holder name)[:\s]*([A-Z][A-Za-z\s]+)/i,
+    /(?:elector's name|elector name)[:\s]*([A-Z][A-Za-z\s]+)/i,
+    /(?:^|\n)\s*Name\s*[:\-]?\s*([A-Z][A-Za-z ]{2,30})/im,
+  ];
+  for (const p of namePatterns) {
+    const m = fullText.match(p);
+    if (m) { fields.name = cleanText(m[1]); break; }
+  }
+
+  // Heuristic: if no match, look for a standalone ALL-CAPS line after EPIC or photo area
+  if (!fields.name) {
+    for (const line of lines) {
+      if (/^[A-Z][A-Z\s]{3,30}$/.test(line) && !/INDIA|ELECTION|COMMISSION|VOTER|CARD|IDENTITY/.test(line)) {
+        fields.name = line;
+        break;
+      }
+    }
+  }
+
+  // ── Relative Name ────────────────────────────────────────────
+  const relPatterns = [
+    /(?:father's name|husband's name|father name|husband name|s\/o|d\/o|w\/o)[:\s]*([A-Z][A-Za-z\s]+)/i,
+    /(?:relative's name|relation name)[:\s]*([A-Z][A-Za-z\s]+)/i,
+    /(?:S\/O|D\/O|W\/O)[:\s.]*([A-Z][A-Za-z\s]+)/,
+  ];
+  for (const p of relPatterns) {
+    const m = fullText.match(p);
+    if (m) { fields.relativeName = cleanText(m[1]); break; }
+  }
+
+  // ── Age ──────────────────────────────────────────────────────
+  const ageM = fullText.match(/(?:age|age\s*\/\s*dob)[:\s]*(\d{1,3})/i);
+  if (ageM) fields.age = ageM[1];
+
+  // ── DOB ──────────────────────────────────────────────────────
+  const dobPatterns = [
+    /(?:date of birth|dob|d\.o\.b)[:\s]*(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4})/i,
+    /\b(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{4})\b/,
+  ];
+  for (const p of dobPatterns) {
+    const m = fullText.match(p);
+    if (m) { fields.dob = m[1]; break; }
+  }
+
+  // ── EPIC Number ──────────────────────────────────────────────
+  const epicM = fullText.match(/(?:epic\s*no|voter\s*id|epic)[:\s.]*([A-Z]{3}\d{7})/i)
+    || fullText.match(/\b([A-Z]{3}\d{7})\b/);
+  if (epicM) fields.epicNo = epicM[1];
+
+  // ── Part Number ──────────────────────────────────────────────
+  const partM = fullText.match(/(?:part\s*(?:no|number|#))[:\s.]*(\d+)/i)
+    || fullText.match(/part\s*[:\-]?\s*(\d+)/i);
+  if (partM) fields.partNo = partM[1];
+
+  // ── Serial Number ────────────────────────────────────────────
+  const serialM = fullText.match(/(?:serial\s*(?:no|number|#)|sl\.?\s*no)[:\s.]*(\d+)/i)
+    || fullText.match(/\bsl\s*no\s*[:\-]?\s*(\d+)/i);
+  if (serialM) fields.serialNo = serialM[1];
+
+  // ── Address ──────────────────────────────────────────────────
+  const addrPatterns = [
+    /(?:address|addr)[:\s]*(.+?)(?:\n(?:age|dob|date|part|serial|epic|$)|\n\n)/is,
+    /(?:house|door|flat|plot|vill|village|ward|district|state|pin)[:\s]*(.{10,120})/i,
+  ];
+  for (const p of addrPatterns) {
+    const m = fullText.match(p);
+    if (m) { fields.address = cleanText(m[1].replace(/\n/g, ', ')); break; }
+  }
+
+  // If name still empty, try first few non-trivial lines
+  if (!fields.name) {
+    const candidates = lines.filter(l =>
+      l.length > 3 && l.length < 40 &&
+      /[A-Za-z]/.test(l) &&
+      !/\d{4,}/.test(l) &&
+      !/election|commission|india|voter|identity|card/i.test(l)
+    );
+    if (candidates.length > 0) fields.name = candidates[0];
+  }
+
+  return fields;
+}
+
+function renderIdFields(fields, rawText) {
+  const panel = document.getElementById('idFieldsPanel');
+  const grid = document.getElementById('idFieldsGrid');
+  const rawEl = document.getElementById('idRawOcr');
+
+  const entries = [
+    ['Name', fields.name],
+    ['Relative Name', fields.relativeName],
+    ['Age', fields.age],
+    ['Date of Birth', fields.dob],
+    ['EPIC No.', fields.epicNo],
+    ['Part Number', fields.partNo],
+    ['Serial No.', fields.serialNo],
+    ['Address', fields.address],
+  ];
+
+  grid.innerHTML = entries.map(([k, v]) => `
+    <div class="field-item">
+      <div class="field-key">${k}</div>
+      <div class="field-value ${v ? '' : 'empty'}">${v || '—not detected—'}</div>
+    </div>
+  `).join('');
+
+  rawEl.textContent = rawText;
+  panel.classList.add('visible');
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║       PDF PROCESSING — Electoral Roll (Kannada)             ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+async function processPdfRoll() {
+  if (!State.pdfFile) { toast('No PDF selected.', 'error'); return; }
+
+  const btn = document.getElementById('runPdfOcrBtn');
+  const spinner = document.getElementById('pdfSpinner');
+  btn.disabled = true;
+  spinner.style.display = 'inline-block';
+  showProgress('pdfProgress');
+  setCardState('card2', 'active');
+  log('Starting PDF processing…');
+
+  try {
+    const Tesseract = await loadTesseract();
+
+    // ── Load PDF ──────────────────────────────────────────────
+    const arrayBuffer = await State.pdfFile.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const totalPages = pdf.numPages;
+    log(`PDF loaded — ${totalPages} page(s)`);
+    setProgress('pdfProgressBar', 'pdfProgressLabel', 5, `PDF loaded (${totalPages} pages). Creating Kannada OCR worker…`);
+
+    // ── Create Tesseract worker with Kannada + English ────────
+    let ocrProgress = 0;
+    const worker = await Tesseract.createWorker(['kan', 'eng'], 1, {
+      logger: (m) => {
+        if (m.status === 'recognizing text') {
+          // We handle progress per-page externally
+        }
+      },
+    });
+    State.tesseractKannadaWorker = worker;
+    log('Kannada OCR worker ready');
+
+    const allEntries = [];
+
+    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+      const basePct = 10 + Math.round(((pageNum - 1) / totalPages) * 85);
+      setProgress('pdfProgressBar', 'pdfProgressLabel', basePct,
+        `Rendering page ${pageNum}/${totalPages}…`);
+      log(`Processing page ${pageNum}/${totalPages}…`);
+
+      // Render PDF page to canvas
+      const page = await pdf.getPage(pageNum);
+      const viewport = page.getViewport({ scale: 2.0 }); // 2x for better OCR accuracy
+
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext('2d');
+
+      await page.render({ canvasContext: ctx, viewport }).promise;
+
+      setProgress('pdfProgressBar', 'pdfProgressLabel', basePct + 2,
+        `Running Kannada OCR on page ${pageNum}…`);
+
+      // OCR the canvas image
+      const result = await worker.recognize(canvas);
+      const pageText = result.data.text;
+
+      log(`Page ${pageNum} — ${pageText.length} chars extracted`, 'log-ok');
+
+      // Parse voter entries from this page
+      const entries = parseKannadaRollPage(pageText, pageNum);
+      allEntries.push(...entries);
+
+      log(`Page ${pageNum} — ${entries.length} voter entries parsed`);
+    }
+
+    await worker.terminate();
+
+    State.rollEntries = allEntries;
+
+    setProgress('pdfProgressBar', 'pdfProgressLabel', 100, `Done! ${allEntries.length} entries parsed.`);
+    log(`Total entries parsed from roll: ${allEntries.length}`, 'log-ok');
+    toast(`Parsed ${allEntries.length} voter entries from ${totalPages} page(s)`, 'success');
+
+    renderRollSummary(allEntries, totalPages);
+
+    setCardState('card2', 'done');
+    setStepNum('stepNum2', '✓');
+    checkMatchReady();
+
+  } catch (err) {
+    log('PDF processing error: ' + err.message, 'log-err');
+    toast('PDF processing failed: ' + err.message, 'error');
+    setCardState('card2', '');
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    spinner.style.display = 'none';
+  }
+}
+
+// ── Kannada Electoral Roll Parser ─────────────────────────────
+// Standard Karnataka electoral roll format has numbered voter blocks:
+//   <serial>. <Kannada name>
+//   <father/husband name>
+//   <house number / address>
+//   Age: XX   Sex: M/F
+
+function parseKannadaRollPage(text, pageNum) {
+  const entries = [];
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+  // Attempt to detect part number from page header
+  let partNo = '';
+  for (const line of lines.slice(0, 10)) {
+    const pm = line.match(/(?:part|भाग|ಭಾಗ)\s*(?:no|number|#|:)?\s*(\d+)/i);
+    if (pm) { partNo = pm[1]; break; }
+  }
+
+  // Pattern 1: Numbered blocks (serial. name / relation / address / age sex)
+  // This is the most common Karnataka format
+  const blockPattern = /^(\d{1,4})\.\s*(.+)$/;
+
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    const match = line.match(blockPattern);
+    if (match) {
+      const serial = match[1];
+      const nameLine = cleanText(match[2]);
+
+      // Collect next up to 5 lines for this entry
+      const entryLines = [nameLine];
+      let j = i + 1;
+      while (j < lines.length && j < i + 6) {
+        const nextLine = lines[j];
+        // Stop if next numbered entry starts
+        if (/^\d{1,4}\./.test(nextLine)) break;
+        entryLines.push(cleanText(nextLine));
+        j++;
+      }
+
+      const entry = parseVoterBlock(entryLines, serial, partNo, pageNum);
+      entries.push(entry);
+      i = j;
+    } else {
+      i++;
+    }
+  }
+
+  // Fallback Pattern 2: Look for age/sex markers to segment entries
+  if (entries.length === 0) {
+    entries.push(...parseRollFallback(lines, partNo, pageNum));
+  }
+
+  return entries;
+}
+
+function parseVoterBlock(lines, serial, partNo, pageNum) {
+  const entry = {
+    serial,
+    partNo,
+    pageNum,
+    name: '',
+    relativeName: '',
+    age: '',
+    sex: '',
+    address: '',
+    rawLines: lines.join(' | '),
+  };
+
+  // Line 0 is typically the voter's name
+  if (lines[0]) entry.name = lines[0];
+
+  // Scan remaining lines for age, sex, relative name, address
+  for (let k = 1; k < lines.length; k++) {
+    const line = lines[k];
+
+    // Age detection (handles Kannada and English)
+    const ageM = line.match(/(?:age|Age|ವಯಸ್ಸು|ವಯ)[:\s]*(\d{1,3})/i)
+      || line.match(/(?:age|Age)[:\s]*(\d{1,3})/i)
+      || line.match(/\b(\d{2,3})\s*(?:yrs?|years?|ವರ್ಷ)?/i);
+    if (ageM && !entry.age) entry.age = ageM[1];
+
+    // Sex detection
+    const sexM = line.match(/(?:sex|Sex|ಲಿಂಗ)[:\s]*(male|female|m|f|ಪುರುಷ|ಮಹಿಳ)/i);
+    if (sexM && !entry.sex) entry.sex = sexM[1];
+
+    // Relative name (father/husband)
+    const relM = line.match(/(?:s\/o|d\/o|w\/o|father|husband|ತಂದೆ|ಪತಿ)[:\s]*(.+)/i);
+    if (relM && !entry.relativeName) entry.relativeName = cleanText(relM[1]);
+
+    // If line looks like a house number or address
+    if (!entry.address && k > 0 && !ageM && !sexM && !relM && line.length > 3) {
+      if (!entry.relativeName && k === 1) {
+        // Second line is often relative name
+        entry.relativeName = line;
+      } else {
+        entry.address = (entry.address ? entry.address + ', ' : '') + line;
+      }
+    }
+  }
+
+  return entry;
+}
+
+// Fallback: try to find voter entries without numbered prefixes
+function parseRollFallback(lines, partNo, pageNum) {
+  const entries = [];
+  // Look for lines that look like names (mix of Kannada/English letters, no digits)
+  // followed by age markers
+  for (let i = 0; i < lines.length; i++) {
+    const ageM = lines[i].match(/(?:age|Age)[:\s]*(\d{2,3})/i);
+    if (ageM) {
+      // The entry goes a few lines back
+      const nameLine = lines[Math.max(0, i - 2)] || '';
+      const relLine = lines[Math.max(0, i - 1)] || '';
+      const sexM = (lines[i + 1] || '').match(/(?:sex|Sex)[:\s]*(male|female|m|f)/i);
+      entries.push({
+        serial: String(entries.length + 1),
+        partNo,
+        pageNum,
+        name: cleanText(nameLine),
+        relativeName: cleanText(relLine),
+        age: ageM[1],
+        sex: sexM ? sexM[1] : '',
+        address: '',
+        rawLines: [nameLine, relLine, lines[i]].join(' | '),
+      });
+    }
+  }
+  return entries;
+}
+
+function renderRollSummary(entries, totalPages) {
+  const panel = document.getElementById('rollFieldsPanel');
+  const summary = document.getElementById('rollSummary');
+  const raw = document.getElementById('rollRawData');
+
+  summary.textContent = `${entries.length} voter entries extracted from ${totalPages} page(s).`;
+  raw.textContent = JSON.stringify(entries.slice(0, 20), null, 2) + (entries.length > 20 ? '\n…and more' : '');
+  panel.classList.add('visible');
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║                   FUZZY MATCHING ENGINE                     ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+function checkMatchReady() {
+  const matchRow = document.getElementById('matchRow');
+  const chip = document.getElementById('matchStatusChip');
+  const idReady = !!State.idFields;
+  const rollReady = State.rollEntries.length > 0;
+
+  if (idReady && rollReady) {
+    matchRow.style.display = 'flex';
+    chip.textContent = `${State.rollEntries.length} roll entries ready`;
+    toast('Both sources ready! Click "Find Matches" to proceed.', 'info');
+  } else if (idReady) {
+    chip.textContent = 'Waiting for electoral roll…';
+    matchRow.style.display = 'flex';
+    document.getElementById('runMatchBtn').disabled = true;
+  } else if (rollReady) {
+    chip.textContent = 'Waiting for voter ID OCR…';
+    matchRow.style.display = 'flex';
+    document.getElementById('runMatchBtn').disabled = true;
+  }
+
+  document.getElementById('runMatchBtn').disabled = !(idReady && rollReady);
+}
+
+function runFuzzyMatch() {
+  if (!State.idFields || State.rollEntries.length === 0) {
+    toast('Both voter ID and electoral roll must be processed first.', 'error');
+    return;
+  }
+
+  log('Starting fuzzy match…');
+  const fields = State.idFields;
+
+  // Build Fuse.js index over roll entries
+  const fuseOptions = {
+    includeScore: true,
+    threshold: 0.6,
+    keys: [
+      { name: 'name', weight: 0.5 },
+      { name: 'relativeName', weight: 0.25 },
+      { name: 'address', weight: 0.15 },
+      { name: 'age', weight: 0.1 },
+    ],
+  };
+
+  const fuse = new Fuse(State.rollEntries, fuseOptions);
+
+  // Build a composite query from available fields
+  const queryParts = [];
+  if (fields.name) queryParts.push(fields.name);
+  if (fields.relativeName) queryParts.push(fields.relativeName);
+
+  const query = queryParts.join(' ');
+  if (!query.trim()) {
+    toast('Could not extract a name from voter ID to search with.', 'error');
+    return;
+  }
+
+  log(`Fuzzy query: "${query}"`);
+
+  // Multi-field search
+  let results = fuse.search(query);
+
+  // Also do individual field searches and merge
+  if (fields.name) {
+    const nameResults = fuse.search({ name: fields.name });
+    // Merge with lower weight
+    for (const nr of nameResults) {
+      const existing = results.find(r => r.item.serial === nr.item.serial);
+      if (!existing) results.push(nr);
+    }
+  }
+
+  if (fields.relativeName) {
+    const relResults = fuse.search({ relativeName: fields.relativeName });
+    for (const rr of relResults) {
+      const existing = results.find(r => r.item.serial === rr.item.serial);
+      if (!existing) results.push(rr);
+    }
+  }
+
+  // Sort by score (lower Fuse score = better match)
+  results.sort((a, b) => (a.score || 1) - (b.score || 1));
+
+  // Apply age/partNo bonus scoring
+  results = results.map(r => {
+    let bonus = 0;
+    if (fields.age && r.item.age && fields.age === r.item.age) bonus += 0.05;
+    if (fields.partNo && r.item.partNo && fields.partNo === r.item.partNo) bonus += 0.05;
+    if (fields.serialNo && r.item.serial && fields.serialNo === r.item.serial) bonus += 0.08;
+    return { ...r, adjustedScore: Math.max(0, (r.score || 0.5) - bonus) };
+  });
+
+  results.sort((a, b) => (a.adjustedScore || 1) - (b.adjustedScore || 1));
+
+  const top5 = results.slice(0, 5);
+  State.matchResults = top5;
+
+  log(`Match complete — top ${top5.length} results`, 'log-ok');
+  renderMatchResults(top5, query);
+}
+
+function confidencePct(fuseScore) {
+  // Fuse score 0 = perfect, 1 = no match. Convert to 0-100%
+  return Math.max(0, Math.round((1 - (fuseScore || 0)) * 100));
+}
+
+function scoreClass(pct) {
+  if (pct >= 75) return 'score-hi';
+  if (pct >= 50) return 'score-mid';
+  return 'score-lo';
+}
+
+function renderMatchResults(results, query) {
+  const section = document.getElementById('resultsSection');
+  const cards = document.getElementById('matchCards');
+  const subtitle = document.getElementById('resultsSubtitle');
+
+  subtitle.textContent = `Fuzzy search for "${query}" across ${State.rollEntries.length} entries`;
+
+  if (results.length === 0) {
+    cards.innerHTML = `<div style="text-align:center;padding:40px;font-family:var(--mono);color:var(--text-muted);">No matches found in the electoral roll.</div>`;
+    section.classList.add('visible');
+    return;
+  }
+
+  cards.innerHTML = results.map((r, idx) => {
+    const entry = r.item;
+    const pct = confidencePct(r.adjustedScore !== undefined ? r.adjustedScore : r.score);
+    const rankClass = idx === 0 ? 'rank-1' : idx === 1 ? 'rank-2' : '';
+    const numClass = idx === 0 ? 'match-rank-1' : idx === 1 ? 'match-rank-2' : '';
+    const sc = scoreClass(pct);
+
+    // Build SVG ring for score
+    const radius = 24;
+    const circ = 2 * Math.PI * radius;
+    const offset = circ - (pct / 100) * circ;
+    const ringColor = pct >= 75 ? 'var(--success)' : pct >= 50 ? 'var(--warning)' : 'var(--error)';
+
+    return `
+      <div class="match-card ${rankClass}">
+        <div class="match-top">
+          <div class="match-rank ${numClass}">${String(idx + 1).padStart(2, '0')}</div>
+          <div style="flex:1">
+            <div class="match-name">${entry.name || '—'}</div>
+            ${entry.relativeName ? `<div class="match-rel">S/O or D/O: ${entry.relativeName}</div>` : ''}
+            ${entry.address ? `<div class="match-addr">${entry.address}</div>` : ''}
+            ${entry.age ? `<div class="match-rel" style="margin-top:4px">Age: ${entry.age}${entry.sex ? ' · ' + entry.sex : ''}</div>` : ''}
+          </div>
+          <div class="match-score-bar">
+            <svg class="score-ring" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="${radius}" stroke="var(--border)" stroke-width="4" fill="none"/>
+              <circle cx="32" cy="32" r="${radius}" stroke="${ringColor}" stroke-width="4" fill="none"
+                stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}"
+                stroke-linecap="round" transform="rotate(-90 32 32)" style="transition:stroke-dashoffset 0.8s ease"/>
+              <text x="32" y="37" text-anchor="middle" font-family="DM Mono,monospace" font-size="12" fill="${ringColor}" font-weight="500">${pct}%</text>
+            </svg>
+            <div class="score-label">confidence</div>
+          </div>
+        </div>
+        <div class="match-meta">
+          ${entry.partNo ? `<div class="meta-chip highlight">Part <span>${entry.partNo}</span></div>` : ''}
+          ${entry.serial ? `<div class="meta-chip highlight">Serial <span>${entry.serial}</span></div>` : ''}
+          <div class="meta-chip">Page <span>${entry.pageNum}</span></div>
+          <div class="meta-chip">Score <span class="${sc}">${pct}%</span></div>
+          <div class="meta-chip">Fuse Δ <span>${(r.adjustedScore || r.score || 0).toFixed(3)}</span></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  section.classList.add('visible');
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║                       CLEAR / RESET                         ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+function clearAll() {
+  // Reset state
+  State.idFile = null;
+  State.pdfFile = null;
+  State.idOcrText = '';
+  State.idFields = null;
+  State.rollEntries = [];
+  State.matchResults = [];
+
+  // Reset UI
+  ['idFieldsPanel', 'rollFieldsPanel', 'logPanel', 'resultsSection'].forEach(id => {
+    document.getElementById(id).classList.remove('visible');
+  });
+
+  document.getElementById('matchRow').style.display = 'none';
+
+  ['card1', 'card2'].forEach(id => setCardState(id, ''));
+  document.getElementById('stepNum1').textContent = '01';
+  document.getElementById('stepNum2').textContent = '02';
+
+  ['idDropZone', 'pdfDropZone'].forEach(id => {
+    document.getElementById(id).classList.remove('has-file', 'dragover');
+  });
+
+  ['idFileInfo', 'pdfFileInfo'].forEach(id => {
+    document.getElementById(id).textContent = '';
+  });
+
+  ['idProgress', 'pdfProgress'].forEach(id => hideProgress(id));
+  ['idProgressBar', 'pdfProgressBar'].forEach(id => {
+    document.getElementById(id).style.width = '0%';
+  });
+
+  document.getElementById('runIdOcrBtn').disabled = true;
+  document.getElementById('runPdfOcrBtn').disabled = true;
+  document.getElementById('idFileInput').value = '';
+  document.getElementById('pdfFileInput').value = '';
+  document.getElementById('matchCards').innerHTML = '';
+  document.getElementById('logOutput').innerHTML = '';
+
+  toast('Reset complete.', 'info');
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║                     INITIALIZATION                          ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+(function init() {
+  // Setup drop zones
+  setupDropZone(
+    'idDropZone', 'idFileInput', 'idFileInfo', 'runIdOcrBtn',
+    (f) => f.type.startsWith('image/'),
+    (f) => { State.idFile = f; log(`Voter ID image selected: ${f.name}`); }
+  );
+
+  setupDropZone(
+    'pdfDropZone', 'pdfFileInput', 'pdfFileInfo', 'runPdfOcrBtn',
+    (f) => f.type === 'application/pdf',
+    (f) => { State.pdfFile = f; log(`Electoral roll PDF selected: ${f.name}`); }
+  );
+
+  // Button events
+  document.getElementById('runIdOcrBtn').addEventListener('click', runVoterIdOcr);
+  document.getElementById('runPdfOcrBtn').addEventListener('click', processPdfRoll);
+  document.getElementById('runMatchBtn').addEventListener('click', runFuzzyMatch);
+  document.getElementById('clearBtn').addEventListener('click', clearAll);
+
+  log('VoterTrace initialized. Select files to begin.', 'log-ok');
+})();
+</script>
+</body>
+</html>
