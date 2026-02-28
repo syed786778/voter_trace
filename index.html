@@ -422,30 +422,50 @@ function extractId(fe, fk, be, bk){
   return f;
 }
 
-// Match English labelled field — tries label on same line AND next line.
-// Handles OCR apostrophe variants. Value must look like a proper name.
+// Match English labelled field — multi-strategy, tolerates OCR apostrophe variants.
 function matchEngField(text, labelPatterns){
-  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
-  // Also try joining pairs of lines (OCR sometimes splits label from value)
-  const pairs=[];
-  for(let i=0;i<lines.length-1;i++) pairs.push({idx:i,joined:lines[i]+' '+lines[i+1]});
+  // Normalize apostrophes/quotes in OCR text before matching
+  const norm = s => s
+    .replace(/[\u2018\u2019\u201A\u201B\u2032\u0060]/g, "'") // smart quotes → straight
+    .replace(/[\u201C\u201D\u201E]/g, '"');
 
-  const nameRe=/^[A-Z][A-Za-z .''-]{1,55}$/;
+  const raw = norm(text);
+  const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
+
+  // A valid English name: starts with capital, only letters/spaces/dots/apostrophes/hyphens
+  // We also allow trailing noise like a period or comma which OCR sometimes adds
+  function extractName(s){
+    s = s.trim().replace(/[,:;.]+$/, '').trim(); // strip trailing punctuation
+    // Must start with capital letter and be a plausible name (2–4 words, all alpha)
+    if(/^[A-Z][A-Za-z]+([ .'-][A-Za-z]+){0,4}$/.test(s) && s.length >= 3) return s;
+    return '';
+  }
 
   for(const re of labelPatterns){
-    // Try each line
     for(let i=0;i<lines.length;i++){
       if(!re.test(lines[i])) continue;
-      const after=lines[i].replace(re,'').trim();
-      if(nameRe.test(after)) return clean(after);
-      // Value on next line
-      if(i+1<lines.length && nameRe.test(lines[i+1])) return clean(lines[i+1]);
+      // Try: value on same line after label
+      const after = lines[i].replace(re,'').replace(/^[:\s|-]+/,'').trim();
+      const n1 = extractName(after);
+      if(n1) return clean(n1);
+      // Try: value on next line
+      if(i+1<lines.length){
+        const n2 = extractName(lines[i+1]);
+        if(n2) return clean(n2);
+      }
+      // Try: value 2 lines ahead (OCR sometimes inserts blank line)
+      if(i+2<lines.length){
+        const n3 = extractName(lines[i+2]);
+        if(n3) return clean(n3);
+      }
     }
-    // Try joined pairs (handles label + value on consecutive OCR lines)
-    for(const {idx,joined} of pairs){
+    // Try joining adjacent lines (label split across lines)
+    for(let i=0;i<lines.length-1;i++){
+      const joined = lines[i]+' '+lines[i+1];
       if(!re.test(joined)) continue;
-      const after=joined.replace(re,'').trim();
-      if(nameRe.test(after)) return clean(after);
+      const after = joined.replace(re,'').replace(/^[:\s|-]+/,'').trim();
+      const n = extractName(after);
+      if(n) return clean(n);
     }
   }
   return '';
@@ -495,14 +515,16 @@ function renderIdFields(f, raw){
     <div class="field-item${r.w?' w2':''}">
       <div class="field-k">${r.k}</div>
       <div class="field-v${r.v?'':' nil'}">${r.v||'Not found'}</div>
-      ${r.copy&&r.v?`<button class="copy-btn" onclick="copyField(this,${JSON.stringify(r.v)})" title="Copy">Copy</button>`:''}
+      ${r.copy&&r.v?`<button class="copy-btn" data-val="${r.v.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}" onclick="copyField(this)" title="Copy">Copy</button>`:''}
     </div>`).join('');
   document.getElementById('id-raw').textContent=raw;
   document.getElementById('id-out').style.display='block';
   document.getElementById('id-out').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function copyField(btn,text){
+function copyField(btn){
+  const text=btn.dataset.val||'';
+  if(!text) return;
   navigator.clipboard.writeText(text).then(()=>{
     btn.textContent='Copied!';btn.classList.add('copied');
     setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1800);
