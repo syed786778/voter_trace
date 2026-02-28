@@ -658,7 +658,7 @@ async function scanPdf() {
   }
 }
 
-// ── PARSE NATIVE PDF TEXT PAGE ────────────────────────────────
+// ── PARSE NATIVE TEXT PAGE (for text-layer PDFs) ────────────
 function parseNativePage(tc, pageNum) {
   const items = tc.items
     .filter(i=>i.str&&i.str.trim())
@@ -669,174 +669,249 @@ function parseNativePage(tc, pageNum) {
     }));
   if (!items.length) return [];
 
-  // Group by Y row
+  // Group by Y row (tolerance 4px)
   const sorted=[...items].sort((a,b)=>b.y-a.y);
   const rows=[];
   for (const item of sorted) {
     const row=rows.find(r=>Math.abs(r[0].y-item.y)<=4);
     if (row) row.push(item); else rows.push([item]);
   }
-  const lines = rows.map(r=>r.sort((a,b)=>a.x-b.x).map(i=>i.text).join(' ').trim()).filter(Boolean);
-  const text = lines.join('\n');
 
-  // Find part number
+  // Part No from header
   let partNo='';
-  for (const ln of lines.slice(0,15)) {
-    const pm=ln.match(/(?:part|ಭಾಗ)\s*[:\-#]?\s*(\d+)/i);
-    if (pm){partNo=pm[1];break;}
+  const topLines=rows.slice(0,5).map(r=>r.sort((a,b)=>a.x-b.x).map(i=>i.text).join(' '));
+  for (const ln of topLines) {
+    const pm=ln.match(/ಭಾಗದ\s*ಸಂಖ್ಯೆ\s*[:\-]?\s*(\d+)|ಭಾಗ\s*[:\-#]?\s*(\d+)/);
+    if (pm){partNo=pm[1]||pm[2];break;}
   }
 
-  return parseOcrPage(text, pageNum, partNo);
+  return parseTablePage(rows, partNo, pageNum);
 }
 
-// ── PARSE OCR TEXT PAGE ───────────────────────────────────────
-// Handles the standard Karnataka electoral roll format:
-//   Each voter block:
-//     Line 1: Serial No. + Kannada Name (ಹೆಸರು)
-//     Line 2: English Name
-//     Line 3: Relative Kannada (ತಂದೆ/ಪತಿ ಹೆಸರು)
-//     Line 4: English Relative Name
-//     Line 5: House No.
-//     Line 6: Age: XX   Sex: M/F
+// ── PARSE COLUMNAR TABLE PAGE (Karnataka electoral roll format) ──────────────
+// Table columns (from the format image):
+//   Col 1 (narrowest, leftmost):  ಕ್ರಮ ಸಂಖ್ಯೆ  — Serial No
+//   Col 2:                         ಮನೆ/ಫ್ಲಾಟ್    — House No
+//   Col 3 (widest):                ಮತದಾರರ ಹೆಸರು  — Voter Name
+//   Col 4 (narrow):                ಸಂಬಂಧ          — Relation (ತಂದೆ/ಗಂಡ/ತಾಯಿ/ಇತರೆ)
+//   Col 5:                         ಸಂಬಂಧಿಯ ಹೆಸರು — Relative Name
+//   Col 6 (narrow):                ಗಂ/ಹೆಂ         — Sex
+//   Col 7 (narrow):                ವಯಸ್ಸು         — Age
+//   Col 8 (narrow):                ಮ.ಗು.ಚೀ ಸಂಖ್ಯೆ — EPIC No (often blank in scanned PDFs)
 //
-// But OCR is messy so we use multiple heuristics
-function parseOcrPage(text, pageNum, knownPart) {
+// When OCR runs on this, each data row becomes ONE line like:
+//   "1  2  ಸುಬ್ರಮಣಿ  ತಂದೆ  ಅಯ್ಯಕ್ಣ  ಗಂ  35"
+// We parse this by detecting the known fixed values in cols 4 and 6.
+function parseTablePage(rows, partNo, pageNum) {
   const entries=[];
-  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
 
-  // Find part number
-  let partNo = knownPart||'';
-  if (!partNo) {
-    for (const ln of lines.slice(0,20)) {
-      const pm=ln.match(/(?:part|ಭಾಗ|Part\s*No\.?)\s*[:\-#]?\s*(\d{1,4})/i);
-      if (pm){partNo=pm[1];break;}
+  // Reconstruct lines from rows
+  const lines = rows
+    .map(r=>r.sort((a,b)=>a.x-b.x).map(i=>i.text).join('\t'))
+    .filter(Boolean);
+
+  // Relation tokens — col 4 values
+  const REL_TOKENS = /^(ತಂದೆ|ಗಂಡ|ತಾಯಿ|ಇತರೆ|ಪತಿ|ಮಗ|ಮಗಳು)$/;
+  // Sex tokens — col 6 values
+  const SEX_TOKENS = /^(ಗಂ|ಹೆಂ|ಗಂ\.|ಹೆಂ\.)$/;
+
+  for (const rawLine of lines) {
+    // Split by whitespace/tab into tokens
+    const tokens = rawLine.split(/[\t]+/).map(t=>t.trim()).filter(Boolean);
+
+    // Skip header/footer lines
+    if (tokens.join(' ').match(/ಕ್ರಮ\s*ಸಂಖ್ಯೆ|ಮನೆ.*ಫ್ಲಾಟ್|ಮತದಾರರ\s*ಹೆಸರು|ಭಾಗದ|ಮತದಾರರ\s*ಪಟ್ಟಿ|ರಾಜ್ಯದ\s*ಕೋಡ್/)) continue;
+    if (tokens.join(' ').match(/ವಿಧಾನ\s*ಸಭಾ|ಭಾರತ\s*ಚುನಾ/)) continue;
+
+    // Find relation token position — this is the most reliable anchor
+    let relIdx = -1;
+    for (let t=0;t<tokens.length;t++) {
+      if (REL_TOKENS.test(tokens[t])) { relIdx=t; break; }
     }
-  }
+    if (relIdx < 0) continue; // Not a data row
 
-  // ── Try Method 1: Serial number anchored blocks ───────────
-  // Karnataka rolls: serial number appears alone on a line or before name
-  // Format variants:
-  //   "1" alone → next lines = name block
-  //   "1. ಹೆಸರು" → inline
-  //   "ಕ್ರ.ಸಂ.: 1" → labeled serial
-
-  let i=0;
-  while (i<lines.length) {
-    const ln=lines[i];
-
-    // Match various serial number patterns
-    const ser = ln.match(/^(\d{1,4})[.)]\s*(.*)$/) ||    // "1. Text"
-                 ln.match(/^(\d{1,4})\s*$/) ||             // "1" alone
-                 ln.match(/ಕ್ರ[.\s]*ಸಂ[.\s]*[:\-]?\s*(\d{1,4})/) || // Kannada serial label
-                 ln.match(/serial\s*[:\-]?\s*(\d{1,4})/i);
-
-    if (ser && parseInt(ser[1]||ser[2]) >= 1 && parseInt(ser[1]||ser[2]) <= 9999) {
-      const serial = String(parseInt(ser[1]||ser[2]));
-      const inline = (ser[2]||'').trim();
-      const block = inline ? [inline] : [];
-      let j=i+1;
-      // Collect up to 10 following lines until next serial
-      while (j<lines.length && j<i+12) {
-        const nx=lines[j];
-        // Stop if next serial number found
-        if (/^(\d{1,4})[.)]/.test(nx)) break;
-        if (/^(\d{1,4})\s*$/.test(nx) && parseInt(nx)===parseInt(serial)+1) break;
-        if (/ಕ್ರ[.\s]*ಸಂ/.test(nx)) break;
-        // Stop at page footer/header markers
-        if (/election\s*commission|ಚುನಾ|ಭಾರತ\s*ಸರ್ಕಾರ/i.test(nx)) break;
-        block.push(nx);
-        j++;
-      }
-      if (block.length>0) {
-        const entry=buildEntry(block,serial,partNo,pageNum);
-        // Only add if we got at least a name
-        if (entry.nameKan||entry.name) {
-          entries.push(entry);
-        }
-      }
-      i=j;
-      continue;
+    // Find sex token (comes after relation)
+    let sexIdx = -1;
+    for (let t=relIdx+1;t<tokens.length;t++) {
+      if (SEX_TOKENS.test(tokens[t])) { sexIdx=t; break; }
     }
-    i++;
-  }
 
-  // ── Method 2: Age-anchored if Method 1 found nothing ─────
-  if (entries.length===0) {
-    for (let k=0;k<lines.length;k++) {
-      // Age line is a strong anchor: "ವಯಸ್ಸು: 35" or "Age: 35"
-      const am=lines[k].match(/(?:ವಯಸ್ಸು|ವಯ|Age)\s*[:\-]?\s*(\d{2,3})/i);
-      if (am && parseInt(am[1])>0 && parseInt(am[1])<120) {
-        const block=[];
-        // Take 5 lines before and 1 after the age line
-        for (let b=Math.max(0,k-5);b<=Math.min(lines.length-1,k+1);b++) {
-          block.push(lines[b]);
-        }
-        const entry=buildEntry(block,String(entries.length+1),partNo,pageNum);
-        if (entry.nameKan||entry.name) entries.push(entry);
-      }
+    // Serial = first numeric token before relation
+    let serial='', houseNo='', nameKan='', relationType='', relativeKan='', sex='', age='', epicNo='';
+
+    // Tokens before relation: [serial] [houseNo] [name...]
+    const preRel = tokens.slice(0, relIdx);
+    // Serial: first token if purely numeric
+    let preStart=0;
+    if (preRel.length>0 && /^\d+$/.test(preRel[0])) {
+      serial=preRel[0]; preStart=1;
+    }
+    // House no: next token if purely numeric
+    if (preRel.length>preStart && /^\d+$/.test(preRel[preStart])) {
+      houseNo=preRel[preStart]; preStart++;
+    }
+    // Voter name: remaining tokens
+    nameKan = preRel.slice(preStart).join(' ').trim();
+
+    // Relation type
+    relationType = tokens[relIdx];
+
+    // Relative name: tokens between relation and sex
+    const postRel = tokens.slice(relIdx+1, sexIdx>=0 ? sexIdx : tokens.length);
+    relativeKan = postRel.join(' ').trim();
+
+    // Sex
+    if (sexIdx>=0) {
+      sex = SEX_TOKENS.test(tokens[sexIdx]) ?
+        (tokens[sexIdx].startsWith('ಗಂ') ? 'ಗಂ (Male)' : 'ಹೆಂ (Female)') : '';
+    }
+
+    // Age + EPIC: tokens after sex
+    const postSex = tokens.slice(sexIdx>=0 ? sexIdx+1 : tokens.length);
+    for (const t of postSex) {
+      if (/^\d{1,3}$/.test(t) && parseInt(t)>0 && parseInt(t)<120 && !age) { age=t; }
+      else if (/^[A-Z]{3}\d{7}$/.test(t)) { epicNo=t; }
+    }
+
+    // Only add if we have a name
+    if (nameKan.length>1) {
+      entries.push({
+        serial, houseNo, partNo, pageNum,
+        nameKan, name:'',           // No English names in Kannada rolls
+        relativeKan, relative:'',
+        relationType,
+        sex, age, epicNo,
+        address: houseNo ? 'House No. '+houseNo : ''
+      });
     }
   }
 
   return entries;
 }
 
-// ── BUILD ENTRY FROM BLOCK OF LINES ──────────────────────────
-function buildEntry(block, serial, partNo, pageNum) {
-  const e={
-    serial, partNo, pageNum,
-    nameKan:'', name:'',
-    relativeKan:'', relative:'',
-    age:'', sex:'', address:''
-  };
+// ── PARSE OCR PAGE (for scanned image PDFs) ──────────────────
+// OCR output for the Karnataka tabular format collapses each row into
+// a single line: "1  2  ಸುಬ್ರಮಣಿ  ತಂದೆ  ಅಯ್ಯಕ್ಣ  ಗಂ  35"
+// We use the same column-anchor strategy as parseTablePage.
+function parseOcrPage(text, pageNum, knownPart) {
+  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
 
-  for (const ln of block) {
-    if (!ln||ln.length<2) continue;
-
-    // Skip header/footer noise
-    if (/election\s*commission|ಚುನಾ|photo\s*electoral|ಮತದಾರ.*ಪಟ್ಟಿ/i.test(ln)) continue;
-
-    // Age
-    const ageM=ln.match(/(?:ವಯಸ್ಸು|ವಯ|Age)\s*[:\-]?\s*(\d{2,3})/i);
-    if (ageM&&!e.age){const n=parseInt(ageM[1]);if(n>0&&n<120){e.age=String(n);}}
-
-    // Sex — only capture known values
-    const sexM=ln.match(/(?:ಲಿಂಗ|Sex|Gender)\s*[:\-]?\s*(ಪುರುಷ|ಸ್ತ್ರೀ|ಪು|ಮ|Male|Female|M|F)\b/i);
-    if (sexM&&!e.sex){
-      const sv=sexM[1].toLowerCase();
-      e.sex=(sv==='m'||sv==='male'||sv==='ಪು'||sv==='ಪುರುಷ')?'Male':'Female';
-    }
-
-    // Relative with explicit label
-    const relM=ln.match(/(?:ತಂದೆ|ಪತಿ|ಸಂಬಂಧ|Relation|S\/O|D\/O|W\/O|Father|Husband|Mother)\s*[:\-]?\s*(.{2,})/i);
-    if (relM&&!e.relativeKan&&!e.relative){
-      const v=clean(relM[1]);
-      if (/[\u0C80-\u0CFF]{2,}/.test(v)) e.relativeKan=v;
-      else if (/[A-Za-z]{2,}/.test(v)) e.relative=v;
-      continue;
-    }
-
-    // Classify remaining lines by script
-    const kanCount=(ln.match(/[\u0C80-\u0CFF]/g)||[]).length;
-    const engCount=(ln.match(/[A-Za-z]/g)||[]).length;
-    const numCount=(ln.match(/\d/g)||[]).length;
-    const totalAlpha=kanCount+engCount;
-    if (totalAlpha<2) continue; // skip lines that are mostly numbers/symbols
-
-    if (kanCount>engCount) {
-      // Kannada-dominant line
-      // Skip if it looks like an age/sex line
-      if (/\d{2,3}/.test(ln)&&(ageM)) continue;
-      if (!e.nameKan) e.nameKan=clean(ln);
-      else if (!e.relativeKan) e.relativeKan=clean(ln);
-      else e.address=(e.address?e.address+', ':'')+clean(ln);
-    } else if (engCount>0) {
-      // English-dominant line
-      if (!e.name&&/[A-Za-z]{2,}/.test(ln)) e.name=clean(ln);
-      else if (!e.relative&&/[A-Za-z]{2,}/.test(ln)) e.relative=clean(ln);
-      else if (ln.length>2) e.address=(e.address?e.address+', ':'')+clean(ln);
+  // Part number from header lines
+  let partNo = knownPart||'';
+  if (!partNo) {
+    for (const ln of lines.slice(0,20)) {
+      const pm=ln.match(/ಭಾಗದ\s*ಸಂಖ್ಯೆ\s*[:\-]?\s*(\d+)|ಭಾಗ\s*[:\-#]?\s*(\d+)/);
+      if (pm){partNo=pm[1]||pm[2];break;}
     }
   }
-  return e;
+
+  const entries=[];
+
+  // Relation tokens
+  const REL_RE = /\b(ತಂದೆ|ಗಂಡ|ತಾಯಿ|ಇತರೆ|ಪತಿ)\b/;
+  // Sex tokens
+  const SEX_RE = /\b(ಗಂ|ಹೆಂ)\b/;
+
+  for (const rawLine of lines) {
+    // Skip headers
+    if (/ಕ್ರಮ\s*ಸಂಖ್ಯೆ|ಮನೆ.*ಫ್ಲಾಟ್|ಮತದಾರರ\s*ಹೆಸರು|ಭಾಗದ|ರಾಜ್ಯದ\s*ಕೋಡ್|ವಿಧಾನ\s*ಸಭಾ|ಭಾರತ\s*ಚುನಾ/.test(rawLine)) continue;
+
+    // Split on whitespace — OCR often has variable spacing
+    const tokens = rawLine.split(/\s{2,}|\t/).map(t=>t.trim()).filter(Boolean);
+    if (tokens.length < 3) {
+      // Try splitting on single spaces too
+      tokens.length=0;
+      rawLine.split(/\s+/).forEach(t=>{ if(t.trim()) tokens.push(t.trim()); });
+    }
+
+    // Find relation anchor
+    let relIdx=-1;
+    for (let t=0;t<tokens.length;t++) {
+      if (REL_RE.test(tokens[t]) && tokens[t].length<=4) { relIdx=t; break; }
+    }
+    if (relIdx<0) continue;
+
+    // Find sex anchor (after relation)
+    let sexIdx=-1;
+    for (let t=relIdx+1;t<tokens.length;t++) {
+      if (SEX_RE.test(tokens[t]) && tokens[t].length<=3) { sexIdx=t; break; }
+    }
+
+    // Parse pre-relation tokens
+    const preRel=tokens.slice(0,relIdx);
+    let serial='',houseNo='',nameKan='',preStart=0;
+    if (preRel.length>0 && /^\d+$/.test(preRel[0])){serial=preRel[0];preStart++;}
+    if (preRel.length>preStart && /^\d+$/.test(preRel[preStart])){houseNo=preRel[preStart];preStart++;}
+    nameKan=preRel.slice(preStart).join(' ').trim();
+
+    const relationType=tokens.slice(relIdx,relIdx+1).join('').replace(REL_RE,'$1');
+
+    // Post-relation up to sex = relative name
+    const relativeKan=tokens.slice(relIdx+1, sexIdx>=0?sexIdx:tokens.length).join(' ').trim();
+
+    // Post-sex = age + epic
+    let sex='',age='',epicNo='';
+    if(sexIdx>=0){
+      const sv=tokens[sexIdx];
+      sex=sv.includes('ಗಂ')?'ಗಂ (Male)':'ಹೆಂ (Female)';
+      const postSex=tokens.slice(sexIdx+1);
+      for(const t of postSex){
+        if(/^\d{1,3}$/.test(t)&&parseInt(t)>0&&parseInt(t)<120&&!age){age=t;}
+        else if(/^[A-Z]{3}\d{7}$/.test(t)){epicNo=t;}
+      }
+    }
+
+    if(nameKan.length>1){
+      entries.push({
+        serial, houseNo, partNo, pageNum,
+        nameKan, name:'',
+        relativeKan, relative:'',
+        relationType, sex, age, epicNo,
+        address: houseNo?'House No. '+houseNo:''
+      });
+    }
+  }
+
+  // Fallback: if no entries parsed (OCR mangled everything), use old line-block method
+  if (entries.length===0) return parseOcrFallback(text, partNo, pageNum);
+  return entries;
+}
+
+// ── FALLBACK parser for OCR text that doesn't match table structure ──
+function parseOcrFallback(text, partNo, pageNum) {
+  const entries=[];
+  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  let i=0;
+  while(i<lines.length){
+    const ln=lines[i];
+    const ser=ln.match(/^(\d{1,4})[.)]\s*(.*)$/)||ln.match(/^(\d{1,4})\s*$/);
+    if(ser&&parseInt(ser[1])>=1&&parseInt(ser[1])<=9999){
+      const serial=ser[1];
+      const block=ser[2]?[ser[2].trim()]:[];
+      let j=i+1;
+      while(j<lines.length&&j<i+10){
+        const nx=lines[j];
+        if(/^(\d{1,4})[.)]/.test(nx)||/^(\d{1,4})\s*$/.test(nx)) break;
+        if(/ಚುನಾ|ಭಾರತ\s*ಸರ್ಕಾರ/i.test(nx)) break;
+        block.push(nx); j++;
+      }
+      // Quick parse
+      let nameKan='',relativeKan='',sex='',age='';
+      for(const b of block){
+        const am=b.match(/(\d{2,3})/);
+        const sm=b.match(/\b(ಗಂ|ಹೆಂ)\b/);
+        const rm=b.match(/\b(ತಂದೆ|ಗಂಡ|ತಾಯಿ|ಇತರೆ)\b/);
+        if(am&&parseInt(am[1])>0&&parseInt(am[1])<120&&!age)age=am[1];
+        if(sm)sex=sm[1].includes('ಗಂ')?'ಗಂ (Male)':'ಹೆಂ (Female)';
+        if(!nameKan&&/[\u0C80-\u0CFF]{3,}/.test(b)&&!rm&&!sm)nameKan=b;
+        else if(rm&&/[\u0C80-\u0CFF]{3,}/.test(b))relativeKan=b.replace(rm[0],'').trim();
+      }
+      if(nameKan)entries.push({serial,partNo,pageNum,nameKan,name:'',relativeKan,relative:'',sex,age,address:'',houseNo:'',relationType:'',epicNo:''});
+      i=j; continue;
+    }
+    i++;
+  }
+  return entries;
 }
 
 // ── SEARCH ───────────────────────────────────────────────────
@@ -849,17 +924,19 @@ function doSearch() {
   // Determine if input is Kannada
   const isKannada = str => /[\u0C80-\u0CFF]/.test(str);
 
+  // Since Karnataka rolls are Kannada-only, always prioritise Kannada fields.
+  // If the user types English we still search English name (fallback).
+  const kanQuery = isKannada(name||rel);
   const fuse = new Fuse(G.entries, {
     includeScore: true,
-    threshold: 0.40,       // Tighter threshold for better precision
+    threshold: 0.45,
     ignoreLocation: true,
     useExtendedSearch: false,
     keys: [
-      // Weight Kannada higher when input is Kannada
-      { name: 'nameKan',     weight: isKannada(name) ? 0.50 : 0.20 },
-      { name: 'name',        weight: isKannada(name) ? 0.15 : 0.45 },
-      { name: 'relativeKan', weight: isKannada(rel||name) ? 0.25 : 0.10 },
-      { name: 'relative',    weight: isKannada(rel||name) ? 0.10 : 0.25 },
+      { name: 'nameKan',     weight: 0.55 },
+      { name: 'name',        weight: 0.15 },
+      { name: 'relativeKan', weight: 0.25 },
+      { name: 'relative',    weight: 0.05 },
     ]
   });
 
@@ -910,38 +987,44 @@ function showResults(list, query) {
   wrap.style.display='block';
 
   if (!list.length) {
-    cards.innerHTML=`<div class="empty"><div class="e-ico">🔍</div><p>No matches found for "<b>${query}</b>".<br>Try different spelling or Kannada script.</p></div>`;
+    cards.innerHTML=`<div class="empty"><div class="e-ico">🔍</div><p>No matches found for "<b>${query}</b>".<br>Try a different spelling or check the Kannada script.</p></div>`;
     wrap.scrollIntoView({behavior:'smooth',block:'start'});
     return;
   }
 
-  cards.innerHTML = list.map((r,i) => {
+  cards.innerHTML = list.map((r,idx) => {
     const e=r.item;
     const pct=Math.max(0,Math.round((1-(r.score||0))*100));
     const bc=pct>=75?'hi':pct>=50?'mid':'lo';
-    const displayName = e.nameKan || e.name || '—';
-    const displayNameAlt = (e.nameKan&&e.name) ? e.name : '';
-    const displayRel = e.relativeKan || e.relative || '';
-    const displayRelAlt = (e.relativeKan&&e.relative) ? e.relative : '';
+
+    // Primary name: Kannada preferred, English fallback
+    const nameMain = e.nameKan || e.name || '—';
+    const nameAlt  = (e.nameKan && e.name) ? e.name : '';
+
+    // Relative name
+    const relMain  = e.relativeKan || e.relative || '';
+    const relAlt   = (e.relativeKan && e.relative) ? e.relative : '';
+    const relLabel = e.relationType ? e.relationType+': ' : '';
 
     return `
-      <div class="result-item${i===0?' top':''}">
-        ${i===0?'<div class="best-pin">Best Match</div>':''}
+      <div class="result-item${idx===0?' top':''}">
+        ${idx===0?'<div class="best-pin">Best Match</div>':''}
         <div class="result-top-row">
-          <div style="min-width:0">
-            <div class="result-name">${displayName}</div>
-            ${displayNameAlt?`<div class="result-sub">${displayNameAlt}</div>`:''}
-            ${displayRel?`<div class="result-sub">Father/Husband: ${displayRel}${displayRelAlt?' · '+displayRelAlt:''}</div>`:''}
+          <div style="min-width:0;flex:1">
+            <div class="result-name">${nameMain}</div>
+            ${nameAlt?`<div class="result-sub">${nameAlt}</div>`:''}
+            ${relMain?`<div class="result-sub" style="margin-top:4px">${relLabel}<b>${relMain}</b>${relAlt?' · '+relAlt:''}</div>`:''}
           </div>
-          <span class="badge ${bc}" style="flex-shrink:0">${pct}%</span>
+          <span class="badge ${bc}" style="flex-shrink:0;align-self:flex-start">${pct}%</span>
         </div>
-        <div class="result-tags">
-          ${e.serial?`<div class="tag hl">Serial No. <b>${e.serial}</b></div>`:''}
-          ${e.partNo?`<div class="tag hl">Part <b>${e.partNo}</b></div>`:''}
-          <div class="tag">Page <b>${e.pageNum}</b></div>
-          ${e.age?`<div class="tag">Age <b>${e.age}</b></div>`:''}
-          ${e.sex?`<div class="tag">Sex <b>${e.sex}</b></div>`:''}
-          ${e.address?`<div class="tag" style="max-width:260px;white-space:normal">📍 ${e.address}</div>`:''}
+        <div class="result-tags" style="margin-top:10px">
+          ${e.serial?`<div class="tag hl">ಕ್ರಮ ಸಂ. <b>${e.serial}</b></div>`:''}
+          ${e.houseNo?`<div class="tag">ಮನೆ <b>${e.houseNo}</b></div>`:''}
+          ${e.partNo?`<div class="tag hl">ಭಾಗ <b>${e.partNo}</b></div>`:''}
+          <div class="tag">ಪುಟ <b>${e.pageNum}</b></div>
+          ${e.age?`<div class="tag">ವಯಸ್ಸು <b>${e.age}</b></div>`:''}
+          ${e.sex?`<div class="tag">${e.sex}</div>`:''}
+          ${e.epicNo?`<div class="tag">EPIC <b>${e.epicNo}</b></div>`:''}
         </div>
       </div>`;
   }).join('');
