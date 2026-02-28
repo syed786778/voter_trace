@@ -61,6 +61,17 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f8fafc;color:#0f172a;m
 .field-k{font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
 .field-v{font-size:14px;font-weight:500;color:#0f172a;line-height:1.4}
 .field-v.nil{font-size:12px;color:#cbd5e1;font-style:italic;font-weight:400}
+.field-item{position:relative;}
+.copy-btn{
+  position:absolute;top:8px;right:8px;
+  background:none;border:1px solid #e2e8f0;border-radius:4px;
+  padding:2px 7px;font-size:10px;font-weight:600;color:#94a3b8;
+  cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;
+  opacity:0;
+}
+.field-item:hover .copy-btn{opacity:1;}
+.copy-btn:hover{background:#eff6ff;border-color:#bfdbfe;color:#2563eb;}
+.copy-btn.copied{color:#16a34a;border-color:#bbf7d0;background:#f0fdf4;}
 
 /* Search */
 .input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
@@ -325,82 +336,70 @@ async function scanId() {
 }
 
 // ── EXTRACT VOTER ID FIELDS ──────────────────────────────────
+// Guiding principle: ONLY show a field if we found it via an explicit label.
+// Never guess or fall back to random lines — wrong data is worse than no data.
 function extractId(fe, fk, be, bk) {
   be=be||''; bk=bk||''; fk=fk||'';
   const f = {
     electorName:'', electorNameKan:'',
     fatherName:'',  fatherNameKan:'',
-    sex:'', dob:'',
-    epicNo:'', addr:'', taluk:'', dist:'',
+    sex:'', epicNo:'',
+    addr:'', taluk:'', dist:'',
     part:'', serial:''
   };
 
   // ── EPIC No. ─────────────────────────────────────────────
-  // Pattern: 3 uppercase letters + 7-8 alphanum (BCW0666909)
-  const epicM = (fe+' '+be).match(/\b([A-Z]{3}[O0][0-9]{6,7})\b/i)
-             || (fe+' '+be).match(/IDENTITY\s+CARD\s+([A-Z0-9]{9,10})/i);
-  if (epicM) f.epicNo = epicM[1].toUpperCase().replace(/O(?=[0-9])/g,'0');
+  // Voter ID EPIC format: 3 letters + 7 digits e.g. BCW0666909
+  const allText = fe+' '+be;
+  const epicM = allText.match(/\b([A-Z]{3}[0-9]{7})\b/)
+             || allText.match(/IDENTITY\s*CARD\s+([A-Z]{3}[A-Z0-9]{6,8})/i)
+             || allText.match(/\b([A-Z]{3}[O][0-9]{6,7})\b/i);
+  if (epicM) f.epicNo = epicM[1].toUpperCase().replace(/^([A-Z]{3})O/,'$10');
 
-  // ── ELECTOR'S NAME (English) ─────────────────────────────
-  // Card has: "Elector's Name : Syed Abdul Naseer"
-  const nameM = fe.match(/elector'?s?\s*name\s*[:\-]\s*([A-Z][A-Za-z .']{2,50})/i)
-             || fe.match(/voter'?s?\s*name\s*[:\-]\s*([A-Z][A-Za-z .']{2,50})/i);
-  if (nameM) f.electorName = clean(nameM[1]);
+  // ── ENGLISH FIELDS — strictly label-anchored ─────────────
+  // Each field is only populated if the label is found.
+  // The label must appear on the same line as, or immediately before, the value.
 
-  // ── FATHER'S NAME (English) ──────────────────────────────
-  // Card has: "Father's Name : Abdul Basith"
-  const fatherM = fe.match(/father'?s?\s*name\s*[:\-]\s*([A-Z][A-Za-z .']{2,50})/i)
-               || fe.match(/husband'?s?\s*name\s*[:\-]\s*([A-Z][A-Za-z .']{2,50})/i);
-  if (fatherM) f.fatherName = clean(fatherM[1]);
+  // Elector's Name
+  const enameM = matchLabelledField(fe, [
+    /elector'?s?\s*name\s*[:\-]\s*/i,
+    /voter'?s?\s*name\s*[:\-]\s*/i,
+  ]);
+  if (enameM) f.electorName = enameM;
 
-  // ── ELECTOR'S NAME (Kannada) ─────────────────────────────
-  // Card has: "ಮತದಾರರ ಹೆಸರು : ಸ್ಯಯದ್ ಅಬ್ಬುಲ್ ನಸೀರ್"
-  // OCR often puts label and value on same line OR value on next line(s)
-  // Strategy: find the label, collect all Kannada text following it
-  f.electorNameKan = extractKannadaAfterLabel(fk,
-    /ಮತದಾರರ\s*ಹೆಸರು|ಮತದಾರ\s*ಹೆಸರ/);
+  // Father's / Husband's Name
+  const fnameM = matchLabelledField(fe, [
+    /father'?s?\s*name\s*[:\-]\s*/i,
+    /husband'?s?\s*name\s*[:\-]\s*/i,
+  ]);
+  if (fnameM) f.fatherName = fnameM;
 
-  // ── FATHER'S NAME (Kannada) ──────────────────────────────
-  // Card has: "ತಂದೆಯ ಹೆಸರು : ಅಬ್ಬುಲ್ ಬಾಸಿತ್"
-  f.fatherNameKan = extractKannadaAfterLabel(fk,
-    /ತಂದೆಯ\s*ಹೆಸರು|ತಂದೆ\s*ಹೆಸರ|ಪತಿಯ\s*ಹೆಸರು/);
-
-  // Fallback Kannada extraction using English name word count as guide
-  if (!f.electorNameKan || !f.fatherNameKan) {
-    kanFallback(fk, f);
-  }
-
-  // ── SEX ──────────────────────────────────────────────────
-  const sexM = (fe+' '+fk).match(/\bsex\s*[:\-]?\s*(male|female|m|f)\b/i)
-            || (fe+' '+fk).match(/ಲಿಂಗ\s*[:\-]?\s*(ಪು|ಮ)/);
+  // Sex
+  const sexM = fe.match(/\bsex\s*[:\-]\s*(male|female|m|f)\b/i)
+            || fe.match(/ಲಿಂಗ\s*[:\-]?\s*(ಪು|ಸ್ತ್ರೀ)/);
   if (sexM) {
     const s = sexM[1].toLowerCase();
     f.sex = (s==='m'||s==='male'||s==='ಪು') ? 'Male' : 'Female';
   }
 
-  // ── DATE OF BIRTH (derived) ───────────────────────────────
-  // Card says: "Age as on 1.1.2002 : 25"
-  // → DOB year = refYear - ageAtRef = 2002 - 25 = 1977
-  // Show as: "~ 1977 (age 25 as on 1.1.2002)"
-  const ageAsOnM =
-    (fe+' '+fk).match(/age\s+as\s+on\s+(\d{1,2})[./](\d{1,2})[./](\d{4})\s*[:\-]\s*(\d{1,3})/i) ||
-    (fe+' '+fk).match(/age\s+as\s+on\s+[\d./]*(\d{4})\s*[:\-]?\s*(\d{1,3})/i);
+  // ── KANNADA FIELDS — strictly label-anchored only ─────────
+  // We look for the Kannada label text and take ONLY the value that
+  // follows on the same line (after the colon) or the very next line
+  // if that next line has no colon (i.e. it's a value continuation).
+  // We NEVER go beyond 1 continuation line, and NEVER grab text that
+  // contains dates, numbers, or known noise patterns.
 
-  if (ageAsOnM) {
-    let refYear, ageAtRef;
-    if (ageAsOnM.length >= 5) {
-      // Full match: day.month.year : age
-      refYear  = parseInt(ageAsOnM[3]);
-      ageAtRef = parseInt(ageAsOnM[4]);
-    } else {
-      refYear  = parseInt(ageAsOnM[1]);
-      ageAtRef = parseInt(ageAsOnM[2]);
-    }
-    if (refYear>1950 && refYear<2030 && ageAtRef>0 && ageAtRef<120) {
-      const dobYear = refYear - ageAtRef;
-      f.dob = `~${dobYear} (was ${ageAtRef} as on 1.1.${refYear})`;
-    }
-  }
+  f.electorNameKan = kanLabelField(fk, [
+    /ಮತದಾರರ\s*ಹೆಸರು\s*[:\-]?/,
+    /ಮತದಾರ\s*ಹೆಸರ\s*[:\-]?/,
+  ]);
+
+  f.fatherNameKan = kanLabelField(fk, [
+    /ತಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,
+    /ತಂದೆ\s*ಹೆಸರ\s*[:\-]?/,
+    /ಪತಿಯ\s*ಹೆಸರು\s*[:\-]?/,
+    /ತಂದೆ\s*[:\-]\s*/,
+  ]);
 
   // ── ADDRESS (back side only) ──────────────────────────────
   if (be) {
@@ -415,8 +414,7 @@ function extractId(fe, fk, be, bk) {
     if (f.taluk) pts.push(f.taluk+' Taluk');
     if (f.dist) pts.push(f.dist+' District');
     if (pts.length) f.addr = pts.join(', ');
-
-    // Part/Serial: back has "238 / 882" at end of page
+    // Part/Serial from back "NNN / NNN" pattern
     const slM = be.match(/\b(\d{1,4})\s*\/\s*(\d{1,4})\s*$/m);
     if (slM) { f.serial=slM[1]; f.part=slM[2]; }
   }
@@ -424,82 +422,120 @@ function extractId(fe, fk, be, bk) {
   return f;
 }
 
-// Collect Kannada text that comes after a given Kannada label on same or next lines
-function extractKannadaAfterLabel(kanText, labelRe) {
-  const lines = kanText.split('\n').map(l=>l.trim());
-  for (let i=0; i<lines.length; i++) {
-    if (!labelRe.test(lines[i])) continue;
-    // Remove the label part, get remainder of same line
-    const sameLine = lines[i].replace(labelRe,'').replace(/^[\s:–\-|]+/,'').trim();
-    const parts = sameLine ? [sameLine] : [];
-    // Collect continuation lines that are Kannada-dominant
-    for (let j=i+1; j<lines.length && j<i+4; j++) {
-      const nx = lines[j];
-      if (!nx) break;
-      // Stop at next label line (has colon and Kannada label keywords)
-      if ((/:/.test(nx)) && /ತಂದೆ|ಪತಿ|ಮತದಾರ|ಲಿಂಗ|ವಯ|ಗ್ರಾಮ|ವಿಳಾಸ/.test(nx)) break;
-      if (/elector|father|husband|sex|age|address/i.test(nx)) break;
-      if (/[\u0C80-\u0CFF]{2,}/.test(nx)) parts.push(nx);
-      else break;
+// Match an English labelled field: find label, return text after it on same line.
+// Also checks the next line if the same line has nothing after the label.
+function matchLabelledField(text, labelPatterns) {
+  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+  for (const re of labelPatterns) {
+    for (let i=0; i<lines.length; i++) {
+      if (!re.test(lines[i])) continue;
+      // Value = everything after the label on the same line
+      const afterLabel = lines[i].replace(re,'').trim();
+      // Must be a plausible name: starts with capital, only letters/spaces/dots
+      const nameRe = /^[A-Z][A-Za-z .'-]{1,50}$/;
+      if (nameRe.test(afterLabel)) return clean(afterLabel);
+      // Try next line if same line was empty after label
+      if (!afterLabel && i+1 < lines.length) {
+        const nx = lines[i+1].trim();
+        if (nameRe.test(nx)) return clean(nx);
+      }
     }
-    const result = parts.join(' ').trim();
-    // Clean up leading pipe/number artifacts from OCR: "| : ಸ್ಯಯದ್…" → "ಸ್ಯಯದ್…"
-    return result.replace(/^[\d\s|.:–\-]+/, '').trim();
   }
   return '';
 }
 
-// Fallback: use English name/father word counts to align Kannada lines
-function kanFallback(fk, f) {
-  const kanLines = fk.split('\n').map(l=>l.trim()).filter(l=>
-    /[\u0C80-\u0CFF]{3,}/.test(l) && l.length>3 && l.length<80 &&
-    !/ಭಾರತ|ಚುನಾ|ಗುರುತಿನ|ಆಯೋಗ|ಗ್ರಾಮ|ಲಿಂಗ/.test(l)
-  );
+// Match a Kannada labelled field — strict version:
+// 1. Find the label line
+// 2. Take value from same line after label, OR from the VERY NEXT line
+// 3. Value must be ONLY Kannada script words (no digits, no dates, no English)
+// 4. If value looks noisy, return '' rather than bad data
+function kanLabelField(kanText, labelPatterns) {
+  const lines = kanText.split('\n').map(l=>l.trim()).filter(Boolean);
 
-  const nWords = f.electorName ? f.electorName.split(/\s+/).length : 3;
-  const rWords = f.fatherName  ? f.fatherName.split(/\s+/).length  : 2;
+  // Noise patterns — if extracted value contains these, reject it
+  const noiseRe = /\d{2,}|NE\s*a|Date|ದಿನಾಂಕ|ಸರ್ಕಾರ|ಯೋಜನ|ಚುನಾ|ಭಾರತ|ಆಯೋಗ|ಗುರುತಿನ|ಚೀಟಿ|ಚೀಟ|ವ್ಯಾಪ್ತಿ|ಪಟ್ಟಿ|ಮಾಹಿತಿ/;
 
-  let allKanWords = [];
-  for (const ln of kanLines) {
-    const w = ln.split(/\s+/).filter(w=>/[\u0C80-\u0CFF]/.test(w));
-    allKanWords.push(...w);
-  }
+  for (const re of labelPatterns) {
+    for (let i=0; i<lines.length; i++) {
+      if (!re.test(lines[i])) continue;
 
-  if (!f.electorNameKan && allKanWords.length >= nWords) {
-    f.electorNameKan = allKanWords.slice(0, nWords).join(' ');
-    allKanWords = allKanWords.slice(nWords);
+      // Get text after label on the same line
+      const sameLine = lines[i].replace(re,'').replace(/^[\s:|–\-]+/,'').trim();
+
+      let candidate = '';
+
+      if (sameLine && /[\u0C80-\u0CFF]{2,}/.test(sameLine)) {
+        candidate = sameLine;
+      } else if (i+1 < lines.length) {
+        // Next line — only if it's purely Kannada (no colon = not a label)
+        const nx = lines[i+1].trim();
+        if (/[\u0C80-\u0CFF]{3,}/.test(nx) && !/:/.test(nx) && !/[A-Za-z]{3,}/.test(nx)) {
+          candidate = nx;
+        }
+      }
+
+      if (!candidate) continue;
+      if (noiseRe.test(candidate)) continue;  // reject noisy result
+
+      // Clean: strip any leading OCR artifacts (|, :, digits, spaces)
+      candidate = candidate.replace(/^[\s\d|.:–\-]+/, '').trim();
+
+      // Final check: must have meaningful Kannada content (≥ 3 Kannada chars)
+      if ((candidate.match(/[\u0C80-\u0CFF]/g)||[]).length >= 3) {
+        return candidate;
+      }
+    }
   }
-  if (!f.fatherNameKan && allKanWords.length >= 1) {
-    f.fatherNameKan = allKanWords.slice(0, rWords).join(' ');
-  }
+  return '';  // Return empty rather than wrong data
 }
 
 function renderIdFields(f, raw) {
   // Build rows using the exact label language from the card
   const rows = [
-    { k:"Elector's Name",         v: f.electorName,    w:false },
-    { k:"Elector's Name (Kannada)", v: f.electorNameKan, w:false, h:!f.electorNameKan },
-    { k:"Father's Name",          v: f.fatherName,     w:false },
-    { k:"Father's Name (Kannada)", v: f.fatherNameKan,  w:false, h:!f.fatherNameKan },
-    { k:"Sex",                    v: f.sex,            w:false },
-    { k:"Year of Birth",          v: f.dob,            w:false, h:!f.dob },
-    { k:"EPIC No.",               v: f.epicNo,         w:false },
-    { k:"Address",                v: f.addr,           w:true,  h:!f.addr },
-    { k:"Part No.",               v: f.part,           w:false, h:!f.part },
-    { k:"Serial No.",             v: f.serial,         w:false, h:!f.serial },
+    { k:"Elector's Name",           v: f.electorName,    w:false, copy:true },
+    { k:"Elector's Name (Kannada)", v: f.electorNameKan, w:false, copy:true, h:!f.electorNameKan },
+    { k:"Father's Name",            v: f.fatherName,     w:false, copy:true },
+    { k:"Father's Name (Kannada)",  v: f.fatherNameKan,  w:false, copy:true, h:!f.fatherNameKan },
+    { k:"Sex",                      v: f.sex,            w:false, h:!f.sex },
+    { k:"EPIC No.",                 v: f.epicNo,         w:false, copy:true },
+    { k:"Address",                  v: f.addr,           w:true,  copy:true, h:!f.addr },
+    { k:"Part No.",                 v: f.part,           w:false, h:!f.part },
+    { k:"Serial No.",               v: f.serial,         w:false, h:!f.serial },
   ].filter(r=>!r.h);
 
   document.getElementById('id-fields').innerHTML = rows.map(r=>`
     <div class="field-item${r.w?' w2':''}">
       <div class="field-k">${r.k}</div>
       <div class="field-v${r.v?'':' nil'}">${r.v||'Not found'}</div>
+      ${r.copy&&r.v?`<button class="copy-btn" onclick="copyField(this,'${r.v.replace(/'/g,"\'")}')" title="Copy">Copy</button>`:''}
     </div>`).join('');
   document.getElementById('id-raw').textContent = raw;
   document.getElementById('id-out').style.display='block';
   document.getElementById('id-out').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-// ── PDF SCAN — Native text extraction (no OCR, ~5 seconds for 52 pages) ──
+function copyField(btn, text) {
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='Copied!';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='Copy'; btn.classList.remove('copied'); }, 1800);
+  }).catch(()=>{
+    // Fallback for browsers without clipboard API
+    const ta=document.createElement('textarea');
+    ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent='Copied!'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='Copy'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+// ── PDF SCAN ─────────────────────────────────────────────────
+// Strategy:
+//   1. Try native text extraction first (fast, <5s for any PDF)
+//   2. If native text is sparse/empty, fall back to OCR with 4 parallel workers
+//   Electoral roll PDFs are usually scanned images → OCR path is common
 async function scanPdf() {
   if (!G.pdfFile) { alert('Please choose a PDF file first.'); return; }
   const btn=document.getElementById('pdf-btn-go');
@@ -511,48 +547,103 @@ async function scanPdf() {
     const buf = await G.pdfFile.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({data:buf}).promise;
     const total = pdf.numPages;
-    setPb('pdf-bar','pdf-txt',2,`Extracting text from ${total} pages…`);
+    setPb('pdf-bar','pdf-txt',2,`Checking PDF format (${total} pages)…`);
 
-    // Extract ALL pages in parallel using PDF.js native text layer
-    // This is 100x faster than OCR — no image conversion needed
-    const pagePromises = [];
-    for (let pn=1; pn<=total; pn++) {
-      pagePromises.push(
-        pdf.getPage(pn).then(pg =>
-          pg.getTextContent().then(tc => ({ pn, tc }))
-        )
+    // ── Step 1: Try native text on first 3 pages ──────────────
+    let nativeTextTotal = 0;
+    for (let pn=1; pn<=Math.min(3,total); pn++) {
+      const pg = await pdf.getPage(pn);
+      const tc = await pg.getTextContent();
+      nativeTextTotal += tc.items.filter(i=>i.str&&i.str.trim().length>1).length;
+    }
+    const hasNativeText = nativeTextTotal > 30; // meaningful text per page
+
+    if (hasNativeText) {
+      // ── Native text path ──────────────────────────────────
+      setPb('pdf-bar','pdf-txt',5,'Extracting native text…');
+      const pagePromises = Array.from({length:total},(_,i)=>
+        pdf.getPage(i+1).then(pg=>pg.getTextContent().then(tc=>({pn:i+1,tc})))
       );
+      let done=0;
+      const allData=[];
+      for (let i=0;i<pagePromises.length;i+=10) {
+        const batch=await Promise.all(pagePromises.slice(i,i+10));
+        allData.push(...batch);
+        done=allData.length;
+        setPb('pdf-bar','pdf-txt',5+Math.round(done/total*80),`Extracted ${done}/${total} pages…`);
+      }
+      setPb('pdf-bar','pdf-txt',88,'Parsing entries…');
+      for (const {pn,tc} of allData.sort((a,b)=>a.pn-b.pn)) {
+        G.entries.push(...parseNativePage(tc,pn));
+      }
+    } else {
+      // ── OCR path: 4 parallel Tesseract workers ────────────
+      setPb('pdf-bar','pdf-txt',3,'Loading OCR engine…');
+      const T = await getTess();
+      setPb('pdf-bar','pdf-txt',5,`Starting OCR on ${total} pages with 4 workers…`);
+
+      // Create 4 workers upfront
+      const N_WORKERS = 4;
+      const workers = await Promise.all(
+        Array.from({length:N_WORKERS}, () => T.createWorker(['kan','eng'], 1))
+      );
+
+      // Render all pages to canvas (can do this quickly in parallel)
+      const canvases = [];
+      setPb('pdf-bar','pdf-txt',8,'Rendering pages…');
+      for (let pn=1; pn<=total; pn++) {
+        const pg = await pdf.getPage(pn);
+        // Scale 1.2 = good balance of speed vs accuracy for printed text
+        const vp = pg.getViewport({scale:1.2});
+        const cv = document.createElement('canvas');
+        cv.width=vp.width; cv.height=vp.height;
+        await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+        // Convert to blob URL for Tesseract (more reliable than canvas element)
+        const blob = await new Promise(res => cv.toBlob(res,'image/jpeg',0.85));
+        const url = URL.createObjectURL(blob);
+        canvases.push({pn, url});
+        if (pn % 5 === 0) setPb('pdf-bar','pdf-txt',8+Math.round(pn/total*22),`Rendered ${pn}/${total} pages…`);
+      }
+      setPb('pdf-bar','pdf-txt',32,'Running OCR…');
+
+      // Distribute pages across 4 workers
+      let donePages = 0;
+      const chunks = Array.from({length:N_WORKERS},()=>[]);
+      canvases.forEach((c,i) => chunks[i % N_WORKERS].push(c));
+
+      async function ocrChunk(worker, pages) {
+        const results=[];
+        for (const {pn,url} of pages) {
+          const {data:{text}} = await worker.recognize(url);
+          URL.revokeObjectURL(url);
+          results.push({pn, text});
+          donePages++;
+          const pct = 32+Math.round(donePages/total*62);
+          setPb('pdf-bar','pdf-txt',pct,`OCR: ${donePages}/${total} pages…`);
+        }
+        return results;
+      }
+
+      const allResults = (await Promise.all(
+        workers.map((w,i) => ocrChunk(w, chunks[i]))
+      )).flat().sort((a,b)=>a.pn-b.pn);
+
+      await Promise.all(workers.map(w=>w.terminate()));
+
+      setPb('pdf-bar','pdf-txt',96,'Parsing voter entries…');
+      for (const {pn,text} of allResults) {
+        G.entries.push(...parseOcrPage(text, pn));
+      }
     }
 
-    // Process in batches of 10 to update progress
-    const batchSize = 10;
-    let done = 0;
-    const allPageData = [];
-
-    for (let i=0; i<pagePromises.length; i+=batchSize) {
-      const batch = await Promise.all(pagePromises.slice(i, i+batchSize));
-      allPageData.push(...batch);
-      done = Math.min(allPageData.length, total);
-      setPb('pdf-bar','pdf-txt', 2+Math.round(done/total*85), `Extracted ${done} of ${total} pages…`);
-    }
-
-    setPb('pdf-bar','pdf-txt',90,'Parsing voter entries…');
-
-    // Parse each page
-    for (const {pn, tc} of allPageData.sort((a,b)=>a.pn-b.pn)) {
-      const entries = parsePageNative(tc, pn);
-      G.entries.push(...entries);
-    }
-
-    // Sort by page then serial
+    // Sort entries
     G.entries.sort((a,b)=>(a.pageNum-b.pageNum)||((+a.serial||0)-(+b.serial||0)));
-
     setPb('pdf-bar','pdf-txt',100,`Done — ${G.entries.length} voter entries found across ${total} pages`);
 
     // Enable search
     document.getElementById('pdf-not-ready').style.display='none';
-    const rb = document.getElementById('pdf-ready-banner');
-    rb.textContent = `✓ ${G.entries.length} voter entries loaded from ${total} pages. Enter a name to search.`;
+    const rb=document.getElementById('pdf-ready-banner');
+    rb.textContent=`✓ ${G.entries.length} voter entries loaded from ${total} pages. Enter a name to search.`;
     rb.style.display='block';
     document.getElementById('s-name').disabled=false;
     document.getElementById('s-rel').disabled=false;
@@ -561,180 +652,137 @@ async function scanPdf() {
 
   } catch(e) {
     console.error(e);
-    alert('PDF error: '+e.message);
+    alert('PDF processing error: '+e.message);
   } finally {
     btn.disabled=false; btn.innerHTML='Process PDF';
   }
 }
 
-// ── PARSE NATIVE PDF TEXT ────────────────────────────────────
-// PDF.js getTextContent() returns items with .str and .transform (position)
-// Electoral roll PDFs have a structured table layout we can reconstruct
-function parsePageNative(tc, pageNum) {
-  const entries = [];
-
-  // Get all text items with their positions
+// ── PARSE NATIVE PDF TEXT PAGE ────────────────────────────────
+function parseNativePage(tc, pageNum) {
   const items = tc.items
-    .filter(i => i.str && i.str.trim())
-    .map(i => ({
-      text: i.str.trim(),
-      x: Math.round(i.transform[4]),
-      y: Math.round(i.transform[5]),
-      // font size from transform matrix
-      h: Math.round(Math.abs(i.transform[3])||Math.abs(i.transform[0]))
+    .filter(i=>i.str&&i.str.trim())
+    .map(i=>({
+      text:i.str.trim(),
+      x:Math.round(i.transform[4]),
+      y:Math.round(i.transform[5])
     }));
+  if (!items.length) return [];
 
-  if (!items.length) return entries;
-
-  // Find part number from header area
-  let partNo = '';
-  const topItems = items.filter(i => i.y > (Math.max(...items.map(x=>x.y)) - 80));
-  for (const it of topItems) {
-    const pm = it.text.match(/(?:part|ಭಾಗ|Part\s*No)\s*[:\-#.]?\s*(\d+)/i);
-    if (pm) { partNo=pm[1]; break; }
+  // Group by Y row
+  const sorted=[...items].sort((a,b)=>b.y-a.y);
+  const rows=[];
+  for (const item of sorted) {
+    const row=rows.find(r=>Math.abs(r[0].y-item.y)<=4);
+    if (row) row.push(item); else rows.push([item]);
   }
+  const lines = rows.map(r=>r.sort((a,b)=>a.x-b.x).map(i=>i.text).join(' ').trim()).filter(Boolean);
+  const text = lines.join('\n');
+
+  // Find part number
+  let partNo='';
+  for (const ln of lines.slice(0,15)) {
+    const pm=ln.match(/(?:part|ಭಾಗ)\s*[:\-#]?\s*(\d+)/i);
+    if (pm){partNo=pm[1];break;}
+  }
+
+  return parseOcrPage(text, pageNum, partNo);
+}
+
+// ── PARSE OCR TEXT PAGE ───────────────────────────────────────
+// Handles the standard Karnataka electoral roll format:
+//   Each voter block:
+//     Line 1: Serial No. + Kannada Name (ಹೆಸರು)
+//     Line 2: English Name
+//     Line 3: Relative Kannada (ತಂದೆ/ಪತಿ ಹೆಸರು)
+//     Line 4: English Relative Name
+//     Line 5: House No.
+//     Line 6: Age: XX   Sex: M/F
+//
+// But OCR is messy so we use multiple heuristics
+function parseOcrPage(text, pageNum, knownPart) {
+  const entries=[];
+  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+
+  // Find part number
+  let partNo = knownPart||'';
   if (!partNo) {
-    // Try any item
-    for (const it of items.slice(0,20)) {
-      const pm = it.text.match(/(\d+)/);
-      if (pm && it.text.match(/part|ಭಾಗ/i)) { partNo=pm[1]; break; }
+    for (const ln of lines.slice(0,20)) {
+      const pm=ln.match(/(?:part|ಭಾಗ|Part\s*No\.?)\s*[:\-#]?\s*(\d{1,4})/i);
+      if (pm){partNo=pm[1];break;}
     }
   }
 
-  // Group items by approximate Y row (within 4px = same line)
-  const rows = groupByRows(items, 4);
-
-  // Reconstruct full text with row breaks — then use the text parser
-  const fullText = rows.map(row =>
-    row.sort((a,b)=>a.x-b.x).map(i=>i.text).join(' ')
-  ).join('\n');
-
-  // Try structured parsing first (numbered entries)
-  const structured = parseStructured(fullText, partNo, pageNum);
-  if (structured.length > 0) return structured;
-
-  // Fall back to block-based parsing
-  return parseBlocks(rows, partNo, pageNum);
-}
-
-function groupByRows(items, tolerance) {
-  const sorted = [...items].sort((a,b) => b.y - a.y); // top to bottom
-  const rows = [];
-  for (const item of sorted) {
-    const row = rows.find(r => Math.abs(r[0].y - item.y) <= tolerance);
-    if (row) row.push(item);
-    else rows.push([item]);
-  }
-  return rows;
-}
-
-function parseStructured(text, partNo, pageNum) {
-  // Match numbered entries like "1.", "1)", or standalone serial numbers
-  const entries = [];
-  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+  // ── Try Method 1: Serial number anchored blocks ───────────
+  // Karnataka rolls: serial number appears alone on a line or before name
+  // Format variants:
+  //   "1" alone → next lines = name block
+  //   "1. ಹೆಸರು" → inline
+  //   "ಕ್ರ.ಸಂ.: 1" → labeled serial
 
   let i=0;
   while (i<lines.length) {
-    // Match: "1. Name" or "1) Name" or serial at start
-    const m = lines[i].match(/^(\d{1,4})[.)]\s*(.*)$/) ||
-               lines[i].match(/^(\d{1,4})\s+(.{4,})$/); // "1  NameHere"
-    if (m && parseInt(m[1]) >= 1 && parseInt(m[1]) <= 9999) {
-      const serial = m[1];
-      const firstLine = m[2].trim();
-      const block = firstLine ? [firstLine] : [];
-      let j = i+1;
-      // Collect continuation lines (up to 10, stop at next numbered entry)
+    const ln=lines[i];
+
+    // Match various serial number patterns
+    const ser = ln.match(/^(\d{1,4})[.)]\s*(.*)$/) ||    // "1. Text"
+                 ln.match(/^(\d{1,4})\s*$/) ||             // "1" alone
+                 ln.match(/ಕ್ರ[.\s]*ಸಂ[.\s]*[:\-]?\s*(\d{1,4})/) || // Kannada serial label
+                 ln.match(/serial\s*[:\-]?\s*(\d{1,4})/i);
+
+    if (ser && parseInt(ser[1]||ser[2]) >= 1 && parseInt(ser[1]||ser[2]) <= 9999) {
+      const serial = String(parseInt(ser[1]||ser[2]));
+      const inline = (ser[2]||'').trim();
+      const block = inline ? [inline] : [];
+      let j=i+1;
+      // Collect up to 10 following lines until next serial
       while (j<lines.length && j<i+12) {
-        const next = lines[j];
-        if (/^(\d{1,4})[.)]/.test(next) || /^(\d{1,4})\s+[A-Z\u0C80-\u0CFF]/.test(next)) break;
-        if (next.length > 0) block.push(next);
+        const nx=lines[j];
+        // Stop if next serial number found
+        if (/^(\d{1,4})[.)]/.test(nx)) break;
+        if (/^(\d{1,4})\s*$/.test(nx) && parseInt(nx)===parseInt(serial)+1) break;
+        if (/ಕ್ರ[.\s]*ಸಂ/.test(nx)) break;
+        // Stop at page footer/header markers
+        if (/election\s*commission|ಚುನಾ|ಭಾರತ\s*ಸರ್ಕಾರ/i.test(nx)) break;
+        block.push(nx);
         j++;
       }
       if (block.length>0) {
-        entries.push(buildEntry(block, serial, partNo, pageNum));
+        const entry=buildEntry(block,serial,partNo,pageNum);
+        // Only add if we got at least a name
+        if (entry.nameKan||entry.name) {
+          entries.push(entry);
+        }
       }
       i=j;
-    } else {
-      i++;
+      continue;
     }
+    i++;
   }
-  return entries;
-}
 
-function parseBlocks(rows, partNo, pageNum) {
-  // For PDFs without numbered entries, look for voter blocks by:
-  // - Serial number column (left-most narrow column with single number)
-  // - Name block (Kannada + English name + relative + age/sex)
-  const entries = [];
-
-  // Identify columns by X position clustering
-  const xPositions = rows.flat().map(i=>i.x);
-  const minX = Math.min(...xPositions);
-  const maxX = Math.max(...xPositions);
-
-  // Typical electoral roll: serial in leftmost ~80px, then name block
-  const serialColMax = minX + (maxX - minX) * 0.15;
-
-  let currentEntry = null;
-  let currentBlock = [];
-
-  for (const row of rows) {
-    const rowText = row.sort((a,b)=>a.x-b.x).map(i=>i.text).join(' ').trim();
-    if (!rowText) continue;
-
-    const leftItems = row.filter(i=>i.x <= serialColMax);
-    const rightItems = row.filter(i=>i.x > serialColMax);
-
-    // Check if left column has a bare serial number
-    const leftText = leftItems.map(i=>i.text).join(' ').trim();
-    const serialM = leftText.match(/^(\d{1,4})$/);
-
-    if (serialM) {
-      // Save previous entry
-      if (currentEntry && currentBlock.length) {
-        entries.push(buildEntry(currentBlock, currentEntry, partNo, pageNum));
+  // ── Method 2: Age-anchored if Method 1 found nothing ─────
+  if (entries.length===0) {
+    for (let k=0;k<lines.length;k++) {
+      // Age line is a strong anchor: "ವಯಸ್ಸು: 35" or "Age: 35"
+      const am=lines[k].match(/(?:ವಯಸ್ಸು|ವಯ|Age)\s*[:\-]?\s*(\d{2,3})/i);
+      if (am && parseInt(am[1])>0 && parseInt(am[1])<120) {
+        const block=[];
+        // Take 5 lines before and 1 after the age line
+        for (let b=Math.max(0,k-5);b<=Math.min(lines.length-1,k+1);b++) {
+          block.push(lines[b]);
+        }
+        const entry=buildEntry(block,String(entries.length+1),partNo,pageNum);
+        if (entry.nameKan||entry.name) entries.push(entry);
       }
-      currentEntry = serialM[1];
-      currentBlock = [];
-      const rightText = rightItems.map(i=>i.text).join(' ').trim();
-      if (rightText) currentBlock.push(rightText);
-    } else if (currentEntry) {
-      // Continuation of current entry
-      if (rowText.length > 1) currentBlock.push(rowText);
     }
-  }
-
-  // Save last entry
-  if (currentEntry && currentBlock.length) {
-    entries.push(buildEntry(currentBlock, currentEntry, partNo, pageNum));
-  }
-
-  // If still no entries, try regex on reconstructed text
-  if (!entries.length) {
-    const fullText = rows.map(r=>r.sort((a,b)=>a.x-b.x).map(i=>i.text).join(' ')).join('\n');
-    return parseByAge(fullText, partNo, pageNum);
   }
 
   return entries;
 }
 
-// Last resort: find entries anchored by age field
-function parseByAge(text, partNo, pageNum) {
-  const entries = [];
-  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
-  for (let k=0; k<lines.length; k++) {
-    const am = lines[k].match(/(?:ವಯಸ್ಸು|Age|ವಯ)\s*[:\-]?\s*(\d{2,3})/i);
-    if (am && parseInt(am[1])>0 && parseInt(am[1])<120) {
-      const block=[];
-      for (let b=Math.max(0,k-4); b<k; b++) block.push(lines[b]);
-      entries.push(buildEntry(block, String(entries.length+1), partNo, pageNum));
-    }
-  }
-  return entries;
-}
-
+// ── BUILD ENTRY FROM BLOCK OF LINES ──────────────────────────
 function buildEntry(block, serial, partNo, pageNum) {
-  const e = {
+  const e={
     serial, partNo, pageNum,
     nameKan:'', name:'',
     relativeKan:'', relative:'',
@@ -742,38 +790,50 @@ function buildEntry(block, serial, partNo, pageNum) {
   };
 
   for (const ln of block) {
-    if (!ln || ln.length < 2) continue;
+    if (!ln||ln.length<2) continue;
 
-    // Age field
-    const ageM = ln.match(/(?:ವಯಸ್ಸು|ವಯ|Age)\s*[:\-]?\s*(\d{2,3})/i);
-    if (ageM && !e.age) { const n=parseInt(ageM[1]); if(n>0&&n<120){e.age=String(n); continue;} }
+    // Skip header/footer noise
+    if (/election\s*commission|ಚುನಾ|photo\s*electoral|ಮತದಾರ.*ಪಟ್ಟಿ/i.test(ln)) continue;
 
-    // Sex field  
-    const sexM = ln.match(/(?:ಲಿಂಗ|Sex)\s*[:\-]?\s*(ಪು|ಮ|Male|Female|M|F)/i);
-    if (sexM && !e.sex) { e.sex=sexM[1]; continue; }
+    // Age
+    const ageM=ln.match(/(?:ವಯಸ್ಸು|ವಯ|Age)\s*[:\-]?\s*(\d{2,3})/i);
+    if (ageM&&!e.age){const n=parseInt(ageM[1]);if(n>0&&n<120){e.age=String(n);}}
 
-    // Relative label
-    const relM = ln.match(/(?:ತಂದೆ|ಪತಿ|S\/O|D\/O|W\/O|Father|Husband)\s*[:\-]?\s*(.+)/i);
-    if (relM && !e.relative && !e.relativeKan) {
+    // Sex — only capture known values
+    const sexM=ln.match(/(?:ಲಿಂಗ|Sex|Gender)\s*[:\-]?\s*(ಪುರುಷ|ಸ್ತ್ರೀ|ಪು|ಮ|Male|Female|M|F)\b/i);
+    if (sexM&&!e.sex){
+      const sv=sexM[1].toLowerCase();
+      e.sex=(sv==='m'||sv==='male'||sv==='ಪು'||sv==='ಪುರುಷ')?'Male':'Female';
+    }
+
+    // Relative with explicit label
+    const relM=ln.match(/(?:ತಂದೆ|ಪತಿ|ಸಂಬಂಧ|Relation|S\/O|D\/O|W\/O|Father|Husband|Mother)\s*[:\-]?\s*(.{2,})/i);
+    if (relM&&!e.relativeKan&&!e.relative){
       const v=clean(relM[1]);
-      if (/[\u0C80-\u0CFF]{3,}/.test(v)) e.relativeKan=v;
-      else if (v.length>1) e.relative=v;
+      if (/[\u0C80-\u0CFF]{2,}/.test(v)) e.relativeKan=v;
+      else if (/[A-Za-z]{2,}/.test(v)) e.relative=v;
       continue;
     }
 
-    // Classify line: Kannada or English
-    const kanChars = (ln.match(/[\u0C80-\u0CFF]/g)||[]).length;
-    const totalChars = ln.replace(/\s/g,'').length;
-    const isKannada = totalChars>0 && (kanChars/totalChars)>0.4;
+    // Classify remaining lines by script
+    const kanCount=(ln.match(/[\u0C80-\u0CFF]/g)||[]).length;
+    const engCount=(ln.match(/[A-Za-z]/g)||[]).length;
+    const numCount=(ln.match(/\d/g)||[]).length;
+    const totalAlpha=kanCount+engCount;
+    if (totalAlpha<2) continue; // skip lines that are mostly numbers/symbols
 
-    if (isKannada) {
-      if (!e.nameKan) e.nameKan = ln;
-      else if (!e.relativeKan) e.relativeKan = ln;
-      else e.address = (e.address?e.address+' ':'')+ln;
-    } else {
-      if (!e.name && /[A-Za-z]{2,}/.test(ln)) e.name = ln;
-      else if (!e.relative && /[A-Za-z]{2,}/.test(ln)) e.relative = ln;
-      else if (ln.length>2) e.address = (e.address?e.address+' ':'')+ln;
+    if (kanCount>engCount) {
+      // Kannada-dominant line
+      // Skip if it looks like an age/sex line
+      if (/\d{2,3}/.test(ln)&&(ageM)) continue;
+      if (!e.nameKan) e.nameKan=clean(ln);
+      else if (!e.relativeKan) e.relativeKan=clean(ln);
+      else e.address=(e.address?e.address+', ':'')+clean(ln);
+    } else if (engCount>0) {
+      // English-dominant line
+      if (!e.name&&/[A-Za-z]{2,}/.test(ln)) e.name=clean(ln);
+      else if (!e.relative&&/[A-Za-z]{2,}/.test(ln)) e.relative=clean(ln);
+      else if (ln.length>2) e.address=(e.address?e.address+', ':'')+clean(ln);
     }
   }
   return e;
