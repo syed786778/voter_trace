@@ -8,103 +8,138 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:'Inter',system-ui,sans-serif;background:#f8fafc;color:#0f172a;min-height:100vh;font-size:14px;line-height:1.5}
+body{font-family:'Inter',system-ui,sans-serif;background:#f0f4f8;color:#0f172a;min-height:100vh;font-size:15px;line-height:1.55}
 
-.topbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 20px;height:52px;gap:8px}
-.topbar-logo{font-weight:700;font-size:15px;color:#0f172a;margin-right:12px}
-.tab-btn{padding:6px 14px;border-radius:6px;border:none;background:none;font-size:13px;font-weight:500;color:#64748b;cursor:pointer;transition:all .15s}
-.tab-btn:hover{background:#f1f5f9;color:#0f172a}
-.tab-btn.on{background:#eff6ff;color:#2563eb;font-weight:600}
+/* ── NAV ── */
+.topbar{position:sticky;top:0;z-index:50;background:#1e293b;display:flex;align-items:center;padding:0 24px;height:56px;gap:8px;box-shadow:0 1px 8px rgba(0,0,0,.25)}
+.topbar-logo{font-weight:800;font-size:17px;color:#fff;margin-right:16px;letter-spacing:-.3px}
+.tab-btn{padding:7px 18px;border-radius:8px;border:none;background:none;font-size:13px;font-weight:600;color:#94a3b8;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.tab-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+.tab-btn.on{background:#2563eb;color:#fff}
 
-.page{display:none;max-width:660px;margin:0 auto;padding:28px 20px 80px}
+/* ── LAYOUT ── */
+.page{display:none;max-width:800px;margin:0 auto;padding:32px 20px 100px}
 .page.on{display:block}
-.page-title{font-size:20px;font-weight:700;margin-bottom:4px}
-.page-sub{font-size:13px;color:#64748b;margin-bottom:24px}
+@media(max-width:600px){.page{padding:20px 12px 80px}}
+.page-title{font-size:24px;font-weight:800;margin-bottom:6px;letter-spacing:-.3px}
+.page-sub{font-size:14px;color:#64748b;margin-bottom:28px}
 
-.box{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:14px}
-.box-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#94a3b8;margin-bottom:14px}
+/* ── CARD ── */
+.box{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.box-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8;margin-bottom:18px}
 
-/* Upload */
-.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:480px){.upload-grid{grid-template-columns:1fr}}
-.slot-label{font-size:11px;font-weight:600;letter-spacing:.4px;margin-bottom:6px;display:block}
+/* ── UPLOAD AREAS ── */
+.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:4px}
+@media(max-width:520px){.upload-grid{grid-template-columns:1fr}}
+.slot-label{font-size:12px;font-weight:700;letter-spacing:.4px;margin-bottom:8px;display:block}
 .slot-label.f{color:#2563eb}.slot-label.b{color:#7c3aed}
 
-.upload-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100%;padding:20px 12px;border:2px dashed #cbd5e1;border-radius:8px;background:#f8fafc;cursor:pointer;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;color:#64748b;transition:all .15s;text-align:center}
+.upload-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;width:100%;min-height:140px;padding:24px 16px;
+  border:2px dashed #cbd5e1;border-radius:12px;
+  background:#f8fafc;cursor:pointer;
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#64748b;
+  transition:all .18s;text-align:center;
+}
 .upload-btn:hover{border-color:#2563eb;background:#eff6ff;color:#2563eb}
 .upload-btn.selected{border-color:#16a34a;border-style:solid;background:#f0fdf4;color:#15803d}
-.upload-btn .ico{font-size:22px}
+.upload-btn .ico{font-size:32px;line-height:1}
+.upload-btn .sub{font-size:11px;color:#94a3b8;margin-top:2px}
+.upload-btn.selected .sub{color:#86efac}
 
-.upload-single{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;width:100%;padding:28px 16px;border:2px dashed #cbd5e1;border-radius:8px;background:#f8fafc;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#64748b;transition:all .15s;text-align:center}
+.upload-single{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;width:100%;min-height:120px;padding:28px 20px;
+  border:2px dashed #cbd5e1;border-radius:12px;
+  background:#f8fafc;cursor:pointer;
+  font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#64748b;
+  transition:all .18s;text-align:center;
+}
 .upload-single:hover{border-color:#2563eb;background:#eff6ff;color:#2563eb}
 .upload-single.selected{border-color:#16a34a;border-style:solid;background:#f0fdf4;color:#15803d}
-.upload-single .ico{font-size:28px}
+.upload-single .ico{font-size:36px;line-height:1}
 
-.thumb{width:100%;max-height:110px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0;margin-top:8px;display:none}
+.thumb{width:100%;max-height:120px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0;margin-top:10px;display:none}
 
-.btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:10px 18px;border-radius:8px;border:none;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;margin-top:12px}
-.btn-blue{background:#2563eb;color:#fff}.btn-blue:hover{background:#1d4ed8}.btn-blue:disabled{background:#bfdbfe;cursor:not-allowed}
+/* ── BUTTONS ── */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px 20px;border-radius:10px;border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:14px;letter-spacing:.1px}
+.btn-blue{background:#2563eb;color:#fff}.btn-blue:hover{background:#1d4ed8}.btn-blue:disabled{background:#bfdbfe;color:#93c5fd;cursor:not-allowed}
 
-.prog-wrap{margin-top:10px;display:none}.prog-wrap.on{display:block}
-.prog-track{height:4px;background:#e2e8f0;border-radius:2px;overflow:hidden;margin-bottom:5px}
-.prog-bar{height:100%;background:#2563eb;border-radius:2px;width:0;transition:width .3s}
-.prog-txt{font-size:12px;color:#64748b}
-
-.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:rot .55s linear infinite;flex-shrink:0}
+/* ── PROGRESS ── */
+.prog-wrap{margin-top:12px;display:none}.prog-wrap.on{display:block}
+.prog-track{height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;margin-bottom:6px}
+.prog-bar{height:100%;background:linear-gradient(90deg,#2563eb,#3b82f6);border-radius:3px;width:0;transition:width .3s}
+.prog-txt{font-size:12px;color:#64748b;font-weight:500}
+.spin{width:15px;height:15px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:rot .55s linear infinite;flex-shrink:0}
 @keyframes rot{to{transform:rotate(360deg)}}
 
-/* Fields */
-.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-@media(max-width:420px){.field-grid{grid-template-columns:1fr}}
-.field-item{background:#f8fafc;border-radius:6px;padding:10px 12px}
+/* ── VOTER ID FIELDS ── */
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.field-grid{grid-template-columns:1fr}}
+.field-item{background:#f8fafc;border-radius:10px;padding:13px 15px;position:relative}
 .field-item.w2{grid-column:1/-1}
-.field-k{font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
-.field-v{font-size:14px;font-weight:500;color:#0f172a;line-height:1.4}
-.field-v.nil{font-size:12px;color:#cbd5e1;font-style:italic;font-weight:400}
-.field-item{position:relative;}
+.field-k{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.field-v{font-size:15px;font-weight:600;color:#0f172a;line-height:1.4;padding-right:52px}
+.field-v.nil{font-size:13px;color:#cbd5e1;font-style:italic;font-weight:400}
 .copy-btn{
-  position:absolute;top:8px;right:8px;
-  background:none;border:1px solid #e2e8f0;border-radius:4px;
-  padding:2px 7px;font-size:10px;font-weight:600;color:#94a3b8;
-  cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;
-  opacity:0;
+  position:absolute;top:10px;right:10px;
+  background:none;border:1px solid #e2e8f0;border-radius:5px;
+  padding:3px 9px;font-size:10px;font-weight:700;color:#94a3b8;
+  cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;opacity:0;
 }
-.field-item:hover .copy-btn{opacity:1;}
-.copy-btn:hover{background:#eff6ff;border-color:#bfdbfe;color:#2563eb;}
-.copy-btn.copied{color:#16a34a;border-color:#bbf7d0;background:#f0fdf4;}
+.field-item:hover .copy-btn{opacity:1}
+.copy-btn:hover{background:#eff6ff;border-color:#bfdbfe;color:#2563eb}
+.copy-btn.copied{color:#16a34a;border-color:#bbf7d0;background:#f0fdf4}
 
-/* Search */
-.input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-@media(max-width:460px){.input-row{grid-template-columns:1fr}}
-.input-group label{display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:4px}
-.input-group input{width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:7px;font-family:'Inter',sans-serif;font-size:13px;color:#0f172a;background:#fff;outline:none;transition:border-color .15s}
+/* ── SEARCH ── */
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:520px){.input-row{grid-template-columns:1fr}}
+.input-group label{display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:5px}
+.input-group input{
+  width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:9px;
+  font-family:'Inter',sans-serif;font-size:14px;color:#0f172a;background:#fff;
+  outline:none;transition:border-color .15s;
+}
 .input-group input:focus{border-color:#2563eb;box-shadow:0 0 0 3px #dbeafe}
 .input-group input:disabled{background:#f8fafc;color:#cbd5e1;cursor:not-allowed}
 
-/* Results */
-.result-item{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin-bottom:10px;position:relative;transition:border-color .15s}
-.result-item:hover{border-color:#bfdbfe}
-.result-item.top{border-color:#2563eb}
-.result-top-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:10px}
-.result-name{font-size:16px;font-weight:700;color:#0f172a}
-.result-sub{font-size:12px;color:#64748b;margin-top:2px;line-height:1.5}
-.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;flex-shrink:0}
+/* ── RESULTS ── */
+.result-item{
+  background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;
+  padding:18px 20px;margin-bottom:12px;position:relative;
+  transition:border-color .15s,box-shadow .15s;
+  box-shadow:0 1px 3px rgba(0,0,0,.04);
+}
+.result-item:hover{border-color:#bfdbfe;box-shadow:0 2px 8px rgba(37,99,235,.08)}
+.result-item.top{border-color:#2563eb;box-shadow:0 2px 12px rgba(37,99,235,.12)}
+.result-top-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.result-name{font-size:19px;font-weight:800;color:#0f172a;line-height:1.3}
+.result-rel{font-size:13px;color:#475569;margin-top:5px;line-height:1.5}
+.result-rel b{color:#0f172a}
+.badge{display:inline-flex;align-items:center;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px}
 .badge.hi{background:#dcfce7;color:#15803d}.badge.mid{background:#fef9c3;color:#a16207}.badge.lo{background:#fee2e2;color:#b91c1c}
-.result-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.tag{font-size:11px;padding:3px 9px;border-radius:5px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569}
-.tag b{color:#0f172a}.tag.hl{background:#eff6ff;border-color:#bfdbfe;color:#2563eb}.tag.hl b{color:#1d4ed8}
-.best-pin{position:absolute;top:-1px;right:12px;background:#2563eb;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:0 0 6px 6px;letter-spacing:.3px}
+.result-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.tag{font-size:12px;padding:4px 11px;border-radius:6px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;font-weight:500}
+.tag b{color:#0f172a;font-weight:700}
+.tag.hl{background:#eff6ff;border-color:#bfdbfe;color:#2563eb}
+.tag.hl b{color:#1d4ed8}
+.best-pin{
+  position:absolute;top:-1px;right:16px;
+  background:#2563eb;color:#fff;
+  font-size:10px;font-weight:800;padding:3px 10px;
+  border-radius:0 0 8px 8px;letter-spacing:.4px;
+}
 
-.banner-ok{padding:10px 14px;border-radius:7px;font-size:13px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;font-weight:500}
-.notice{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;font-size:13px;color:#94a3b8;margin-bottom:14px}
-
-.empty{text-align:center;padding:36px 16px;color:#94a3b8}
-.empty .e-ico{font-size:30px;margin-bottom:8px}
-
-details{margin-top:12px}
+/* ── MISC ── */
+.banner-ok{padding:12px 16px;border-radius:10px;font-size:13px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;font-weight:600}
+.notice{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;color:#94a3b8;margin-bottom:14px}
+.empty{text-align:center;padding:48px 20px;color:#94a3b8}
+.empty .e-ico{font-size:36px;margin-bottom:12px}
+.empty p{font-size:14px;line-height:1.7}
+details{margin-top:14px}
 details summary{font-size:12px;color:#94a3b8;cursor:pointer;user-select:none}
-details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px;font-size:10px;color:#64748b;white-space:pre-wrap;word-break:break-word;max-height:160px;overflow-y:auto;font-family:monospace}
-
+details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;font-size:10px;color:#64748b;white-space:pre-wrap;word-break:break-word;max-height:180px;overflow-y:auto;font-family:monospace}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:3px}
 </style>
@@ -120,25 +155,27 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
 <!-- PAGE 1: VOTER ID -->
 <div class="page on" id="voter-id">
   <p class="page-title">Voter ID Reader</p>
-  <p class="page-sub">Upload your voter ID card to extract all details.</p>
+  <p class="page-sub">Upload your voter ID card images to extract all details automatically.</p>
 
   <div class="box">
     <div class="box-head">Upload Card Images</div>
     <div class="upload-grid">
       <div>
-        <span class="slot-label f">▲ Front side</span>
+        <span class="slot-label f">▲ Front side (required)</span>
         <button class="upload-btn" id="front-btn" onclick="document.getElementById('fi-front').click()">
           <span class="ico">🪪</span>
-          <span id="front-lbl">Click to choose image</span>
+          <span id="front-lbl">Tap to upload front</span>
+          <span class="sub">JPG, PNG, HEIC</span>
         </button>
         <input type="file" id="fi-front" accept="image/*" style="display:none">
         <img id="front-thumb" class="thumb" alt="">
       </div>
       <div>
-        <span class="slot-label b">▼ Back side</span>
+        <span class="slot-label b">▼ Back side (optional)</span>
         <button class="upload-btn" id="back-btn" onclick="document.getElementById('fi-back').click()">
           <span class="ico">🏠</span>
-          <span id="back-lbl">Click to choose image</span>
+          <span id="back-lbl">Tap to upload back</span>
+          <span class="sub">For address details</span>
         </button>
         <input type="file" id="fi-back" accept="image/*" style="display:none">
         <img id="back-thumb" class="thumb" alt="">
@@ -166,13 +203,13 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
 <!-- PAGE 2: ELECTORAL ROLL SEARCH -->
 <div class="page" id="roll-search">
   <p class="page-title">Electoral Roll Search</p>
-  <p class="page-sub">Upload the electoral roll PDF, then search by name to find voter details.</p>
+  <p class="page-sub">Upload the electoral roll PDF, then search by name in Kannada to find voter records.</p>
 
   <div class="box">
     <div class="box-head">Step 1 — Upload Electoral Roll PDF</div>
     <button class="upload-single" id="pdf-btn" onclick="document.getElementById('fi-pdf').click()">
       <span class="ico">📄</span>
-      <span id="pdf-lbl">Click to choose PDF file</span>
+      <span id="pdf-lbl">Tap to upload electoral roll PDF</span>
     </button>
     <input type="file" id="fi-pdf" accept="application/pdf" style="display:none">
     <div class="prog-wrap" id="pdf-prog">
@@ -185,17 +222,17 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
   <div class="box" id="search-box">
     <div class="box-head">Step 2 — Search for a Voter</div>
     <div class="notice" id="pdf-not-ready">
-      <span style="font-size:16px">⬆️</span>
+      <span style="font-size:18px">⬆️</span>
       <span>Upload and process the PDF above first, then search here.</span>
     </div>
-    <div class="banner-ok" id="pdf-ready-banner" style="display:none;margin-bottom:14px"></div>
+    <div class="banner-ok" id="pdf-ready-banner" style="display:none;margin-bottom:16px"></div>
     <div class="input-row">
       <div class="input-group">
-        <label for="s-name">Voter Name — ಮತದಾರರ ಹೆಸರು</label>
-        <input id="s-name" type="text" placeholder="ಕನ್ನಡದಲ್ಲಿ ಹೆಸರು ಬರೆಯಿರಿ (ಉದಾ: ಸುಬ್ರಮಣಿ)" disabled>
+        <label for="s-name">ಮತದಾರರ ಹೆಸರು (Voter Name)</label>
+        <input id="s-name" type="text" placeholder="ಕನ್ನಡದಲ್ಲಿ ಹೆಸರು ಬರೆಯಿರಿ…" disabled>
       </div>
       <div class="input-group">
-        <label for="s-rel">Father / Husband — ತಂದೆ / ಗಂಡ ಹೆಸರು</label>
+        <label for="s-rel">ತಂದೆ / ಗಂಡ ಹೆಸರು (Father / Husband)</label>
         <input id="s-rel" type="text" placeholder="ಸಂಬಂಧಿಯ ಹೆಸರು (ಐಚ್ಛಿಕ)" disabled>
       </div>
     </div>
@@ -223,424 +260,336 @@ function go(pageId, tabId) {
   document.getElementById(tabId).classList.add('on');
 }
 
-// ── FILE INPUT WIRING ────────────────────────────────────────
-// Reliable pattern: button.onclick → input.click(), input.onchange reads file
+// ── FILE WIRING ───────────────────────────────────────────────
 function wireFile(inputId, btnId, lblId, thumbId, onFile) {
-  const inp = document.getElementById(inputId);
-  const btn = document.getElementById(btnId);
-  const lbl = document.getElementById(lblId);
-  const thumb = thumbId ? document.getElementById(thumbId) : null;
-
-  inp.addEventListener('change', function() {
-    const file = this.files && this.files[0];
-    if (!file) return;
+  const inp=document.getElementById(inputId);
+  const btn=document.getElementById(btnId);
+  const lbl=document.getElementById(lblId);
+  const thumb=thumbId?document.getElementById(thumbId):null;
+  inp.addEventListener('change',function(){
+    const file=this.files&&this.files[0]; if(!file) return;
     btn.classList.add('selected');
-    lbl.textContent = file.name.length > 30 ? file.name.slice(0,28)+'…' : file.name;
-    if (thumb && file.type.startsWith('image/')) {
-      const fr = new FileReader();
-      fr.onload = e => { thumb.src = e.target.result; thumb.style.display = 'block'; };
+    lbl.textContent=file.name.length>32?file.name.slice(0,30)+'…':file.name;
+    if(thumb&&file.type.startsWith('image/')){
+      const fr=new FileReader();
+      fr.onload=e=>{thumb.src=e.target.result;thumb.style.display='block';};
       fr.readAsDataURL(file);
     }
     onFile(file);
   });
-
-  // Drag-drop support
-  btn.addEventListener('dragover', e => { e.preventDefault(); btn.style.borderColor='#2563eb'; });
-  btn.addEventListener('dragleave', () => { btn.style.borderColor=''; });
-  btn.addEventListener('drop', e => {
-    e.preventDefault(); btn.style.borderColor='';
-    const file = e.dataTransfer.files && e.dataTransfer.files[0];
-    if (!file) return;
-    try { const dt=new DataTransfer(); dt.items.add(file); inp.files=dt.files; } catch(x){}
+  btn.addEventListener('dragover',e=>{e.preventDefault();btn.style.borderColor='#2563eb';});
+  btn.addEventListener('dragleave',()=>{btn.style.borderColor='';});
+  btn.addEventListener('drop',e=>{
+    e.preventDefault();btn.style.borderColor='';
+    const file=e.dataTransfer.files&&e.dataTransfer.files[0]; if(!file) return;
+    try{const dt=new DataTransfer();dt.items.add(file);inp.files=dt.files;}catch(x){}
     inp.dispatchEvent(new Event('change'));
   });
 }
 
 // ── UTILS ────────────────────────────────────────────────────
-let _T = null;
-function getTess() {
-  if (_T) return _T;
-  _T = new Promise((res,rej) => {
-    if (window.Tesseract) { res(window.Tesseract); return; }
-    const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js';
-    s.onload = () => res(window.Tesseract);
-    s.onerror = rej;
+let _T=null;
+function getTess(){
+  if(_T) return _T;
+  _T=new Promise((res,rej)=>{
+    if(window.Tesseract){res(window.Tesseract);return;}
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js';
+    s.onload=()=>res(window.Tesseract);s.onerror=rej;
     document.head.appendChild(s);
   });
   return _T;
 }
-
-function setPb(barId, txtId, pct, msg) {
-  const b=document.getElementById(barId), t=document.getElementById(txtId);
-  if (b) b.style.width=Math.min(100,Math.max(0,pct))+'%';
-  if (t&&msg!==undefined) t.textContent=msg;
+function setPb(barId,txtId,pct,msg){
+  const b=document.getElementById(barId),t=document.getElementById(txtId);
+  if(b) b.style.width=Math.min(100,Math.max(0,pct))+'%';
+  if(t&&msg!==undefined) t.textContent=msg;
 }
-
-function clean(s){ return (s||'').replace(/\s+/g,' ').trim(); }
+function clean(s){return(s||'').replace(/\s+/g,' ').trim();}
 
 // ── VOTER ID SCAN ────────────────────────────────────────────
-async function scanId() {
-  if (!G.frontFile) { alert('Please choose the front image first.'); return; }
+async function scanId(){
+  if(!G.frontFile){alert('Please choose the front image first.');return;}
   const btn=document.getElementById('id-btn');
-  btn.disabled=true; btn.innerHTML='<span class="spin"></span>Scanning…';
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Scanning…';
   document.getElementById('id-prog').classList.add('on');
-
-  try {
-    const T = await getTess();
-
-    // Pass 1: front, English + Hindi
+  try{
+    const T=await getTess();
     setPb('id-bar','id-txt',5,'Reading front (English)…');
-    const w1 = await T.createWorker(['eng','hin'],1,{
-      logger:m=>{ if(m.status==='recognizing text') setPb('id-bar','id-txt',5+m.progress*22,'Reading front (English)…'); }
-    });
-    const frontEng = (await w1.recognize(G.frontFile)).data.text;
+    const w1=await T.createWorker(['eng','hin'],1,{logger:m=>{if(m.status==='recognizing text')setPb('id-bar','id-txt',5+m.progress*22,'Reading front (English)…');}});
+    const frontEng=(await w1.recognize(G.frontFile)).data.text;
     await w1.terminate();
 
-    // Pass 2: front, Kannada
     setPb('id-bar','id-txt',29,'Reading front (Kannada)…');
-    const w2 = await T.createWorker(['kan','eng'],1,{
-      logger:m=>{ if(m.status==='recognizing text') setPb('id-bar','id-txt',29+m.progress*22,'Reading front (Kannada)…'); }
-    });
-    const frontKan = (await w2.recognize(G.frontFile)).data.text;
+    const w2=await T.createWorker(['kan','eng'],1,{logger:m=>{if(m.status==='recognizing text')setPb('id-bar','id-txt',29+m.progress*22,'Reading front (Kannada)…');}});
+    const frontKan=(await w2.recognize(G.frontFile)).data.text;
     await w2.terminate();
 
-    let backEng='', backKan='';
-    if (G.backFile) {
+    let backEng='',backKan='';
+    if(G.backFile){
       setPb('id-bar','id-txt',53,'Reading back (English)…');
-      const w3 = await T.createWorker(['eng','hin'],1,{
-        logger:m=>{ if(m.status==='recognizing text') setPb('id-bar','id-txt',53+m.progress*18,'Reading back (English)…'); }
-      });
-      backEng = (await w3.recognize(G.backFile)).data.text;
+      const w3=await T.createWorker(['eng','hin'],1,{logger:m=>{if(m.status==='recognizing text')setPb('id-bar','id-txt',53+m.progress*18,'Reading back (English)…');}});
+      backEng=(await w3.recognize(G.backFile)).data.text;
       await w3.terminate();
-
       setPb('id-bar','id-txt',73,'Reading back (Kannada)…');
-      const w4 = await T.createWorker(['kan','eng'],1,{
-        logger:m=>{ if(m.status==='recognizing text') setPb('id-bar','id-txt',73+m.progress*18,'Reading back (Kannada)…'); }
-      });
-      backKan = (await w4.recognize(G.backFile)).data.text;
+      const w4=await T.createWorker(['kan','eng'],1,{logger:m=>{if(m.status==='recognizing text')setPb('id-bar','id-txt',73+m.progress*18,'Reading back (Kannada)…');}});
+      backKan=(await w4.recognize(G.backFile)).data.text;
       await w4.terminate();
     }
-
     setPb('id-bar','id-txt',95,'Extracting details…');
-    const f = extractId(frontEng, frontKan, backEng, backKan);
-    renderIdFields(f, frontEng+'\n\n---KANNADA---\n\n'+frontKan+(backEng?'\n\n---BACK---\n\n'+backEng+'\n\n'+backKan:''));
+    const f=extractId(frontEng,frontKan,backEng,backKan);
+    renderIdFields(f,frontEng+'\n\n---KANNADA---\n\n'+frontKan+(backEng?'\n\n---BACK---\n\n'+backEng+'\n\n'+backKan:''));
     setPb('id-bar','id-txt',100,'Done');
-
-  } catch(e) {
-    console.error(e);
-    alert('Scan error: '+e.message);
-  } finally {
-    btn.disabled=false; btn.innerHTML='Scan Voter ID';
-  }
+  }catch(e){console.error(e);alert('Scan error: '+e.message);}
+  finally{btn.disabled=false;btn.innerHTML='Scan Voter ID';}
 }
 
 // ── EXTRACT VOTER ID FIELDS ──────────────────────────────────
-// Guiding principle: ONLY show a field if we found it via an explicit label.
-// Never guess or fall back to random lines — wrong data is worse than no data.
-function extractId(fe, fk, be, bk) {
+// Core principle: only show a field if found via explicit label.
+// Never fall back to random lines — blank beats wrong.
+function extractId(fe, fk, be, bk){
   be=be||''; bk=bk||''; fk=fk||'';
-  const f = {
-    electorName:'', electorNameKan:'',
-    fatherName:'',  fatherNameKan:'',
-    sex:'', epicNo:'',
-    addr:'', taluk:'', dist:'',
-    part:'', serial:''
-  };
+  const f={electorName:'',electorNameKan:'',fatherName:'',fatherNameKan:'',sex:'',epicNo:'',addr:'',part:'',serial:''};
 
-  // ── EPIC No. ─────────────────────────────────────────────
-  // Voter ID EPIC format: 3 letters + 7 digits e.g. BCW0666909
-  const allText = fe+' '+be;
-  const epicM = allText.match(/\b([A-Z]{3}[0-9]{7})\b/)
-             || allText.match(/IDENTITY\s*CARD\s+([A-Z]{3}[A-Z0-9]{6,8})/i)
-             || allText.match(/\b([A-Z]{3}[O][0-9]{6,7})\b/i);
-  if (epicM) f.epicNo = epicM[1].toUpperCase().replace(/^([A-Z]{3})O/,'$10');
+  // EPIC No — 3 letters + 7 digits, OCR may swap O↔0
+  const epicAll=fe+' '+be;
+  const epicM=epicAll.match(/\b([A-Z]{3}[0-9]{7})\b/)
+           ||epicAll.match(/IDENTITY\s*CARD\s+([A-Z]{3}[A-Z0-9]{6,8})/i)
+           ||epicAll.match(/\b([A-Z]{3}[O][0-9]{6,7})\b/i);
+  if(epicM) f.epicNo=epicM[1].toUpperCase().replace(/([A-Z]{3})O/,'$10');
 
-  // ── ENGLISH FIELDS — strictly label-anchored ─────────────
-  // Each field is only populated if the label is found.
-  // The label must appear on the same line as, or immediately before, the value.
-
-  // Elector's Name
-  const enameM = matchLabelledField(fe, [
-    /elector'?s?\s*name\s*[:\-]\s*/i,
-    /voter'?s?\s*name\s*[:\-]\s*/i,
+  // ── English fields — multi-attempt label matching ──────────
+  // OCR often garbles apostrophes: "Elector's" → "Elector s" or "Electors"
+  // We try many label variants and also scan across line boundaries.
+  f.electorName = matchEngField(fe, [
+    /elector[''s]*\s*name\s*[:\-]\s*/i,
+    /voters?\s*name\s*[:\-]\s*/i,
+    /name\s*of\s*elector\s*[:\-]\s*/i,
+    // OCR without apostrophe or space
+    /electors\s+name\s*[:\-]\s*/i,
+    /elector\s+s\s+name\s*[:\-]\s*/i,
   ]);
-  if (enameM) f.electorName = enameM;
 
-  // Father's / Husband's Name
-  const fnameM = matchLabelledField(fe, [
-    /father'?s?\s*name\s*[:\-]\s*/i,
-    /husband'?s?\s*name\s*[:\-]\s*/i,
+  f.fatherName = matchEngField(fe, [
+    /father[''s]*\s*name\s*[:\-]\s*/i,
+    /husband[''s]*\s*name\s*[:\-]\s*/i,
+    /father\s+s\s+name\s*[:\-]\s*/i,
+    /fathers\s+name\s*[:\-]\s*/i,
   ]);
-  if (fnameM) f.fatherName = fnameM;
 
   // Sex
-  const sexM = fe.match(/\bsex\s*[:\-]\s*(male|female|m|f)\b/i)
-            || fe.match(/ಲಿಂಗ\s*[:\-]?\s*(ಪು|ಸ್ತ್ರೀ)/);
-  if (sexM) {
-    const s = sexM[1].toLowerCase();
-    f.sex = (s==='m'||s==='male'||s==='ಪು') ? 'Male' : 'Female';
-  }
+  const sexM=fe.match(/\bsex\s*[:\-]\s*(male|female|m\b|f\b)/i);
+  if(sexM){const s=sexM[1].toLowerCase();f.sex=(s==='m'||s==='male')?'Male':'Female';}
 
-  // ── KANNADA FIELDS — strictly label-anchored only ─────────
-  // We look for the Kannada label text and take ONLY the value that
-  // follows on the same line (after the colon) or the very next line
-  // if that next line has no colon (i.e. it's a value continuation).
-  // We NEVER go beyond 1 continuation line, and NEVER grab text that
-  // contains dates, numbers, or known noise patterns.
-
-  f.electorNameKan = kanLabelField(fk, [
+  // ── Kannada fields — label-anchored, noise-filtered ────────
+  f.electorNameKan = kanField(fk, [
     /ಮತದಾರರ\s*ಹೆಸರು\s*[:\-]?/,
     /ಮತದಾರ\s*ಹೆಸರ\s*[:\-]?/,
   ]);
-
-  f.fatherNameKan = kanLabelField(fk, [
+  f.fatherNameKan = kanField(fk, [
     /ತಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,
     /ತಂದೆ\s*ಹೆಸರ\s*[:\-]?/,
     /ಪತಿಯ\s*ಹೆಸರು\s*[:\-]?/,
-    /ತಂದೆ\s*[:\-]\s*/,
+    /ಕಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,  // common OCR variant
   ]);
 
-  // ── ADDRESS (back side only) ──────────────────────────────
-  if (be) {
-    const addrM = be.match(/address\s*[:\-]\s*([^\n]{5,80})/i);
-    if (addrM) f.addr = clean(addrM[1]);
-    const talukM = be.match(/taluk\s*[:\-]\s*([A-Za-z ()\-]{3,50})/i);
-    if (talukM) f.taluk = clean(talukM[1]);
-    const distM = be.match(/district\s*[:\-]\s*([A-Za-z ]{3,40})/i);
-    if (distM) f.dist = clean(distM[1]);
+  // ── Address + Part/Serial — BACK SIDE ONLY ─────────────────
+  // Part/Serial are NEVER extracted from front side to avoid address number clashes.
+  if(be && be.trim().length > 20){
+    const addrM=be.match(/address\s*[:\-]\s*([^\n]{5,100})/i);
+    if(addrM) f.addr=clean(addrM[1]);
+    const talukM=be.match(/taluk\s*[:\-]\s*([A-Za-z ()\-]{3,50})/i);
+    const distM=be.match(/district\s*[:\-]\s*([A-Za-z ]{3,40})/i);
     const pts=[];
-    if (f.addr) pts.push(f.addr);
-    if (f.taluk) pts.push(f.taluk+' Taluk');
-    if (f.dist) pts.push(f.dist+' District');
-    if (pts.length) f.addr = pts.join(', ');
-    // Part/Serial from back "NNN / NNN" pattern
-    const slM = be.match(/\b(\d{1,4})\s*\/\s*(\d{1,4})\s*$/m);
-    if (slM) { f.serial=slM[1]; f.part=slM[2]; }
-  }
+    if(f.addr) pts.push(f.addr);
+    if(talukM) pts.push(clean(talukM[1])+' Taluk');
+    if(distM) pts.push(clean(distM[1])+' District');
+    if(pts.length) f.addr=pts.join(', ');
 
+    // Part/Serial: look for explicit labels first, then "NNN / NNN" at END of text only
+    const partLabelM=be.match(/part\s*no\.?\s*[:\-]\s*(\d{1,4})/i);
+    const serialLabelM=be.match(/serial\s*no\.?\s*[:\-]\s*(\d{1,4})/i)||be.match(/sl\.?\s*no\.?\s*[:\-]\s*(\d{1,4})/i);
+    if(partLabelM) f.part=partLabelM[1];
+    if(serialLabelM) f.serial=serialLabelM[1];
+
+    // Fallback: "NNN / NNN" at the very end of the back text (last 60 chars)
+    if(!f.part && !f.serial){
+      const tail=be.slice(-60);
+      const slM=tail.match(/\b(\d{1,4})\s*\/\s*(\d{1,4})\s*$/);
+      if(slM){f.serial=slM[1];f.part=slM[2];}
+    }
+  }
   return f;
 }
 
-// Match an English labelled field: find label, return text after it on same line.
-// Also checks the next line if the same line has nothing after the label.
-function matchLabelledField(text, labelPatterns) {
-  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
-  for (const re of labelPatterns) {
-    for (let i=0; i<lines.length; i++) {
-      if (!re.test(lines[i])) continue;
-      // Value = everything after the label on the same line
-      const afterLabel = lines[i].replace(re,'').trim();
-      // Must be a plausible name: starts with capital, only letters/spaces/dots
-      const nameRe = /^[A-Z][A-Za-z .'-]{1,50}$/;
-      if (nameRe.test(afterLabel)) return clean(afterLabel);
-      // Try next line if same line was empty after label
-      if (!afterLabel && i+1 < lines.length) {
-        const nx = lines[i+1].trim();
-        if (nameRe.test(nx)) return clean(nx);
-      }
+// Match English labelled field — tries label on same line AND next line.
+// Handles OCR apostrophe variants. Value must look like a proper name.
+function matchEngField(text, labelPatterns){
+  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  // Also try joining pairs of lines (OCR sometimes splits label from value)
+  const pairs=[];
+  for(let i=0;i<lines.length-1;i++) pairs.push({idx:i,joined:lines[i]+' '+lines[i+1]});
+
+  const nameRe=/^[A-Z][A-Za-z .''-]{1,55}$/;
+
+  for(const re of labelPatterns){
+    // Try each line
+    for(let i=0;i<lines.length;i++){
+      if(!re.test(lines[i])) continue;
+      const after=lines[i].replace(re,'').trim();
+      if(nameRe.test(after)) return clean(after);
+      // Value on next line
+      if(i+1<lines.length && nameRe.test(lines[i+1])) return clean(lines[i+1]);
+    }
+    // Try joined pairs (handles label + value on consecutive OCR lines)
+    for(const {idx,joined} of pairs){
+      if(!re.test(joined)) continue;
+      const after=joined.replace(re,'').trim();
+      if(nameRe.test(after)) return clean(after);
     }
   }
   return '';
 }
 
-// Match a Kannada labelled field — strict version:
-// 1. Find the label line
-// 2. Take value from same line after label, OR from the VERY NEXT line
-// 3. Value must be ONLY Kannada script words (no digits, no dates, no English)
-// 4. If value looks noisy, return '' rather than bad data
-function kanLabelField(kanText, labelPatterns) {
-  const lines = kanText.split('\n').map(l=>l.trim()).filter(Boolean);
-
-  // Noise patterns — if extracted value contains these, reject it
-  const noiseRe = /\d{2,}|NE\s*a|Date|ದಿನಾಂಕ|ಸರ್ಕಾರ|ಯೋಜನ|ಚುನಾ|ಭಾರತ|ಆಯೋಗ|ಗುರುತಿನ|ಚೀಟಿ|ಚೀಟ|ವ್ಯಾಪ್ತಿ|ಪಟ್ಟಿ|ಮಾಹಿತಿ/;
-
-  for (const re of labelPatterns) {
-    for (let i=0; i<lines.length; i++) {
-      if (!re.test(lines[i])) continue;
-
-      // Get text after label on the same line
-      const sameLine = lines[i].replace(re,'').replace(/^[\s:|–\-]+/,'').trim();
-
-      let candidate = '';
-
-      if (sameLine && /[\u0C80-\u0CFF]{2,}/.test(sameLine)) {
-        candidate = sameLine;
-      } else if (i+1 < lines.length) {
-        // Next line — only if it's purely Kannada (no colon = not a label)
-        const nx = lines[i+1].trim();
-        if (/[\u0C80-\u0CFF]{3,}/.test(nx) && !/:/.test(nx) && !/[A-Za-z]{3,}/.test(nx)) {
-          candidate = nx;
-        }
+// Match Kannada labelled field — strict noise filter, strip trailing OCR junk.
+function kanField(kanText, labelPatterns){
+  const lines=kanText.split('\n').map(l=>l.trim()).filter(Boolean);
+  const noiseRe=/\d{4,}|Date|ದಿನಾಂಕ|ಸರ್ಕಾರ|ಯೋಜನ|ಚುನಾ|ಭಾರತ|ಆಯೋಗ|ಗುರುತಿನ|ಚೀಟಿ|ಪಟ್ಟಿ|ಮಾಹಿತಿ|ವ್ಯಾಪ್ತಿ/;
+  for(const re of labelPatterns){
+    for(let i=0;i<lines.length;i++){
+      if(!re.test(lines[i])) continue;
+      const sameLine=lines[i].replace(re,'').replace(/^[\s:|–\-]+/,'').trim();
+      let cand='';
+      if(sameLine && /[\u0C80-\u0CFF]{2,}/.test(sameLine)){
+        cand=sameLine;
+      } else if(i+1<lines.length){
+        const nx=lines[i+1].trim();
+        if(/[\u0C80-\u0CFF]{3,}/.test(nx)&&!/:/.test(nx)&&!/[A-Za-z]{3,}/.test(nx)) cand=nx;
       }
-
-      if (!candidate) continue;
-      if (noiseRe.test(candidate)) continue;  // reject noisy result
-
-      // Clean: strip any leading OCR artifacts (|, :, digits, spaces)
-      candidate = candidate.replace(/^[\s\d|.:–\-]+/, '').trim();
-
-      // Final check: must have meaningful Kannada content (≥ 3 Kannada chars)
-      if ((candidate.match(/[\u0C80-\u0CFF]/g)||[]).length >= 3) {
-        return candidate;
-      }
+      if(!cand||noiseRe.test(cand)) continue;
+      // Strip leading OCR artifacts and trailing dashes/pipes
+      cand=cand
+        .replace(/^[\s\d|.:–\-]+/,'')
+        .replace(/[\s\-–|]+$/,'')   // ← removes trailing " -" artifacts
+        .trim();
+      if((cand.match(/[\u0C80-\u0CFF]/g)||[]).length>=3) return cand;
     }
   }
-  return '';  // Return empty rather than wrong data
+  return '';
 }
 
-function renderIdFields(f, raw) {
-  // Build rows using the exact label language from the card
-  const rows = [
-    { k:"Elector's Name",           v: f.electorName,    w:false, copy:true },
-    { k:"Elector's Name (Kannada)", v: f.electorNameKan, w:false, copy:true, h:!f.electorNameKan },
-    { k:"Father's Name",            v: f.fatherName,     w:false, copy:true },
-    { k:"Father's Name (Kannada)",  v: f.fatherNameKan,  w:false, copy:true, h:!f.fatherNameKan },
-    { k:"Sex",                      v: f.sex,            w:false, h:!f.sex },
-    { k:"EPIC No.",                 v: f.epicNo,         w:false, copy:true },
-    { k:"Address",                  v: f.addr,           w:true,  copy:true, h:!f.addr },
-    { k:"Part No.",                 v: f.part,           w:false, h:!f.part },
-    { k:"Serial No.",               v: f.serial,         w:false, h:!f.serial },
+function renderIdFields(f, raw){
+  const rows=[
+    {k:"Elector's Name",           v:f.electorName,    copy:true},
+    {k:"Elector's Name (Kannada)", v:f.electorNameKan, copy:true, h:!f.electorNameKan},
+    {k:"Father's Name",            v:f.fatherName,     copy:true},
+    {k:"Father's Name (Kannada)",  v:f.fatherNameKan,  copy:true, h:!f.fatherNameKan},
+    {k:"Sex",                      v:f.sex,                       h:!f.sex},
+    {k:"EPIC No.",                 v:f.epicNo,         copy:true},
+    {k:"Address",                  v:f.addr,           copy:true, w:true, h:!f.addr},
+    {k:"Part No.",                 v:f.part,                      h:!f.part},
+    {k:"Serial No.",               v:f.serial,                    h:!f.serial},
   ].filter(r=>!r.h);
 
-  document.getElementById('id-fields').innerHTML = rows.map(r=>`
+  document.getElementById('id-fields').innerHTML=rows.map(r=>`
     <div class="field-item${r.w?' w2':''}">
       <div class="field-k">${r.k}</div>
       <div class="field-v${r.v?'':' nil'}">${r.v||'Not found'}</div>
-      ${r.copy&&r.v?`<button class="copy-btn" onclick="copyField(this,'${r.v.replace(/'/g,"\'")}')" title="Copy">Copy</button>`:''}
+      ${r.copy&&r.v?`<button class="copy-btn" onclick="copyField(this,${JSON.stringify(r.v)})" title="Copy">Copy</button>`:''}
     </div>`).join('');
-  document.getElementById('id-raw').textContent = raw;
+  document.getElementById('id-raw').textContent=raw;
   document.getElementById('id-out').style.display='block';
   document.getElementById('id-out').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function copyField(btn, text) {
+function copyField(btn,text){
   navigator.clipboard.writeText(text).then(()=>{
-    btn.textContent='Copied!';
-    btn.classList.add('copied');
-    setTimeout(()=>{ btn.textContent='Copy'; btn.classList.remove('copied'); }, 1800);
+    btn.textContent='Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1800);
   }).catch(()=>{
-    // Fallback for browsers without clipboard API
     const ta=document.createElement('textarea');
-    ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
-    document.body.appendChild(ta); ta.select();
-    document.execCommand('copy');
+    ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');
     document.body.removeChild(ta);
-    btn.textContent='Copied!'; btn.classList.add('copied');
-    setTimeout(()=>{ btn.textContent='Copy'; btn.classList.remove('copied'); }, 1800);
+    btn.textContent='Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1800);
   });
 }
 
 // ── PDF SCAN ─────────────────────────────────────────────────
-// Strategy:
-//   1. Try native text extraction first (fast, <5s for any PDF)
-//   2. If native text is sparse/empty, fall back to OCR with 4 parallel workers
-//   Electoral roll PDFs are usually scanned images → OCR path is common
-async function scanPdf() {
-  if (!G.pdfFile) { alert('Please choose a PDF file first.'); return; }
+async function scanPdf(){
+  if(!G.pdfFile){alert('Please choose a PDF file first.');return;}
   const btn=document.getElementById('pdf-btn-go');
-  btn.disabled=true; btn.innerHTML='<span class="spin"></span>Processing…';
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Processing…';
   document.getElementById('pdf-prog').classList.add('on');
   G.entries=[];
-
-  try {
-    const buf = await G.pdfFile.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({data:buf}).promise;
-    const total = pdf.numPages;
+  try{
+    const buf=await G.pdfFile.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+    const total=pdf.numPages;
     setPb('pdf-bar','pdf-txt',2,`Checking PDF format (${total} pages)…`);
 
-    // ── Step 1: Try native text on first 3 pages ──────────────
-    let nativeTextTotal = 0;
-    for (let pn=1; pn<=Math.min(3,total); pn++) {
-      const pg = await pdf.getPage(pn);
-      const tc = await pg.getTextContent();
-      nativeTextTotal += tc.items.filter(i=>i.str&&i.str.trim().length>1).length;
+    // Detect native text vs scanned image
+    let nativeCount=0;
+    for(let pn=1;pn<=Math.min(3,total);pn++){
+      const pg=await pdf.getPage(pn);
+      const tc=await pg.getTextContent();
+      nativeCount+=tc.items.filter(i=>i.str&&i.str.trim().length>1).length;
     }
-    const hasNativeText = nativeTextTotal > 30; // meaningful text per page
+    const hasNative=nativeCount>30;
 
-    if (hasNativeText) {
-      // ── Native text path ──────────────────────────────────
-      setPb('pdf-bar','pdf-txt',5,'Extracting native text…');
-      const pagePromises = Array.from({length:total},(_,i)=>
-        pdf.getPage(i+1).then(pg=>pg.getTextContent().then(tc=>({pn:i+1,tc})))
-      );
-      let done=0;
-      const allData=[];
-      for (let i=0;i<pagePromises.length;i+=10) {
-        const batch=await Promise.all(pagePromises.slice(i,i+10));
-        allData.push(...batch);
-        done=allData.length;
+    if(hasNative){
+      // Fast native path
+      setPb('pdf-bar','pdf-txt',5,'Extracting text…');
+      const pageP=Array.from({length:total},(_,i)=>pdf.getPage(i+1).then(pg=>pg.getTextContent().then(tc=>({pn:i+1,tc}))));
+      let done=0;const allData=[];
+      for(let i=0;i<pageP.length;i+=10){
+        const batch=await Promise.all(pageP.slice(i,i+10));
+        allData.push(...batch);done=allData.length;
         setPb('pdf-bar','pdf-txt',5+Math.round(done/total*80),`Extracted ${done}/${total} pages…`);
       }
       setPb('pdf-bar','pdf-txt',88,'Parsing entries…');
-      for (const {pn,tc} of allData.sort((a,b)=>a.pn-b.pn)) {
-        G.entries.push(...parseNativePage(tc,pn));
-      }
+      for(const {pn,tc} of allData.sort((a,b)=>a.pn-b.pn)) G.entries.push(...parseNativePage(tc,pn));
     } else {
-      // ── OCR path: 4 parallel Tesseract workers ────────────
+      // OCR path — 4 parallel workers
       setPb('pdf-bar','pdf-txt',3,'Loading OCR engine…');
-      const T = await getTess();
-      setPb('pdf-bar','pdf-txt',5,`Starting OCR on ${total} pages with 4 workers…`);
-
-      // Create 4 workers upfront
-      const N_WORKERS = 4;
-      const workers = await Promise.all(
-        Array.from({length:N_WORKERS}, () => T.createWorker(['kan','eng'], 1))
-      );
-
-      // Render all pages to canvas (can do this quickly in parallel)
-      const canvases = [];
-      setPb('pdf-bar','pdf-txt',8,'Rendering pages…');
-      for (let pn=1; pn<=total; pn++) {
-        const pg = await pdf.getPage(pn);
-        // Scale 1.2 = good balance of speed vs accuracy for printed text
-        const vp = pg.getViewport({scale:1.2});
-        const cv = document.createElement('canvas');
-        cv.width=vp.width; cv.height=vp.height;
+      const T=await getTess();
+      setPb('pdf-bar','pdf-txt',5,`Starting OCR on ${total} pages…`);
+      const N=4;
+      const workers=await Promise.all(Array.from({length:N},()=>T.createWorker(['kan','eng'],1)));
+      const canvases=[];
+      for(let pn=1;pn<=total;pn++){
+        const pg=await pdf.getPage(pn);
+        const vp=pg.getViewport({scale:1.3});
+        const cv=document.createElement('canvas');
+        cv.width=vp.width;cv.height=vp.height;
         await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
-        // Convert to blob URL for Tesseract (more reliable than canvas element)
-        const blob = await new Promise(res => cv.toBlob(res,'image/jpeg',0.85));
-        const url = URL.createObjectURL(blob);
-        canvases.push({pn, url});
-        if (pn % 5 === 0) setPb('pdf-bar','pdf-txt',8+Math.round(pn/total*22),`Rendered ${pn}/${total} pages…`);
+        const blob=await new Promise(res=>cv.toBlob(res,'image/jpeg',0.85));
+        canvases.push({pn,url:URL.createObjectURL(blob)});
+        if(pn%5===0) setPb('pdf-bar','pdf-txt',8+Math.round(pn/total*22),`Rendered ${pn}/${total}…`);
       }
       setPb('pdf-bar','pdf-txt',32,'Running OCR…');
-
-      // Distribute pages across 4 workers
-      let donePages = 0;
-      const chunks = Array.from({length:N_WORKERS},()=>[]);
-      canvases.forEach((c,i) => chunks[i % N_WORKERS].push(c));
-
-      async function ocrChunk(worker, pages) {
-        const results=[];
-        for (const {pn,url} of pages) {
-          const {data:{text}} = await worker.recognize(url);
+      let doneP=0;
+      const chunks=Array.from({length:N},()=>[]);
+      canvases.forEach((c,i)=>chunks[i%N].push(c));
+      async function ocrChunk(w,pages){
+        const res=[];
+        for(const {pn,url} of pages){
+          const {data:{text}}=await w.recognize(url);
           URL.revokeObjectURL(url);
-          results.push({pn, text});
-          donePages++;
-          const pct = 32+Math.round(donePages/total*62);
-          setPb('pdf-bar','pdf-txt',pct,`OCR: ${donePages}/${total} pages…`);
+          res.push({pn,text});doneP++;
+          setPb('pdf-bar','pdf-txt',32+Math.round(doneP/total*62),`OCR: ${doneP}/${total} pages…`);
         }
-        return results;
+        return res;
       }
-
-      const allResults = (await Promise.all(
-        workers.map((w,i) => ocrChunk(w, chunks[i]))
-      )).flat().sort((a,b)=>a.pn-b.pn);
-
+      const allR=(await Promise.all(workers.map((w,i)=>ocrChunk(w,chunks[i])))).flat().sort((a,b)=>a.pn-b.pn);
       await Promise.all(workers.map(w=>w.terminate()));
-
       setPb('pdf-bar','pdf-txt',96,'Parsing voter entries…');
-      for (const {pn,text} of allResults) {
-        G.entries.push(...parseOcrPage(text, pn));
-      }
+      for(const {pn,text} of allR) G.entries.push(...parseOcrPage(text,pn));
     }
 
-    // Sort entries
     G.entries.sort((a,b)=>(a.pageNum-b.pageNum)||((+a.serial||0)-(+b.serial||0)));
     setPb('pdf-bar','pdf-txt',100,`Done — ${G.entries.length} voter entries found across ${total} pages`);
-
-    // Enable search
     document.getElementById('pdf-not-ready').style.display='none';
     const rb=document.getElementById('pdf-ready-banner');
     rb.textContent=`✓ ${G.entries.length} voter entries loaded from ${total} pages. Enter a name to search.`;
@@ -649,290 +598,92 @@ async function scanPdf() {
     document.getElementById('s-rel').disabled=false;
     document.getElementById('search-btn').disabled=false;
     document.getElementById('search-box').scrollIntoView({behavior:'smooth',block:'start'});
-
-  } catch(e) {
-    console.error(e);
-    alert('PDF processing error: '+e.message);
-  } finally {
-    btn.disabled=false; btn.innerHTML='Process PDF';
-  }
+  }catch(e){console.error(e);alert('PDF error: '+e.message);}
+  finally{btn.disabled=false;btn.innerHTML='Process PDF';}
 }
 
-// ── PARSE NATIVE TEXT PAGE (for text-layer PDFs) ────────────
-function parseNativePage(tc, pageNum) {
-  const items = tc.items
-    .filter(i=>i.str&&i.str.trim())
-    .map(i=>({
-      text:i.str.trim(),
-      x:Math.round(i.transform[4]),
-      y:Math.round(i.transform[5])
-    }));
-  if (!items.length) return [];
-
-  // Group by Y row (tolerance 4px)
+// ── PARSE NATIVE TEXT PAGE ────────────────────────────────────
+function parseNativePage(tc, pageNum){
+  const items=tc.items.filter(i=>i.str&&i.str.trim()).map(i=>({text:i.str.trim(),x:Math.round(i.transform[4]),y:Math.round(i.transform[5])}));
+  if(!items.length) return [];
   const sorted=[...items].sort((a,b)=>b.y-a.y);
   const rows=[];
-  for (const item of sorted) {
-    const row=rows.find(r=>Math.abs(r[0].y-item.y)<=4);
-    if (row) row.push(item); else rows.push([item]);
-  }
-
-  // Part No from header
+  for(const item of sorted){const row=rows.find(r=>Math.abs(r[0].y-item.y)<=4);if(row)row.push(item);else rows.push([item]);}
+  const lines=rows.map(r=>r.sort((a,b)=>a.x-b.x).map(i=>i.text).join(' ').trim()).filter(Boolean);
   let partNo='';
-  const topLines=rows.slice(0,5).map(r=>r.sort((a,b)=>a.x-b.x).map(i=>i.text).join(' '));
-  for (const ln of topLines) {
-    const pm=ln.match(/ಭಾಗದ\s*ಸಂಖ್ಯೆ\s*[:\-]?\s*(\d+)|ಭಾಗ\s*[:\-#]?\s*(\d+)/);
-    if (pm){partNo=pm[1]||pm[2];break;}
-  }
-
-  return parseTablePage(rows, partNo, pageNum);
+  for(const ln of lines.slice(0,15)){const pm=ln.match(/ಭಾಗದ?\s*ಸಂಖ್ಯೆ\s*[:\-]?\s*(\d+)/)||ln.match(/ಭಾಗ\s*[:\-#]\s*(\d+)/i);if(pm){partNo=pm[1];break;}}
+  return parseOcrPage(lines.join('\n'),pageNum,partNo);
 }
 
-// ── PARSE COLUMNAR TABLE PAGE (Karnataka electoral roll format) ──────────────
-// Table columns (from the format image):
-//   Col 1 (narrowest, leftmost):  ಕ್ರಮ ಸಂಖ್ಯೆ  — Serial No
-//   Col 2:                         ಮನೆ/ಫ್ಲಾಟ್    — House No
-//   Col 3 (widest):                ಮತದಾರರ ಹೆಸರು  — Voter Name
-//   Col 4 (narrow):                ಸಂಬಂಧ          — Relation (ತಂದೆ/ಗಂಡ/ತಾಯಿ/ಇತರೆ)
-//   Col 5:                         ಸಂಬಂಧಿಯ ಹೆಸರು — Relative Name
-//   Col 6 (narrow):                ಗಂ/ಹೆಂ         — Sex
-//   Col 7 (narrow):                ವಯಸ್ಸು         — Age
-//   Col 8 (narrow):                ಮ.ಗು.ಚೀ ಸಂಖ್ಯೆ — EPIC No (often blank in scanned PDFs)
-//
-// When OCR runs on this, each data row becomes ONE line like:
-//   "1  2  ಸುಬ್ರಮಣಿ  ತಂದೆ  ಅಯ್ಯಕ್ಣ  ಗಂ  35"
-// We parse this by detecting the known fixed values in cols 4 and 6.
-function parseTablePage(rows, partNo, pageNum) {
+// ── PARSE OCR PAGE ────────────────────────────────────────────
+// Karnataka electoral roll: pure Kannada table
+//   [serial] [houseNo] [voterName] [relation] [relativeName] [sex] [age]
+// Relation: ತಂದೆ / ಗಂಡ / ತಾಯಿ / ಇತರೆ     Sex: ಗಂ / ಹೆಂ
+function parseOcrPage(text, pageNum, knownPart){
+  const rawLines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  let partNo=knownPart||'';
+  if(!partNo){
+    for(const ln of rawLines.slice(0,30)){
+      const pm=ln.match(/ಭಾಗದ?\s*ಸಂಖ್ಯೆ\s*[:\-]?\s*(\d+)/)||ln.match(/ಭಾಗ\s*[:\-#]\s*(\d+)/i)||ln.match(/part\s*[:\-#]\s*(\d+)/i);
+      if(pm){partNo=pm[1];break;}
+    }
+  }
+
+  // Strip OCR noise from a line
+  function cleanLn(ln){
+    return ln.replace(/\|/g,' ').replace(/\$(\d)/g,'$1').replace(/^\$\s*/,'')
+             .replace(/([\u0C80-\u0CFF])\./g,'$1').replace(/\s+/g,' ').trim();
+  }
+  // Canonical form for token matching (strip dots, dashes)
+  function canon(t){return t.replace(/[.\-\s]/g,'');}
+
+  const REL=new Set(['ತಂದೆ','ಗಂಡ','ತಾಯಿ','ಇತರೆ','ಪತಿ','ಸ್ವಂತ','ಮಗ','ಮಗಳು']);
+  const SEX=new Set(['ಗಂ','ಹೆಂ']);
+  const SKIP=/ಕ್ರಮ\s*ಸಂಖ್ಯೆ|ಮನೆ.*ಫ್ಲಾಟ್|ಮತದಾರರ\s*ಹೆಸರು|ಭಾಗದ?\s*ಸಂಖ್ಯೆ|ರಾಜ್ಯದ\s*ಕೋಡ್|ವಿಧಾನ\s*ಸಭಾ|ಭಾರತ\s*ಚುನಾ|ಸಂಬಂಧ|ಮ\.ಗು\.ಚೀ|ವಿಭಾಗ\s*[:\-]|ಸಂಖ್ಯೆ\s*ಮತ್ತು|ಮತದಾರರ\s*ಪಟ್ಟಿ/;
+
   const entries=[];
-
-  // Reconstruct lines from rows
-  const lines = rows
-    .map(r=>r.sort((a,b)=>a.x-b.x).map(i=>i.text).join('\t'))
-    .filter(Boolean);
-
-  // Relation tokens — col 4 values
-  const REL_TOKENS = /^(ತಂದೆ|ಗಂಡ|ತಾಯಿ|ಇತರೆ|ಪತಿ|ಮಗ|ಮಗಳು)$/;
-  // Sex tokens — col 6 values
-  const SEX_TOKENS = /^(ಗಂ|ಹೆಂ|ಗಂ\.|ಹೆಂ\.)$/;
-
-  for (const rawLine of lines) {
-    // Split by whitespace/tab into tokens
-    const tokens = rawLine.split(/[\t]+/).map(t=>t.trim()).filter(Boolean);
-
-    // Skip header/footer lines
-    if (tokens.join(' ').match(/ಕ್ರಮ\s*ಸಂಖ್ಯೆ|ಮನೆ.*ಫ್ಲಾಟ್|ಮತದಾರರ\s*ಹೆಸರು|ಭಾಗದ|ಮತದಾರರ\s*ಪಟ್ಟಿ|ರಾಜ್ಯದ\s*ಕೋಡ್/)) continue;
-    if (tokens.join(' ').match(/ವಿಧಾನ\s*ಸಭಾ|ಭಾರತ\s*ಚುನಾ/)) continue;
-
-    // Find relation token position — this is the most reliable anchor
-    let relIdx = -1;
-    for (let t=0;t<tokens.length;t++) {
-      if (REL_TOKENS.test(tokens[t])) { relIdx=t; break; }
-    }
-    if (relIdx < 0) continue; // Not a data row
-
-    // Find sex token (comes after relation)
-    let sexIdx = -1;
-    for (let t=relIdx+1;t<tokens.length;t++) {
-      if (SEX_TOKENS.test(tokens[t])) { sexIdx=t; break; }
-    }
-
-    // Serial = first numeric token before relation
-    let serial='', houseNo='', nameKan='', relationType='', relativeKan='', sex='', age='', epicNo='';
-
-    // Tokens before relation: [serial] [houseNo] [name...]
-    const preRel = tokens.slice(0, relIdx);
-    // Serial: first token if purely numeric
-    let preStart=0;
-    if (preRel.length>0 && /^\d+$/.test(preRel[0])) {
-      serial=preRel[0]; preStart=1;
-    }
-    // House no: next token if purely numeric
-    if (preRel.length>preStart && /^\d+$/.test(preRel[preStart])) {
-      houseNo=preRel[preStart]; preStart++;
-    }
-    // Voter name: remaining tokens
-    nameKan = preRel.slice(preStart).join(' ').trim();
-
-    // Relation type
-    relationType = tokens[relIdx];
-
-    // Relative name: tokens between relation and sex
-    const postRel = tokens.slice(relIdx+1, sexIdx>=0 ? sexIdx : tokens.length);
-    relativeKan = postRel.join(' ').trim();
-
-    // Sex
-    if (sexIdx>=0) {
-      sex = SEX_TOKENS.test(tokens[sexIdx]) ?
-        (tokens[sexIdx].startsWith('ಗಂ') ? 'ಗಂ (Male)' : 'ಹೆಂ (Female)') : '';
-    }
-
-    // Age + EPIC: tokens after sex
-    const postSex = tokens.slice(sexIdx>=0 ? sexIdx+1 : tokens.length);
-    for (const t of postSex) {
-      if (/^\d{1,3}$/.test(t) && parseInt(t)>0 && parseInt(t)<120 && !age) { age=t; }
-      else if (/^[A-Z]{3}\d{7}$/.test(t)) { epicNo=t; }
-    }
-
-    // Only add if we have a name
-    if (nameKan.length>1) {
-      entries.push({
-        serial, houseNo, partNo, pageNum,
-        nameKan, name:'',           // No English names in Kannada rolls
-        relativeKan, relative:'',
-        relationType,
-        sex, age, epicNo,
-        address: houseNo ? 'House No. '+houseNo : ''
-      });
-    }
-  }
-
-  return entries;
-}
-
-// ── PARSE OCR PAGE (for scanned image PDFs) ──────────────────
-// Karnataka electoral roll: pure Kannada tabular format.
-// Each row: <serial>  <houseNo>  <voterName>  <relation>  <relativeName>  <sex>  <age>
-// Relation words: ತಂದೆ (father) ಗಂಡ (husband) ತಾಯಿ (mother) ಇತರೆ (other) ಪತಿ (husband)
-// Sex tokens: ಗಂ (male) ಹೆಂ (female)
-//
-// OCR artefacts we handle:
-//   - "$" prefix on numbers  (e.g. "$65" → "65")
-//   - Trailing "." on Kannada words  (e.g. "ತಂದೆ." → "ತಂದೆ")
-//   - "|" instead of space
-//   - Relation word on a separate line from the voter name
-function parseOcrPage(text, pageNum, knownPart) {
-  const rawLines = text.split('\n').map(l => l.trim()).filter(Boolean);
-
-  // ── Part number ───────────────────────────────────────────
-  let partNo = knownPart || '';
-  if (!partNo) {
-    for (const ln of rawLines.slice(0, 30)) {
-      const pm = ln.match(/ಭಾಗದ\s*ಸಂಖ್ಯೆ\s*[:\-]?\s*(\d+)/i)
-              || ln.match(/ಭಾಗ\s*ಸಂಖ್ಯೆ\s*[:\-]?\s*(\d+)/i)
-              || ln.match(/ಭಾಗ\s*[:\-#]\s*(\d+)/i)
-              || ln.match(/part\s*[:\-#]?\s*(\d+)/i);
-      if (pm) { partNo = pm[1]; break; }
-    }
-  }
-
-  // ── Pre-clean lines ───────────────────────────────────────
-  // Remove OCR artifacts so token matching is reliable
-  function cleanLine(ln) {
-    return ln
-      .replace(/\|/g, ' ')                    // | → space
-      .replace(/^\$\s*/, '')                   // leading $
-      .replace(/\$(\d)/g, '$1')               // $65 → 65
-      .replace(/([\u0C80-\u0CFF])\.(\s|$)/g, '$1$2') // dot after Kannada char
-      .replace(/\s+/g, ' ')
-      .trim();
-  }
-
-  // Canonical form of a token for matching (strip dots, dashes, spaces)
-  function canon(t) { return t.replace(/[.\-\s]/g, ''); }
-
-  // Relation token exact match (canonical)
-  const REL_CANON = new Set(['ತಂದೆ','ಗಂಡ','ತಾಯಿ','ಇತರೆ','ಪತಿ','ಸ್ವಂತ','ಅಮ್ಮ']);
-  // Sex token exact match (canonical)
-  const SEX_CANON = new Set(['ಗಂ','ಹೆಂ']);
-
-  // Header patterns to skip
-  const HEADER_RE = /ಕ್ರಮ\s*ಸಂಖ್ಯೆ|ಮನೆ.*ಫ್ಲಾಟ್|ಮತದಾರರ\s*ಹೆಸರು|ಭಾಗದ\s*ಸಂಖ್ಯೆ|ರಾಜ್ಯದ\s*ಕೋಡ್|ವಿಧಾನ\s*ಸಭಾ|ಭಾರತ\s*ಚುನಾ|ಸಂಬಂಧ|ಮ\.ಗು\.ಚೀ|ವಿಭಾಗ\s*[:\-]|ಸಂಖ್ಯೆ.*ಮತ್ತು|ಮತದಾರರ\s*ಪಟ್ಟಿ/;
-
-  const entries = [];
-
-  // ── Method A: Single-line table row parser ─────────────────
-  // Each cleaned line is tokenised; we find the relation token as anchor.
-  // Pre-relation: [serial] [houseNo] [name words…]
-  // Post-relation: [relative name words…] [sex] [age] [optional epicNo]
-  for (const rawLn of rawLines) {
-    if (HEADER_RE.test(rawLn)) continue;
-
-    const ln = cleanLine(rawLn);
-    if (!ln || ln.length < 3) continue;
-
-    const tokens = ln.split(/\s+/);
+  for(const rawLn of rawLines){
+    if(SKIP.test(rawLn)) continue;
+    const ln=cleanLn(rawLn);
+    if(!ln||ln.length<3) continue;
+    const tokens=ln.split(/\s+/);
 
     // Find relation anchor
-    let relIdx = -1;
-    for (let t = 0; t < tokens.length; t++) {
-      if (REL_CANON.has(canon(tokens[t]))) { relIdx = t; break; }
-    }
-    if (relIdx < 0) continue;
+    let relIdx=-1;
+    for(let t=0;t<tokens.length;t++){if(REL.has(canon(tokens[t]))){relIdx=t;break;}}
+    if(relIdx<0) continue;
 
-    // Find sex anchor (after relation)
-    let sexIdx = -1;
-    for (let t = relIdx + 1; t < tokens.length; t++) {
-      if (SEX_CANON.has(canon(tokens[t]))) { sexIdx = t; break; }
-    }
+    // Find sex anchor
+    let sexIdx=-1;
+    for(let t=relIdx+1;t<tokens.length;t++){if(SEX.has(canon(tokens[t]))){sexIdx=t;break;}}
 
-    // Pre-relation: extract serial, houseNo, voter name
-    const preRel = tokens.slice(0, relIdx);
-    let serial = '', houseNo = '', preStart = 0;
+    // Pre-relation: [serial] [houseNo] [name…]
+    const pre=tokens.slice(0,relIdx);
+    let serial='',houseNo='',ps=0;
+    if(pre.length>0&&/^\d+$/.test(canon(pre[0]))){serial=canon(pre[0]);ps++;}
+    if(pre.length>ps&&/^\d+$/.test(canon(pre[ps]))){houseNo=canon(pre[ps]);ps++;}
+    const nameKan=pre.slice(ps).map(t=>canon(t)).filter(t=>/[\u0C80-\u0CFF]/.test(t)).join(' ').trim();
 
-    // Serial: first numeric token (allow $-prefix artefact)
-    if (preRel.length > 0) {
-      const c0 = canon(preRel[0]);
-      if (/^\d+$/.test(c0)) { serial = c0; preStart = 1; }
-    }
-    // House no: next numeric token
-    if (preRel.length > preStart) {
-      const c1 = canon(preRel[preStart]);
-      if (/^\d+$/.test(c1)) { houseNo = c1; preStart++; }
-    }
-    // Voter name: rest of pre-relation tokens, cleaned
-    const nameKan = preRel.slice(preStart)
-      .map(t => canon(t))          // strip trailing dots
-      .filter(t => /[\u0C80-\u0CFF]/.test(t))  // only Kannada content
-      .join(' ')
-      .trim();
+    const relationType=canon(tokens[relIdx]);
+    const relEnd=sexIdx>=0?sexIdx:tokens.length;
+    const relativeKan=tokens.slice(relIdx+1,relEnd).map(t=>canon(t)).filter(t=>/[\u0C80-\u0CFF]/.test(t)).join(' ').trim();
 
-    // Relation type (canonical)
-    const relationType = canon(tokens[relIdx]);
-
-    // Relative name: between relation and sex
-    const relEnd = sexIdx >= 0 ? sexIdx : tokens.length;
-    const relativeKan = tokens.slice(relIdx + 1, relEnd)
-      .map(t => canon(t))
-      .filter(t => /[\u0C80-\u0CFF]/.test(t))
-      .join(' ')
-      .trim();
-
-    // Sex
-    let sex = '';
-    if (sexIdx >= 0) {
-      sex = canon(tokens[sexIdx]) === 'ಗಂ' ? 'ಗಂ (Male)' : 'ಹೆಂ (Female)';
-    }
-
-    // Age + EPIC from post-sex tokens
-    let age = '', epicNo = '';
-    const postSex = sexIdx >= 0 ? tokens.slice(sexIdx + 1) : [];
-    for (const t of postSex) {
-      const ct = canon(t);
-      if (/^\d{1,3}$/.test(ct) && parseInt(ct) > 0 && parseInt(ct) < 120 && !age) {
-        age = ct;
-      } else if (/^[A-Z]{3}\d{7}$/.test(ct)) {
-        epicNo = ct;
+    let sex='',age='',epicNo='';
+    if(sexIdx>=0){
+      sex=canon(tokens[sexIdx])==='ಗಂ'?'ಗಂ (Male)':'ಹೆಂ (Female)';
+      for(const t of tokens.slice(sexIdx+1)){
+        const ct=canon(t);
+        if(/^\d{1,3}$/.test(ct)&&parseInt(ct)>0&&parseInt(ct)<120&&!age) age=ct;
+        else if(/^[A-Z]{3}\d{7}$/.test(ct)) epicNo=ct;
       }
     }
-
-    if (nameKan.length > 1) {
-      entries.push({
-        serial, houseNo, partNo, pageNum,
-        nameKan, name: '',
-        relativeKan, relative: '',
-        relationType, sex, age, epicNo,
-        address: houseNo ? 'House No. ' + houseNo : ''
-      });
-    }
+    if(nameKan.length>1) entries.push({serial,houseNo,partNo,pageNum,nameKan,name:'',relativeKan,relative:'',relationType,sex,age,epicNo,address:houseNo?'House No. '+houseNo:''});
   }
-
-  // ── Method B: fallback for mangled OCR ───────────────────
-  if (entries.length === 0) return parseOcrFallback(text, partNo, pageNum);
+  if(entries.length===0) return parseOcrFallback(text,partNo,pageNum);
   return entries;
 }
 
-// ── FALLBACK parser for OCR text that doesn't match table structure ──
-function parseOcrFallback(text, partNo, pageNum) {
+function parseOcrFallback(text,partNo,pageNum){
   const entries=[];
   const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
   let i=0;
@@ -940,28 +691,24 @@ function parseOcrFallback(text, partNo, pageNum) {
     const ln=lines[i];
     const ser=ln.match(/^(\d{1,4})[.)]\s*(.*)$/)||ln.match(/^(\d{1,4})\s*$/);
     if(ser&&parseInt(ser[1])>=1&&parseInt(ser[1])<=9999){
-      const serial=ser[1];
-      const block=ser[2]?[ser[2].trim()]:[];
+      const serial=ser[1];const block=ser[2]?[ser[2].trim()]:[];
       let j=i+1;
       while(j<lines.length&&j<i+10){
         const nx=lines[j];
         if(/^(\d{1,4})[.)]/.test(nx)||/^(\d{1,4})\s*$/.test(nx)) break;
         if(/ಚುನಾ|ಭಾರತ\s*ಸರ್ಕಾರ/i.test(nx)) break;
-        block.push(nx); j++;
+        block.push(nx);j++;
       }
-      // Quick parse
       let nameKan='',relativeKan='',sex='',age='';
       for(const b of block){
-        const am=b.match(/(\d{2,3})/);
-        const sm=b.match(/\b(ಗಂ|ಹೆಂ)\b/);
-        const rm=b.match(/\b(ತಂದೆ|ಗಂಡ|ತಾಯಿ|ಇತರೆ)\b/);
-        if(am&&parseInt(am[1])>0&&parseInt(am[1])<120&&!age)age=am[1];
-        if(sm)sex=sm[1].includes('ಗಂ')?'ಗಂ (Male)':'ಹೆಂ (Female)';
-        if(!nameKan&&/[\u0C80-\u0CFF]{3,}/.test(b)&&!rm&&!sm)nameKan=b;
-        else if(rm&&/[\u0C80-\u0CFF]{3,}/.test(b))relativeKan=b.replace(rm[0],'').trim();
+        const am=b.match(/(\d{2,3})/);const sm=b.match(/\b(ಗಂ|ಹೆಂ)\b/);const rm=b.match(/\b(ತಂದೆ|ಗಂಡ|ತಾಯಿ|ಇತರೆ)\b/);
+        if(am&&parseInt(am[1])>0&&parseInt(am[1])<120&&!age) age=am[1];
+        if(sm) sex=sm[1].includes('ಗಂ')?'ಗಂ (Male)':'ಹೆಂ (Female)';
+        if(!nameKan&&/[\u0C80-\u0CFF]{3,}/.test(b)&&!rm&&!sm) nameKan=b;
+        else if(rm&&/[\u0C80-\u0CFF]{3,}/.test(b)) relativeKan=b.replace(rm[0],'').trim();
       }
-      if(nameKan)entries.push({serial,partNo,pageNum,nameKan,name:'',relativeKan,relative:'',sex,age,address:'',houseNo:'',relationType:'',epicNo:''});
-      i=j; continue;
+      if(nameKan) entries.push({serial,partNo,pageNum,nameKan,name:'',relativeKan,relative:'',sex,age,address:'',houseNo:'',relationType:'',epicNo:''});
+      i=j;continue;
     }
     i++;
   }
@@ -969,113 +716,113 @@ function parseOcrFallback(text, partNo, pageNum) {
 }
 
 // ── SEARCH ───────────────────────────────────────────────────
-function doSearch() {
-  const name = document.getElementById('s-name').value.trim();
-  const rel  = document.getElementById('s-rel').value.trim();
-  if (!name && !rel) { alert('Enter at least a name to search.'); return; }
-  if (!G.entries.length) { alert('Please process a PDF first.'); return; }
+// For Kannada electoral rolls we use a two-layer strategy:
+//   Layer 1: Direct substring / includes check (handles partial word matches perfectly)
+//   Layer 2: Fuse.js fuzzy for typo tolerance / alternate spellings
+// This ensures ಪಾಚಾ ಬೇಗ್ is found even if OCR rendered it slightly differently.
+function doSearch(){
+  const name=document.getElementById('s-name').value.trim();
+  const rel=document.getElementById('s-rel').value.trim();
+  if(!name&&!rel){alert('Enter at least a name to search.');return;}
+  if(!G.entries.length){alert('Please process a PDF first.');return;}
 
-  // Determine if input is Kannada
-  const isKannada = str => /[\u0C80-\u0CFF]/.test(str);
+  const isKan=str=>/[\u0C80-\u0CFF]/.test(str);
+  const norm=str=>str.replace(/[\u200B-\u200D\uFEFF\u200C]/g,'').replace(/\s+/g,' ').trim();
 
-  // Since Karnataka rolls are Kannada-only, always prioritise Kannada fields.
-  // If the user types English we still search English name (fallback).
-  const kanQuery = isKannada(name||rel);
-  const fuse = new Fuse(G.entries, {
-    includeScore: true,
-    threshold: 0.45,
-    ignoreLocation: true,
-    useExtendedSearch: false,
-    keys: [
-      { name: 'nameKan',     weight: 0.55 },
-      { name: 'name',        weight: 0.15 },
-      { name: 'relativeKan', weight: 0.25 },
-      { name: 'relative',    weight: 0.05 },
-    ]
-  });
+  const qName=norm(name);
+  const qRel=norm(rel);
 
-  const seen = new Set();
-  let results = [];
+  // ── Layer 1: substring match ──────────────────────────────
+  // For each query word, check if entry's nameKan contains it
+  function subMatch(entry, q, field){
+    if(!q) return false;
+    const val=norm(entry[field]||'');
+    if(!val) return false;
+    // All words of query must appear in field
+    const words=q.split(/\s+/).filter(Boolean);
+    return words.every(w=>val.includes(w));
+  }
 
-  function add(more) {
-    for (const r of more) {
-      const k=`${r.item.pageNum}-${r.item.serial}`;
-      if (!seen.has(k)) { seen.add(k); results.push(r); }
+  const subResults=[];
+  const seenSub=new Set();
+  for(const e of G.entries){
+    const nameHit = !qName || subMatch(e,qName,'nameKan') || subMatch(e,qName,'name');
+    const relHit  = !qRel  || subMatch(e,qRel,'relativeKan') || subMatch(e,qRel,'relative');
+    if(nameHit&&relHit){
+      const k=`${e.pageNum}-${e.serial}`;
+      if(!seenSub.has(k)){seenSub.add(k);subResults.push({item:e,score:0.0,exact:true});}
     }
   }
 
-  // Primary search with both fields
-  if (name && rel) {
-    add(fuse.search({ $and:[
-      { $or: isKannada(name)
-          ? [{nameKan:name},{name}]
-          : [{name},{nameKan:name}] },
-      { $or: isKannada(rel)
-          ? [{relativeKan:rel},{relative:rel}]
-          : [{relative:rel},{relativeKan:rel}] }
+  // ── Layer 2: Fuse.js fuzzy ────────────────────────────────
+  const fuse=new Fuse(G.entries,{
+    includeScore:true,
+    threshold:0.55,       // more lenient to catch OCR variations
+    ignoreLocation:true,
+    useExtendedSearch:false,
+    keys:[
+      {name:'nameKan',    weight: isKan(qName)?0.55:0.20},
+      {name:'name',       weight: isKan(qName)?0.15:0.50},
+      {name:'relativeKan',weight: isKan(qRel||qName)?0.25:0.10},
+      {name:'relative',   weight: isKan(qRel||qName)?0.05:0.20},
+    ]
+  });
+
+  const seen=new Set(seenSub);
+  const fuseResults=[];
+  function addFuse(more){
+    for(const r of more){
+      const k=`${r.item.pageNum}-${r.item.serial}`;
+      if(!seen.has(k)){seen.add(k);fuseResults.push(r);}
+    }
+  }
+  if(qName&&qRel){
+    addFuse(fuse.search({$and:[
+      {$or:isKan(qName)?[{nameKan:qName}]:[{name:qName},{nameKan:qName}]},
+      {$or:isKan(qRel)?[{relativeKan:qRel}]:[{relative:qRel},{relativeKan:qRel}]}
     ]}));
   }
+  if(qName) addFuse(isKan(qName)?fuse.search({nameKan:qName}):fuse.search({name:qName}));
+  if(qRel)  addFuse(isKan(qRel) ?fuse.search({relativeKan:qRel}):fuse.search({relative:qRel}));
 
-  // Individual field searches to catch partial matches
-  if (name) {
-    add(isKannada(name)
-      ? fuse.search({nameKan:name})
-      : fuse.search({name}));
-    add(isKannada(name)
-      ? fuse.search({name})
-      : fuse.search({nameKan:name}));
-  }
-  if (rel) {
-    add(isKannada(rel)
-      ? fuse.search({relativeKan:rel})
-      : fuse.search({relative:rel}));
-  }
+  fuseResults.sort((a,b)=>(a.score||1)-(b.score||1));
 
-  results.sort((a,b)=>(a.score||1)-(b.score||1));
-  showResults(results.slice(0,5), name||rel);
+  // Combine: exact substring matches first, then fuzzy
+  const combined=[...subResults,...fuseResults.slice(0,5)].slice(0,8);
+  showResults(combined,qName||qRel);
 }
 
-function showResults(list, query) {
+function showResults(list,query){
   const wrap=document.getElementById('roll-out');
   const cards=document.getElementById('roll-cards');
   wrap.style.display='block';
-
-  if (!list.length) {
-    cards.innerHTML=`<div class="empty"><div class="e-ico">🔍</div><p>No matches found for "<b>${query}</b>".<br>Try a different spelling or check the Kannada script.</p></div>`;
-    wrap.scrollIntoView({behavior:'smooth',block:'start'});
-    return;
+  if(!list.length){
+    cards.innerHTML=`<div class="empty"><div class="e-ico">🔍</div><p>No matches found for "<b>${query}</b>".<br>Try different spelling or check Kannada script.</p></div>`;
+    wrap.scrollIntoView({behavior:'smooth',block:'start'});return;
   }
-
-  cards.innerHTML = list.map((r,idx) => {
+  const relMap={'ತಂದೆ':'Father','ಗಂಡ':'Husband','ತಾಯಿ':'Mother','ಪತಿ':'Husband','ಇತರೆ':'Other','ಸ್ವಂತ':'Self','ಮಗ':'Son','ಮಗಳು':'Daughter'};
+  cards.innerHTML=list.map((r,idx)=>{
     const e=r.item;
-    const pct=Math.max(0,Math.round((1-(r.score||0))*100));
+    const isExact=r.exact===true;
+    const pct=isExact?100:Math.max(0,Math.round((1-(r.score||0))*100));
     const bc=pct>=75?'hi':pct>=50?'mid':'lo';
-
-    // Primary name: Kannada preferred, English fallback
-    const nameMain = e.nameKan || e.name || '—';
-    // Only show English alt if both exist (Karnataka rolls are Kannada-only)
-    const nameAlt  = (e.nameKan && e.name) ? e.name : '';
-
-    // Relative name
-    const relMain  = e.relativeKan || e.relative || '';
-    const relAlt   = (e.relativeKan && e.relative) ? e.relative : '';
-    // Translate relation type for display
-    const relTypeMap = {'ತಂದೆ':'Father','ಗಂಡ':'Husband','ತಾಯಿ':'Mother','ಪತಿ':'Husband','ಇತರೆ':'Other','ಸ್ವಂತ':'Self'};
-    const relTypeEng = relTypeMap[e.relationType] || e.relationType || '';
-    const relLabel = relTypeEng ? relTypeEng+': ' : '';
-
+    const nm=e.nameKan||e.name||'—';
+    const nmAlt=(e.nameKan&&e.name)?e.name:'';
+    const rel=e.relativeKan||e.relative||'';
+    const relAlt=(e.relativeKan&&e.relative)?e.relative:'';
+    const relLbl=(relMap[e.relationType]||e.relationType||'');
     return `
       <div class="result-item${idx===0?' top':''}">
         ${idx===0?'<div class="best-pin">Best Match</div>':''}
         <div class="result-top-row">
           <div style="min-width:0;flex:1">
-            <div class="result-name">${nameMain}</div>
-            ${nameAlt?`<div class="result-sub">${nameAlt}</div>`:''}
-            ${relMain?`<div class="result-sub" style="margin-top:4px">${relLabel}<b>${relMain}</b>${relAlt?' · '+relAlt:''}</div>`:''}
+            <div class="result-name">${nm}</div>
+            ${nmAlt?`<div class="result-rel" style="margin-top:3px">${nmAlt}</div>`:''}
+            ${rel?`<div class="result-rel" style="margin-top:6px">${relLbl?relLbl+': ':''}<b>${rel}</b>${relAlt?' · '+relAlt:''}</div>`:''}
           </div>
-          <span class="badge ${bc}" style="flex-shrink:0;align-self:flex-start">${pct}%</span>
+          <span class="badge ${bc}">${isExact?'Exact':pct+'%'}</span>
         </div>
-        <div class="result-tags" style="margin-top:10px">
+        <div class="result-tags">
           ${e.serial?`<div class="tag hl">ಕ್ರಮ ಸಂ. <b>${e.serial}</b></div>`:''}
           ${e.houseNo?`<div class="tag">ಮನೆ <b>${e.houseNo}</b></div>`:''}
           ${e.partNo?`<div class="tag hl">ಭಾಗ <b>${e.partNo}</b></div>`:''}
@@ -1086,28 +833,18 @@ function showResults(list, query) {
         </div>
       </div>`;
   }).join('');
-
   wrap.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 // ── INIT ─────────────────────────────────────────────────────
-wireFile('fi-front','front-btn','front-lbl','front-thumb', file => {
-  G.frontFile=file;
-  document.getElementById('id-btn').disabled=false;
+wireFile('fi-front','front-btn','front-lbl','front-thumb',file=>{G.frontFile=file;document.getElementById('id-btn').disabled=false;});
+wireFile('fi-back','back-btn','back-lbl','back-thumb',file=>{G.backFile=file;});
+wireFile('fi-pdf','pdf-btn','pdf-lbl',null,file=>{
+  if(file.type!=='application/pdf'){alert('Please upload a PDF file.');return;}
+  G.pdfFile=file;document.getElementById('pdf-btn-go').disabled=false;
 });
-
-wireFile('fi-back','back-btn','back-lbl','back-thumb', file => {
-  G.backFile=file;
-});
-
-wireFile('fi-pdf','pdf-btn','pdf-lbl',null, file => {
-  if (file.type!=='application/pdf') { alert('Please upload a PDF file.'); return; }
-  G.pdfFile=file;
-  document.getElementById('pdf-btn-go').disabled=false;
-});
-
-document.getElementById('s-name').addEventListener('keydown', e=>{ if(e.key==='Enter') doSearch(); });
-document.getElementById('s-rel').addEventListener('keydown',  e=>{ if(e.key==='Enter') doSearch(); });
+document.getElementById('s-name').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
+document.getElementById('s-rel').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
 </script>
 </body>
 </html>
