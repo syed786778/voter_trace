@@ -375,13 +375,13 @@ function extractId(fe, fk, be, bk){
 
   // English fields — label-based first, positional fallback second
   f.electorName = matchEngField(fe, [
-    /elector[''s]*\s*name\s*[:\-]?\s*/i,   // "Elector's Name :" or "Elector's Name"
+    /elector[''s]*\s*name\s*[:\-]?\s*/i,
     /voters?\s*name\s*[:\-]?\s*/i,
     /name\s*of\s*elector\s*[:\-]?\s*/i,
     /electors?\s+name\s*[:\-]?\s*/i,
     /elector\s+s\s+name\s*[:\-]?\s*/i,
-    /\d+\s+name\s*[:\-]\s*/i,             // "81001075 Name : Syed Abdul Naseer"
-    /(?<!father[''s]* )(?<!husband[''s]* )\bname\s*[:\-]\s*/i,  // bare "Name :" fallback
+    /\d+\s+name\s*[:\-]\s*/i,
+    /^name\s*[:\-]\s*/i,
   ]);
   // Positional fallback: if label-based failed, scan all lines for a name-like string
   // positioned BEFORE the sex/epic fields. On voter IDs the name is always above those.
@@ -463,38 +463,64 @@ function scanForName(text, epicNo, alreadyFound){
   return results[0] ? clean(results[0]) : '';
 }
 
-// Label-based English field matcher — normalises apostrophes, checks same/next/next+1 lines.
+// Label-based English field matcher.
+// Normalises apostrophes/quotes, then for each label pattern:
+//   1. Checks if the pattern matches anywhere in the line
+//   2. Strips the matched label prefix → value on SAME line
+//   3. If same-line value empty, checks next 3 lines for a name
+//   4. Also tries joining adjacent lines (label split by OCR line break)
 function matchEngField(text, labelPatterns){
+  // Normalise smart quotes → straight so patterns work uniformly
   const norm = s => s
     .replace(/[\u2018\u2019\u201A\u201B\u2032\u0060]/g,"'")
     .replace(/[\u201C\u201D\u201E]/g,'"');
-  const raw=norm(text);
-  const lines=raw.split('\n').map(l=>l.trim()).filter(Boolean);
 
+  const raw  = norm(text);
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+
+  // A valid English proper name: 1–5 words, all letters (any case).
+  // We strip leading punctuation/digits/pipes before testing.
   function extractName(s){
-    s=s.trim().replace(/^[:\s\-|]+/,'').replace(/[,:;.]+$/,'').trim();
-    // Allow: 2-4 words, each starting with capital (or all-upper word)
-    if(/^[A-Z][A-Za-z]+(?:\s+[A-Za-z]+){1,4}$/.test(s) && s.length>=3) return s;
+    if(!s) return '';
+    s = s.trim()
+         .replace(/^[\d\s|.:,;\-]+/, '')   // strip leading noise (handles "81001075 Name :" residue)
+         .replace(/[,:;.!?]+$/, '')           // strip trailing punctuation
+         .trim();
+    // 1–5 space-separated words, each purely alphabetic (allows all-caps)
+    if(s.length >= 3 && /^[A-Za-z]+(?:\s+[A-Za-z]+){0,4}$/.test(s)){
+      // Reject single common non-name words
+      const lower = s.toLowerCase();
+      if(/^(male|female|india|photo|card|date|age|sex|election|commission)$/.test(lower)) return '';
+      // At least one word must start with a capital letter (excludes all-lowercase OCR noise)
+      if(/[A-Z]/.test(s)) return s;
+    }
     return '';
   }
 
   for(const re of labelPatterns){
-    for(let i=0;i<lines.length;i++){
+    for(let i = 0; i < lines.length; i++){
       if(!re.test(lines[i])) continue;
-      // Same line after label
-      const after=lines[i].replace(re,'').trim();
-      const n1=extractName(after); if(n1) return clean(n1);
-      // Next 3 lines
-      for(let d=1;d<=3;d++){
-        if(i+d<lines.length){const n=extractName(lines[i+d]); if(n) return clean(n);}
+
+      // Value on same line — strip the label prefix
+      const after = lines[i].replace(re, '').trim();
+      const n1 = extractName(after);
+      if(n1) return clean(n1);
+
+      // Value on next 1-3 lines
+      for(let d = 1; d <= 3; d++){
+        if(i + d < lines.length){
+          const n = extractName(lines[i + d]);
+          if(n) return clean(n);
+        }
       }
     }
-    // Join adjacent line pairs (label split across OCR lines)
-    for(let i=0;i<lines.length-1;i++){
-      const joined=lines[i]+' '+lines[i+1];
+    // Also try joining adjacent line pairs (label wraps across OCR line)
+    for(let i = 0; i < lines.length - 1; i++){
+      const joined = lines[i] + ' ' + lines[i+1];
       if(!re.test(joined)) continue;
-      const after=joined.replace(re,'').trim();
-      const n=extractName(after); if(n) return clean(n);
+      const after = joined.replace(re, '').trim();
+      const n = extractName(after);
+      if(n) return clean(n);
     }
   }
   return '';
