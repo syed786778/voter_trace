@@ -3,145 +3,56 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VoterTrace</title>
+<title>VoterTrace - Optimized OCR</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+/* CSS Reset & Base */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
 body{font-family:'Inter',system-ui,sans-serif;background:#f0f4f8;color:#0f172a;min-height:100vh;font-size:15px;line-height:1.55}
 
-/* ── NAV ── */
+/* Nav */
 .topbar{position:sticky;top:0;z-index:50;background:#1e293b;display:flex;align-items:center;padding:0 24px;height:56px;gap:8px;box-shadow:0 1px 8px rgba(0,0,0,.25)}
 .topbar-logo{font-weight:800;font-size:17px;color:#fff;margin-right:16px;letter-spacing:-.3px}
-.tab-btn{padding:7px 18px;border-radius:8px;border:none;background:none;font-size:13px;font-weight:600;color:#94a3b8;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.tab-btn{padding:7px 18px;border-radius:8px;border:none;background:none;font-size:13px;font-weight:600;color:#94a3b8;cursor:pointer;transition:all .15s}
 .tab-btn:hover{background:rgba(255,255,255,.1);color:#fff}
 .tab-btn.on{background:#2563eb;color:#fff}
 
-/* ── LAYOUT ── */
+/* Layout */
 .page{display:none;max-width:800px;margin:0 auto;padding:32px 20px 100px}
 .page.on{display:block}
-@media(max-width:600px){.page{padding:20px 12px 80px}}
 .page-title{font-size:24px;font-weight:800;margin-bottom:6px;letter-spacing:-.3px}
 .page-sub{font-size:14px;color:#64748b;margin-bottom:28px}
 
-/* ── CARD ── */
+/* Card */
 .box{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
 .box-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8;margin-bottom:18px}
 
-/* ── UPLOAD AREAS ── */
-.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:4px}
+/* Upload */
+.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:520px){.upload-grid{grid-template-columns:1fr}}
-.slot-label{font-size:12px;font-weight:700;letter-spacing:.4px;margin-bottom:8px;display:block}
-.slot-label.f{color:#2563eb}.slot-label.b{color:#7c3aed}
+.slot-label{font-size:12px;font-weight:700;margin-bottom:8px;display:block}
+.slot-label.f{color:#2563eb}
+.upload-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;width:100%;min-height:140px;border:2px dashed #cbd5e1;border-radius:12px;background:#f8fafc;cursor:pointer;transition:all .18s}
+.upload-btn:hover{border-color:#2563eb;background:#eff6ff}
+.upload-btn.selected{border-color:#16a34a;background:#f0fdf4;color:#15803d}
+.thumb{width:100%;max-height:150px;object-fit:contain;border-radius:8px;margin-top:10px;display:none;background: #eee}
 
-.upload-btn{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:8px;width:100%;min-height:140px;padding:24px 16px;
-  border:2px dashed #cbd5e1;border-radius:12px;
-  background:#f8fafc;cursor:pointer;
-  font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#64748b;
-  transition:all .18s;text-align:center;
-}
-.upload-btn:hover{border-color:#2563eb;background:#eff6ff;color:#2563eb}
-.upload-btn.selected{border-color:#16a34a;border-style:solid;background:#f0fdf4;color:#15803d}
-.upload-btn .ico{font-size:32px;line-height:1}
-.upload-btn .sub{font-size:11px;color:#94a3b8;margin-top:2px}
-.upload-btn.selected .sub{color:#86efac}
-
-.upload-single{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:10px;width:100%;min-height:120px;padding:28px 20px;
-  border:2px dashed #cbd5e1;border-radius:12px;
-  background:#f8fafc;cursor:pointer;
-  font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#64748b;
-  transition:all .18s;text-align:center;
-}
-.upload-single:hover{border-color:#2563eb;background:#eff6ff;color:#2563eb}
-.upload-single.selected{border-color:#16a34a;border-style:solid;background:#f0fdf4;color:#15803d}
-.upload-single .ico{font-size:36px;line-height:1}
-
-.thumb{width:100%;max-height:120px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0;margin-top:10px;display:none}
-
-/* ── BUTTONS ── */
-.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px 20px;border-radius:10px;border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:14px;letter-spacing:.1px}
-.btn-blue{background:#2563eb;color:#fff}.btn-blue:hover{background:#1d4ed8}.btn-blue:disabled{background:#bfdbfe;color:#93c5fd;cursor:not-allowed}
-
-/* ── PROGRESS ── */
-.prog-wrap{margin-top:12px;display:none}.prog-wrap.on{display:block}
-.prog-track{height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;margin-bottom:6px}
-.prog-bar{height:100%;background:linear-gradient(90deg,#2563eb,#3b82f6);border-radius:3px;width:0;transition:width .3s}
-.prog-txt{font-size:12px;color:#64748b;font-weight:500}
-.spin{width:15px;height:15px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:rot .55s linear infinite;flex-shrink:0}
-@keyframes rot{to{transform:rotate(360deg)}}
-
-/* ── VOTER ID FIELDS ── */
+/* Fields */
 .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:480px){.field-grid{grid-template-columns:1fr}}
-.field-item{background:#f8fafc;border-radius:10px;padding:13px 15px;position:relative}
-.field-item.w2{grid-column:1/-1}
-.field-k{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
-.field-v{font-size:15px;font-weight:600;color:#0f172a;line-height:1.4;padding-right:52px}
-.field-v.nil{font-size:13px;color:#cbd5e1;font-style:italic;font-weight:400}
-.copy-btn{
-  position:absolute;top:10px;right:10px;
-  background:none;border:1px solid #e2e8f0;border-radius:5px;
-  padding:3px 9px;font-size:10px;font-weight:700;color:#94a3b8;
-  cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;opacity:0;
-}
-.field-item:hover .copy-btn{opacity:1}
-.copy-btn:hover{background:#eff6ff;border-color:#bfdbfe;color:#2563eb}
-.copy-btn.copied{color:#16a34a;border-color:#bbf7d0;background:#f0fdf4}
+.field-item{background:#f8fafc;border-radius:10px;padding:13px 15px;position:relative;border: 1px solid #f1f5f9}
+.field-k{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:4px}
+.field-v{font-size:15px;font-weight:600;color:#0f172a}
+.copy-btn{position:absolute;top:10px;right:10px;background:white;border:1px solid #e2e8f0;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;opacity:0.6}
+.copy-btn:hover{opacity:1; background:#2563eb; color:white}
 
-/* ── SEARCH ── */
-.input-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-@media(max-width:520px){.input-row{grid-template-columns:1fr}}
-.input-group label{display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:5px}
-.input-group input{
-  width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:9px;
-  font-family:'Inter',sans-serif;font-size:14px;color:#0f172a;background:#fff;
-  outline:none;transition:border-color .15s;
-}
-.input-group input:focus{border-color:#2563eb;box-shadow:0 0 0 3px #dbeafe}
-.input-group input:disabled{background:#f8fafc;color:#cbd5e1;cursor:not-allowed}
+/* Progress */
+.prog-wrap{margin-top:15px;display:none}.prog-wrap.on{display:block}
+.prog-track{height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden}
+.prog-bar{height:100%;background:#2563eb;width:0%;transition:width .3s}
 
-/* ── RESULTS ── */
-.result-item{
-  background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;
-  padding:18px 20px;margin-bottom:12px;position:relative;
-  transition:border-color .15s,box-shadow .15s;
-  box-shadow:0 1px 3px rgba(0,0,0,.04);
-}
-.result-item:hover{border-color:#bfdbfe;box-shadow:0 2px 8px rgba(37,99,235,.08)}
-.result-item.top{border-color:#2563eb;box-shadow:0 2px 12px rgba(37,99,235,.12)}
-.result-top-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.result-name{font-size:19px;font-weight:800;color:#0f172a;line-height:1.3}
-.result-rel{font-size:13px;color:#475569;margin-top:5px;line-height:1.5}
-.result-rel b{color:#0f172a}
-.badge{display:inline-flex;align-items:center;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px}
-.badge.hi{background:#dcfce7;color:#15803d}.badge.mid{background:#fef9c3;color:#a16207}.badge.lo{background:#fee2e2;color:#b91c1c}
-.result-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
-.tag{font-size:12px;padding:4px 11px;border-radius:6px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;font-weight:500}
-.tag b{color:#0f172a;font-weight:700}
-.tag.hl{background:#eff6ff;border-color:#bfdbfe;color:#2563eb}
-.tag.hl b{color:#1d4ed8}
-.best-pin{
-  position:absolute;top:-1px;right:16px;
-  background:#2563eb;color:#fff;
-  font-size:10px;font-weight:800;padding:3px 10px;
-  border-radius:0 0 8px 8px;letter-spacing:.4px;
-}
-
-/* ── MISC ── */
-.banner-ok{padding:12px 16px;border-radius:10px;font-size:13px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;font-weight:600}
-.notice{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;color:#94a3b8;margin-bottom:14px}
-.empty{text-align:center;padding:48px 20px;color:#94a3b8}
-.empty .e-ico{font-size:36px;margin-bottom:12px}
-.empty p{font-size:14px;line-height:1.7}
-details{margin-top:14px}
-details summary{font-size:12px;color:#94a3b8;cursor:pointer;user-select:none}
-details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;font-size:10px;color:#64748b;white-space:pre-wrap;word-break:break-word;max-height:180px;overflow-y:auto;font-family:monospace}
-::-webkit-scrollbar{width:5px}
-::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:3px}
+.btn{width:100%;padding:14px;border-radius:10px;border:none;background:#2563eb;color:#fff;font-weight:700;cursor:pointer;margin-top:15px}
+.btn:disabled{background:#cbd5e1;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -149,908 +60,236 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
 <div class="topbar">
   <span class="topbar-logo">VoterTrace</span>
   <button class="tab-btn on" id="t1" onclick="go('voter-id','t1')">Voter ID Reader</button>
-  <button class="tab-btn"    id="t2" onclick="go('roll-search','t2')">Electoral Roll Search</button>
 </div>
 
-<!-- PAGE 1: VOTER ID -->
 <div class="page on" id="voter-id">
   <p class="page-title">Voter ID Reader</p>
-  <p class="page-sub">Upload your voter ID card images to extract all details automatically.</p>
+  <p class="page-sub">Upload your card to extract details. (Optimized for Name Detection)</p>
 
   <div class="box">
     <div class="box-head">Upload Card Images</div>
     <div class="upload-grid">
       <div>
-        <span class="slot-label f">▲ Front side (required)</span>
+        <span class="slot-label f">▲ Front side</span>
         <button class="upload-btn" id="front-btn" onclick="document.getElementById('fi-front').click()">
-          <span class="ico">🪪</span>
-          <span id="front-lbl">Tap to upload front</span>
-          <span class="sub">JPG, PNG, HEIC</span>
+          <span style="font-size:32px">🪪</span>
+          <span id="front-lbl">Upload Front</span>
         </button>
         <input type="file" id="fi-front" accept="image/*" style="display:none">
-        <img id="front-thumb" class="thumb" alt="">
+        <img id="front-thumb" class="thumb">
       </div>
       <div>
-        <span class="slot-label b">▼ Back side (optional)</span>
+        <span class="slot-label" style="color:#7c3aed">▼ Back side (Optional)</span>
         <button class="upload-btn" id="back-btn" onclick="document.getElementById('fi-back').click()">
-          <span class="ico">🏠</span>
-          <span id="back-lbl">Tap to upload back</span>
-          <span class="sub">For address details</span>
+          <span style="font-size:32px">🏠</span>
+          <span id="back-lbl">Upload Back</span>
         </button>
         <input type="file" id="fi-back" accept="image/*" style="display:none">
-        <img id="back-thumb" class="thumb" alt="">
+        <img id="back-thumb" class="thumb">
       </div>
     </div>
+
     <div class="prog-wrap" id="id-prog">
       <div class="prog-track"><div class="prog-bar" id="id-bar"></div></div>
-      <div class="prog-txt" id="id-txt">Scanning…</div>
+      <p id="id-txt" style="font-size:12px; margin-top:5px; color:#64748b">Initializing...</p>
     </div>
-    <button class="btn btn-blue" id="id-btn" disabled onclick="scanId()">Scan Voter ID</button>
+
+    <button class="btn" id="id-btn" onclick="scanId()">Scan Voter ID</button>
   </div>
 
   <div id="id-out" style="display:none">
     <div class="box">
       <div class="box-head">Extracted Details</div>
       <div class="field-grid" id="id-fields"></div>
-      <details>
-        <summary>View raw scanned text</summary>
-        <pre id="id-raw"></pre>
+      <details style="margin-top:15px">
+        <summary style="font-size:12px; color:#94a3b8; cursor:pointer">View Raw Text</summary>
+        <pre id="id-raw" style="font-size:10px; background:#f8fafc; padding:10px; margin-top:5px; white-space:pre-wrap"></pre>
       </details>
     </div>
   </div>
 </div>
 
-<!-- PAGE 2: ELECTORAL ROLL SEARCH -->
-<div class="page" id="roll-search">
-  <p class="page-title">Electoral Roll Search</p>
-  <p class="page-sub">Upload the electoral roll PDF, then search by name in Kannada to find voter records.</p>
-
-  <div class="box">
-    <div class="box-head">Step 1 — Upload Electoral Roll PDF</div>
-    <button class="upload-single" id="pdf-btn" onclick="document.getElementById('fi-pdf').click()">
-      <span class="ico">📄</span>
-      <span id="pdf-lbl">Tap to upload electoral roll PDF</span>
-    </button>
-    <input type="file" id="fi-pdf" accept="application/pdf" style="display:none">
-    <div class="prog-wrap" id="pdf-prog">
-      <div class="prog-track"><div class="prog-bar" id="pdf-bar"></div></div>
-      <div class="prog-txt" id="pdf-txt">Processing…</div>
-    </div>
-    <button class="btn btn-blue" id="pdf-btn-go" disabled onclick="scanPdf()">Process PDF</button>
-  </div>
-
-  <div class="box" id="search-box">
-    <div class="box-head">Step 2 — Search for a Voter</div>
-    <div class="notice" id="pdf-not-ready">
-      <span style="font-size:18px">⬆️</span>
-      <span>Upload and process the PDF above first, then search here.</span>
-    </div>
-    <div class="banner-ok" id="pdf-ready-banner" style="display:none;margin-bottom:16px"></div>
-    <div class="input-row">
-      <div class="input-group">
-        <label for="s-name">ಮತದಾರರ ಹೆಸರು (Voter Name)</label>
-        <input id="s-name" type="text" placeholder="ಕನ್ನಡದಲ್ಲಿ ಹೆಸರು ಬರೆಯಿರಿ…" disabled>
-      </div>
-      <div class="input-group">
-        <label for="s-rel">ತಂದೆ / ಗಂಡ ಹೆಸರು (Father / Husband)</label>
-        <input id="s-rel" type="text" placeholder="ಸಂಬಂಧಿಯ ಹೆಸರು (ಐಚ್ಛಿಕ)" disabled>
-      </div>
-    </div>
-    <button class="btn btn-blue" style="margin-top:0" id="search-btn" disabled onclick="doSearch()">Search</button>
-  </div>
-
-  <div id="roll-out" style="display:none">
-    <div id="roll-cards"></div>
-  </div>
-
-  <!-- Browse panel: lets user find entries even when OCR mangled the name -->
-  <div class="box" id="browse-box" style="display:none">
-    <div class="box-head">Browse Entries by Part / Page</div>
-    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
-      <div class="input-group" style="flex:1;min-width:140px">
-        <label for="br-part">Part No. (ಭಾಗ)</label>
-        <input id="br-part" type="number" min="1" placeholder="e.g. 214">
-      </div>
-      <div class="input-group" style="flex:1;min-width:140px">
-        <label for="br-serial">Serial No. (ಕ್ರಮ ಸಂ.)</label>
-        <input id="br-serial" type="number" min="1" placeholder="e.g. 685">
-      </div>
-      <button class="btn btn-blue" style="margin-top:0;width:auto;padding:11px 20px;flex-shrink:0" onclick="doBrowse()">Browse</button>
-    </div>
-    <div id="browse-cards" style="margin-top:14px"></div>
-  </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/7.0.0/fuse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js"></script>
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const G = { frontFile:null, backFile:null };
 
-const G = { frontFile:null, backFile:null, pdfFile:null, entries:[] };
-
-// ── NAV ──────────────────────────────────────────────────────
-function go(pageId, tabId) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
-  document.getElementById(pageId).classList.add('on');
-  document.getElementById(tabId).classList.add('on');
+// Navigation
+function go(p, t) {
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('on'));
+  document.getElementById(p).classList.add('on');
 }
 
-// ── FILE WIRING ───────────────────────────────────────────────
-function wireFile(inputId, btnId, lblId, thumbId, onFile) {
-  const inp=document.getElementById(inputId);
-  const btn=document.getElementById(btnId);
-  const lbl=document.getElementById(lblId);
-  const thumb=thumbId?document.getElementById(thumbId):null;
-  inp.addEventListener('change',function(){
-    const file=this.files&&this.files[0]; if(!file) return;
-    btn.classList.add('selected');
-    lbl.textContent=file.name.length>32?file.name.slice(0,30)+'…':file.name;
-    if(thumb&&file.type.startsWith('image/')){
-      const fr=new FileReader();
-      fr.onload=e=>{thumb.src=e.target.result;thumb.style.display='block';};
-      fr.readAsDataURL(file);
-    }
-    onFile(file);
-  });
-  btn.addEventListener('dragover',e=>{e.preventDefault();btn.style.borderColor='#2563eb';});
-  btn.addEventListener('dragleave',()=>{btn.style.borderColor='';});
-  btn.addEventListener('drop',e=>{
-    e.preventDefault();btn.style.borderColor='';
-    const file=e.dataTransfer.files&&e.dataTransfer.files[0]; if(!file) return;
-    try{const dt=new DataTransfer();dt.items.add(file);inp.files=dt.files;}catch(x){}
-    inp.dispatchEvent(new Event('change'));
-  });
-}
+// File Handlers
+document.getElementById('fi-front').onchange = e => handleFile(e, 'front');
+document.getElementById('fi-back').onchange = e => handleFile(e, 'back');
 
-// ── UTILS ────────────────────────────────────────────────────
-let _T=null;
-function getTess(){
-  if(_T) return _T;
-  _T=new Promise((res,rej)=>{
-    if(window.Tesseract){res(window.Tesseract);return;}
-    const s=document.createElement('script');
-    s.src='https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js';
-    s.onload=()=>res(window.Tesseract);s.onerror=rej;
-    document.head.appendChild(s);
-  });
-  return _T;
-}
-function setPb(barId,txtId,pct,msg){
-  const b=document.getElementById(barId),t=document.getElementById(txtId);
-  if(b) b.style.width=Math.min(100,Math.max(0,pct))+'%';
-  if(t&&msg!==undefined) t.textContent=msg;
-}
-function clean(s){return(s||'').replace(/\s+/g,' ').trim();}
-
-// ── VOTER ID SCAN ────────────────────────────────────────────
-async function scanId(){
-  if(!G.frontFile){alert('Please choose the front image first.');return;}
-  const btn=document.getElementById('id-btn');
-  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Scanning…';
-  document.getElementById('id-prog').classList.add('on');
-  try{
-    const T=await getTess();
-    setPb('id-bar','id-txt',5,'Reading front (English)…');
-    const w1=await T.createWorker(['eng','hin'],1,{logger:m=>{if(m.status==='recognizing text')setPb('id-bar','id-txt',5+m.progress*22,'Reading front (English)…');}});
-    const frontEng=(await w1.recognize(G.frontFile)).data.text;
-    await w1.terminate();
-
-    setPb('id-bar','id-txt',29,'Reading front (Kannada)…');
-    const w2=await T.createWorker(['kan','eng'],1,{logger:m=>{if(m.status==='recognizing text')setPb('id-bar','id-txt',29+m.progress*22,'Reading front (Kannada)…');}});
-    const frontKan=(await w2.recognize(G.frontFile)).data.text;
-    await w2.terminate();
-
-    let backEng='',backKan='';
-    if(G.backFile){
-      setPb('id-bar','id-txt',53,'Reading back (English)…');
-      const w3=await T.createWorker(['eng','hin'],1,{logger:m=>{if(m.status==='recognizing text')setPb('id-bar','id-txt',53+m.progress*18,'Reading back (English)…');}});
-      backEng=(await w3.recognize(G.backFile)).data.text;
-      await w3.terminate();
-      setPb('id-bar','id-txt',73,'Reading back (Kannada)…');
-      const w4=await T.createWorker(['kan','eng'],1,{logger:m=>{if(m.status==='recognizing text')setPb('id-bar','id-txt',73+m.progress*18,'Reading back (Kannada)…');}});
-      backKan=(await w4.recognize(G.backFile)).data.text;
-      await w4.terminate();
-    }
-    setPb('id-bar','id-txt',95,'Extracting details…');
-    const f=extractId(frontEng,frontKan,backEng,backKan);
-    renderIdFields(f,frontEng+'\n\n---KANNADA---\n\n'+frontKan+(backEng?'\n\n---BACK---\n\n'+backEng+'\n\n'+backKan:''));
-    setPb('id-bar','id-txt',100,'Done');
-  }catch(e){console.error(e);alert('Scan error: '+e.message);}
-  finally{btn.disabled=false;btn.innerHTML='Scan Voter ID';}
-}
-
-// ── EXTRACT VOTER ID FIELDS ──────────────────────────────────
-function extractId(fe, fk, be, bk){
-  be=be||''; bk=bk||''; fk=fk||'';
-  const f={electorName:'',electorNameKan:'',fatherName:'',fatherNameKan:'',sex:'',epicNo:'',addr:'',part:'',serial:''};
-
-  // EPIC No — 3 letters + 7 digits, OCR may swap O↔0
-  const epicAll=fe+' '+be;
-  const epicM=epicAll.match(/\b([A-Z]{3}[0-9]{7})\b/)
-           ||epicAll.match(/IDENTITY\s*CARD\s+([A-Z]{3}[A-Z0-9]{6,8})/i)
-           ||epicAll.match(/\b([A-Z]{3}[O][0-9]{6,7})\b/i);
-  if(epicM) f.epicNo=epicM[1].toUpperCase().replace(/([A-Z]{3})O/,'$10');
-
-  // English fields — label-based first, positional fallback second
-  f.electorName = matchEngField(fe, [
-    /elector[''s]*\s*name\s*[:\-]\s*/i,
-    /voters?\s*name\s*[:\-]\s*/i,
-    /name\s*of\s*elector\s*[:\-]\s*/i,
-    /electors?\s+name\s*[:\-]\s*/i,
-    /elector\s+s\s+name\s*[:\-]\s*/i,
-  ]);
-  // Positional fallback: if label-based failed, scan all lines for a name-like string
-  // positioned BEFORE the sex/epic fields. On voter IDs the name is always above those.
-  if(!f.electorName) f.electorName = scanForName(fe, f.epicNo);
-
-  f.fatherName = matchEngField(fe, [
-    /father[''s]*\s*name\s*[:\-]\s*/i,
-    /husband[''s]*\s*name\s*[:\-]\s*/i,
-    /father\s+s\s+name\s*[:\-]\s*/i,
-    /fathers?\s+name\s*[:\-]\s*/i,
-    /relation\s*[:\-]\s*/i,
-  ]);
-  if(!f.fatherName) f.fatherName = scanForName(fe, f.epicNo, f.electorName);
-
-  // Sex
-  const sexM=fe.match(/\bsex\s*[:\-]\s*(male|female|m\b|f\b)/i);
-  if(sexM){const s=sexM[1].toLowerCase();f.sex=(s==='m'||s==='male')?'Male':'Female';}
-
-  // Kannada fields — label-anchored, noise-filtered
-  f.electorNameKan = kanField(fk, [
-    /ಮತದಾರರ\s*ಹೆಸರು\s*[:\-]?/,
-    /ಮತದಾರ\s*ಹೆಸರ\s*[:\-]?/,
-  ]);
-  f.fatherNameKan = kanField(fk, [
-    /ತಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,
-    /ತಂದೆ\s*ಹೆಸರ\s*[:\-]?/,
-    /ಪತಿಯ\s*ಹೆಸರು\s*[:\-]?/,
-    /ಕಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,
-  ]);
-
-  // Address + Part/Serial — BACK SIDE ONLY
-  if(be && be.trim().length > 20){
-    const addrM=be.match(/address\s*[:\-]\s*([^\n]{5,100})/i);
-    if(addrM) f.addr=clean(addrM[1]);
-    const talukM=be.match(/taluk\s*[:\-]\s*([A-Za-z ()\-]{3,50})/i);
-    const distM=be.match(/district\s*[:\-]\s*([A-Za-z ]{3,40})/i);
-    const pts=[];
-    if(f.addr) pts.push(f.addr);
-    if(talukM) pts.push(clean(talukM[1])+' Taluk');
-    if(distM) pts.push(clean(distM[1])+' District');
-    if(pts.length) f.addr=pts.join(', ');
-    const partLabelM=be.match(/part\s*no\.?\s*[:\-]\s*(\d{1,4})/i);
-    const serialLabelM=be.match(/serial\s*no\.?\s*[:\-]\s*(\d{1,4})/i)||be.match(/sl\.?\s*no\.?\s*[:\-]\s*(\d{1,4})/i);
-    if(partLabelM) f.part=partLabelM[1];
-    if(serialLabelM) f.serial=serialLabelM[1];
-    if(!f.part && !f.serial){
-      const tail=be.slice(-60);
-      const slM=tail.match(/\b(\d{1,4})\s*\/\s*(\d{1,4})\s*$/);
-      if(slM){f.serial=slM[1];f.part=slM[2];}
-    }
+function handleFile(e, type) {
+  const file = e.target.files[0];
+  if(!file) return;
+  G[type+'File'] = file;
+  document.getElementById(type+'-btn').classList.add('selected');
+  document.getElementById(type+'-lbl').textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = document.getElementById(type+'-thumb');
+    img.src = ev.target.result;
+    img.style.display = 'block';
   }
+  reader.readAsDataURL(file);
+}
+
+async function scanId() {
+  if(!G.frontFile) return alert("Upload front image!");
+  
+  const btn = document.getElementById('id-btn');
+  const prog = document.getElementById('id-prog');
+  btn.disabled = true;
+  prog.classList.add('on');
+
+  try {
+    const worker = await Tesseract.createWorker(['eng', 'kan']);
+    
+    setPb(20, "Reading Front Side...");
+    const { data: { text: frontText } } = await worker.recognize(G.frontFile);
+    
+    let backText = "";
+    if(G.backFile) {
+      setPb(60, "Reading Back Side...");
+      const { data: { text: bTxt } } = await worker.recognize(G.backFile);
+      backText = bTxt;
+    }
+
+    await worker.terminate();
+    
+    setPb(90, "Processing Details...");
+    const result = extractId(frontText, backText);
+    renderResults(result, frontText + "\n" + backText);
+    setPb(100, "Done!");
+
+  } catch (err) {
+    console.error(err);
+    alert("Scan failed. Try a clearer photo.");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function setPb(pct, msg) {
+  document.getElementById('id-bar').style.width = pct + "%";
+  document.getElementById('id-txt').textContent = msg;
+}
+
+// ── OPTIMIZED EXTRACTION ENGINE ────────────────────────────────
+
+function extractId(front, back) {
+  const f = { electorName:'', electorNameKan:'', fatherName:'', fatherNameKan:'', sex:'', epicNo:'', addr:'' };
+  const allText = front + "\n" + back;
+
+  // 1. EPIC Number (Improved)
+  const epicM = allText.match(/\b([A-Z]{3}[0-9IO]{7,8})\b/i);
+  if(epicM) f.epicNo = epicM[1].toUpperCase().replace(/O/g, '0').replace(/I/g, '1');
+
+  // 2. English Elector Name (Fuzzy Label + Positional Fallback)
+  f.electorName = matchEngField(front, [/elector[''s\s]*name/i, /voter[''s\s]*name/i, /name\s*of\s*elector/i]);
+  if(!f.electorName) f.electorName = scanForName(front, f.epicNo);
+
+  // 3. Father/Husband Name
+  f.fatherName = matchEngField(front, [/father[''s\s]*name/i, /husband[''s\s]*name/i, /relation/i]);
+  if(!f.fatherName) f.fatherName = scanForName(front, f.epicNo, f.electorName);
+
+  // 4. Sex
+  const sexM = front.match(/\b(sex|gender)\s*[:\-]?\s*(male|female|m\b|f\b)/i);
+  if(sexM) f.sex = (sexM[2].toLowerCase().startsWith('m')) ? 'Male' : 'Female';
+
+  // 5. Kannada Fields (With Token-Filtering to strip Latin noise)
+  f.electorNameKan = kanField(front, [/ಮತದಾರರ\s*ಹೆಸರು/, /ಹೆಸರು/]);
+  f.fatherNameKan = kanField(front, [/ತಂದೆಯ\s*ಹೆಸರು/, /ಪತಿಯ\s*ಹೆಸರು/, /ಸಂಬಂಧಿ/]);
+
+  // 6. Address (Simple back-side scan)
+  if(back) {
+    const addrM = back.match(/address\s*[:\-]\s*([\s\S]{5,150})/i);
+    if(addrM) f.addr = cleanText(addrM[1].split('\n\n')[0]);
+  }
+
   return f;
 }
 
-// Positional name scanner — fallback when label matching fails.
-// Scans every line of the English OCR for plausible proper names,
-// skipping known non-name lines (EPIC, labels, single words, all-caps headings).
-// Returns the best candidate, or '' if none found.
-function scanForName(text, epicNo, alreadyFound){
-  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
-  const skipRe = /\b(election|commission|india|government|voter|elector|father|husband|sex|address|taluk|district|house|name|male|female|photo|identity|card|date|age|serial|part|no\.?)\b/i;
-  const results = [];
-  for(const ln of lines){
-    // Skip line if it contains the EPIC or non-name keywords
+function scanForName(text, epicNo, alreadyFound) {
+  const lines = text.split('\n').map(l=>l.trim()).filter(l => l.length > 3);
+  const ignore = /election|commission|india|government|voter|elector|father|husband|sex|address|identity|card|photo/i;
+  
+  for(const ln of lines) {
     if(epicNo && ln.includes(epicNo)) continue;
-    if(skipRe.test(ln)) continue;
-    // Name pattern: 2-4 capitalized words, only letters/spaces/hyphens/dots
-    // Also allow all-upper names like "SYED ABDUL NASEER"
-    const m = ln.match(/^([A-Z][A-Za-z]+(?:\s+[A-Za-z]+){1,4})$/);
-    if(!m) continue;
-    const candidate = m[1].trim();
-    // Skip if it matches what we already found
-    if(alreadyFound && candidate.toLowerCase()===alreadyFound.toLowerCase()) continue;
-    // Skip single common English words
-    if(candidate.split(/\s+/).length < 2) continue;
-    results.push(candidate);
-  }
-  // Return first result — on a voter ID the name appears near the top
-  return results[0] ? clean(results[0]) : '';
-}
-
-// Label-based English field matcher — normalises apostrophes, checks same/next/next+1 lines.
-function matchEngField(text, labelPatterns){
-  const norm = s => s
-    .replace(/[\u2018\u2019\u201A\u201B\u2032\u0060]/g,"'")
-    .replace(/[\u201C\u201D\u201E]/g,'"');
-  const raw=norm(text);
-  const lines=raw.split('\n').map(l=>l.trim()).filter(Boolean);
-
-  function extractName(s){
-    s=s.trim().replace(/^[:\s\-|]+/,'').replace(/[,:;.]+$/,'').trim();
-    // Allow: 2-4 words, each starting with capital (or all-upper word)
-    if(/^[A-Z][A-Za-z]+(?:\s+[A-Za-z]+){1,4}$/.test(s) && s.length>=3) return s;
-    return '';
-  }
-
-  for(const re of labelPatterns){
-    for(let i=0;i<lines.length;i++){
-      if(!re.test(lines[i])) continue;
-      // Same line after label
-      const after=lines[i].replace(re,'').trim();
-      const n1=extractName(after); if(n1) return clean(n1);
-      // Next 3 lines
-      for(let d=1;d<=3;d++){
-        if(i+d<lines.length){const n=extractName(lines[i+d]); if(n) return clean(n);}
-      }
-    }
-    // Join adjacent line pairs (label split across OCR lines)
-    for(let i=0;i<lines.length-1;i++){
-      const joined=lines[i]+' '+lines[i+1];
-      if(!re.test(joined)) continue;
-      const after=joined.replace(re,'').trim();
-      const n=extractName(after); if(n) return clean(n);
-    }
+    if(ignore.test(ln)) continue;
+    if(alreadyFound && ln.toLowerCase().includes(alreadyFound.toLowerCase())) continue;
+    
+    // Pattern: 2-4 Capitalized words
+    if(/^[A-Z\s\.]{3,40}$/i.test(ln) && ln.split(' ').length >= 2) return cleanText(ln);
   }
   return '';
 }
 
-// Kannada field extractor — label anchor + token-by-token Kannada filter.
-// Token filter is the ONLY reliable way to strip OCR garbage like "ಪಾಚಾ ಬೇಗ್ 5 Ae"
-// because the garbage can appear in the middle or end, and may itself contain Kannada.
-function kanField(kanText, labelPatterns){
-  const lines=kanText.split('\n').map(l=>l.trim()).filter(Boolean);
-
-  // Keep only leading tokens that are >50% Kannada characters.
-  // Stops at the first token that is predominantly non-Kannada.
-  function kanOnly(s){
-    const tokens=s.split(/\s+/);
-    const kept=[];
-    for(const tok of tokens){
-      if(!tok) continue;
-      const chars=[...tok];
-      const kanCount=chars.filter(ch=>ch>='\u0C80'&&ch<='\u0CFF').length;
-      if(chars.length>0 && kanCount/chars.length>0.5){
-        kept.push(tok);
-      } else {
-        break; // stop at first non-Kannada token
-      }
-    }
-    return kept.join(' ').trim();
-  }
-
-  const noiseRe=/ಸರ್ಕಾರ|ಯೋಜನ|ಚುನಾ|ಭಾರತ|ಆಯೋಗ|ಗುರುತಿನ|ಚೀಟಿ|ಪಟ್ಟಿ|ಮಾಹಿತಿ|ವ್ಯಾಪ್ತಿ/;
-
-  for(const re of labelPatterns){
-    for(let i=0;i<lines.length;i++){
-      if(!re.test(lines[i])) continue;
-
-      // Get text after the label on the same line
-      const sameLine=lines[i].replace(re,'').replace(/^[\s:|–\-]+/,'').trim();
-      let cand='';
-      if(sameLine && /[\u0C80-\u0CFF]{2,}/.test(sameLine)){
-        cand=sameLine;
-      } else if(i+1<lines.length){
-        // Next line — accept even if it has some Latin (we'll strip it with kanOnly)
-        const nx=lines[i+1].trim();
-        if(/[\u0C80-\u0CFF]{3,}/.test(nx) && !/:/.test(nx)) cand=nx;
-      }
-      if(!cand) continue;
-
-      // Strip leading OCR artifacts (digits, pipes, colons)
-      cand=cand.replace(/^[\s\d|.:–\-]+/,'').trim();
-
-      // Token-by-token filter: keep only Kannada-dominant tokens from the start
-      cand=kanOnly(cand);
-
-      if(!cand || noiseRe.test(cand)) continue;
-      if((cand.match(/[\u0C80-\u0CFF]/g)||[]).length>=3) return cand;
-    }
-  }
-  return '';
-}
-
-function renderIdFields(f, raw){
-  const rows=[
-    {k:"Elector's Name",           v:f.electorName,    copy:true},
-    {k:"Elector's Name (Kannada)", v:f.electorNameKan, copy:true, h:!f.electorNameKan},
-    {k:"Father's Name",            v:f.fatherName,     copy:true},
-    {k:"Father's Name (Kannada)",  v:f.fatherNameKan,  copy:true, h:!f.fatherNameKan},
-    {k:"Sex",                      v:f.sex,                       h:!f.sex},
-    {k:"EPIC No.",                 v:f.epicNo,         copy:true},
-    {k:"Address",                  v:f.addr,           copy:true, w:true, h:!f.addr},
-    {k:"Part No.",                 v:f.part,                      h:!f.part},
-    {k:"Serial No.",               v:f.serial,                    h:!f.serial},
-  ].filter(r=>!r.h);
-
-  document.getElementById('id-fields').innerHTML=rows.map(r=>`
-    <div class="field-item${r.w?' w2':''}">
-      <div class="field-k">${r.k}</div>
-      <div class="field-v${r.v?'':' nil'}">${r.v||'Not found'}</div>
-      ${r.copy&&r.v?`<button class="copy-btn" data-val="${r.v.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}" onclick="copyField(this)" title="Copy">Copy</button>`:''}
-    </div>`).join('');
-  document.getElementById('id-raw').textContent=raw;
-  document.getElementById('id-out').style.display='block';
-  document.getElementById('id-out').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-function copyField(btn){
-  const text=btn.dataset.val||'';
-  if(!text) return;
-  navigator.clipboard.writeText(text).then(()=>{
-    btn.textContent='Copied!';btn.classList.add('copied');
-    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1800);
-  }).catch(()=>{
-    const ta=document.createElement('textarea');
-    ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
-    document.body.appendChild(ta);ta.select();document.execCommand('copy');
-    document.body.removeChild(ta);
-    btn.textContent='Copied!';btn.classList.add('copied');
-    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1800);
-  });
-}
-
-// ── PDF SCAN ─────────────────────────────────────────────────
-async function scanPdf(){
-  if(!G.pdfFile){alert('Please choose a PDF file first.');return;}
-  const btn=document.getElementById('pdf-btn-go');
-  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Processing…';
-  document.getElementById('pdf-prog').classList.add('on');
-  G.entries=[];
-  try{
-    const buf=await G.pdfFile.arrayBuffer();
-    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
-    const total=pdf.numPages;
-    setPb('pdf-bar','pdf-txt',2,`Checking PDF format (${total} pages)…`);
-
-    // Detect native text vs scanned image
-    let nativeCount=0;
-    for(let pn=1;pn<=Math.min(3,total);pn++){
-      const pg=await pdf.getPage(pn);
-      const tc=await pg.getTextContent();
-      nativeCount+=tc.items.filter(i=>i.str&&i.str.trim().length>1).length;
-    }
-    const hasNative=nativeCount>30;
-
-    if(hasNative){
-      // Fast native path
-      setPb('pdf-bar','pdf-txt',5,'Extracting text…');
-      const pageP=Array.from({length:total},(_,i)=>pdf.getPage(i+1).then(pg=>pg.getTextContent().then(tc=>({pn:i+1,tc}))));
-      let done=0;const allData=[];
-      for(let i=0;i<pageP.length;i+=10){
-        const batch=await Promise.all(pageP.slice(i,i+10));
-        allData.push(...batch);done=allData.length;
-        setPb('pdf-bar','pdf-txt',5+Math.round(done/total*80),`Extracted ${done}/${total} pages…`);
-      }
-      setPb('pdf-bar','pdf-txt',88,'Parsing entries…');
-      for(const {pn,tc} of allData.sort((a,b)=>a.pn-b.pn)) G.entries.push(...parseNativePage(tc,pn));
-    } else {
-      // OCR path — 4 parallel workers
-      setPb('pdf-bar','pdf-txt',3,'Loading OCR engine…');
-      const T=await getTess();
-      setPb('pdf-bar','pdf-txt',5,`Starting OCR on ${total} pages…`);
-      const N=4;
-      const workers=await Promise.all(Array.from({length:N},()=>T.createWorker(['kan','eng'],1)));
-      const canvases=[];
-      for(let pn=1;pn<=total;pn++){
-        const pg=await pdf.getPage(pn);
-        const vp=pg.getViewport({scale:1.3});
-        const cv=document.createElement('canvas');
-        cv.width=vp.width;cv.height=vp.height;
-        await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
-        const blob=await new Promise(res=>cv.toBlob(res,'image/jpeg',0.85));
-        canvases.push({pn,url:URL.createObjectURL(blob)});
-        if(pn%5===0) setPb('pdf-bar','pdf-txt',8+Math.round(pn/total*22),`Rendered ${pn}/${total}…`);
-      }
-      setPb('pdf-bar','pdf-txt',32,'Running OCR…');
-      let doneP=0;
-      const chunks=Array.from({length:N},()=>[]);
-      canvases.forEach((c,i)=>chunks[i%N].push(c));
-      async function ocrChunk(w,pages){
-        const res=[];
-        for(const {pn,url} of pages){
-          const {data:{text}}=await w.recognize(url);
-          URL.revokeObjectURL(url);
-          res.push({pn,text});doneP++;
-          setPb('pdf-bar','pdf-txt',32+Math.round(doneP/total*62),`OCR: ${doneP}/${total} pages…`);
+function kanField(text, patterns) {
+  const lines = text.split('\n').map(l=>l.trim());
+  for(const re of patterns) {
+    for(let i=0; i<lines.length; i++) {
+      if(re.test(lines[i])) {
+        let val = lines[i].replace(re, '').replace(/^[:\s\-|–]+/, '').trim();
+        if(!val && lines[i+1]) val = lines[i+1].trim();
+        if(val) {
+          // Keep only tokens containing Kannada characters (removes "5 Ae", "Male", etc)
+          const filtered = val.split(/\s+/).filter(tok => /[\u0C80-\u0CFF]/.test(tok));
+          return filtered.join(' ');
         }
-        return res;
-      }
-      const allR=(await Promise.all(workers.map((w,i)=>ocrChunk(w,chunks[i])))).flat().sort((a,b)=>a.pn-b.pn);
-      await Promise.all(workers.map(w=>w.terminate()));
-      setPb('pdf-bar','pdf-txt',96,'Parsing voter entries…');
-      for(const {pn,text} of allR) G.entries.push(...parseOcrPage(text,pn));
-    }
-
-    G.entries.sort((a,b)=>(a.pageNum-b.pageNum)||((+a.serial||0)-(+b.serial||0)));
-    setPb('pdf-bar','pdf-txt',100,`Done — ${G.entries.length} voter entries found across ${total} pages`);
-    document.getElementById('pdf-not-ready').style.display='none';
-    const rb=document.getElementById('pdf-ready-banner');
-    rb.textContent=`✓ ${G.entries.length} voter entries loaded from ${total} pages. Enter a name to search.`;
-    rb.style.display='block';
-    document.getElementById('s-name').disabled=false;
-    document.getElementById('s-rel').disabled=false;
-    document.getElementById('search-btn').disabled=false;
-    document.getElementById('browse-box').style.display='block';
-    document.getElementById('search-box').scrollIntoView({behavior:'smooth',block:'start'});
-  }catch(e){console.error(e);alert('PDF error: '+e.message);}
-  finally{btn.disabled=false;btn.innerHTML='Process PDF';}
-}
-
-// ── PARSE NATIVE TEXT PAGE ────────────────────────────────────
-function parseNativePage(tc, pageNum){
-  const items=tc.items.filter(i=>i.str&&i.str.trim()).map(i=>({text:i.str.trim(),x:Math.round(i.transform[4]),y:Math.round(i.transform[5])}));
-  if(!items.length) return [];
-  const sorted=[...items].sort((a,b)=>b.y-a.y);
-  const rows=[];
-  for(const item of sorted){const row=rows.find(r=>Math.abs(r[0].y-item.y)<=4);if(row)row.push(item);else rows.push([item]);}
-  const lines=rows.map(r=>r.sort((a,b)=>a.x-b.x).map(i=>i.text).join(' ').trim()).filter(Boolean);
-  let partNo='';
-  for(const ln of lines.slice(0,15)){const pm=ln.match(/ಭಾಗದ?\s*ಸಂಖ್ಯೆ\s*[:\-]?\s*(\d+)/)||ln.match(/ಭಾಗ\s*[:\-#]\s*(\d+)/i);if(pm){partNo=pm[1];break;}}
-  return parseOcrPage(lines.join('\n'),pageNum,partNo);
-}
-
-// ── PARSE OCR PAGE ────────────────────────────────────────────
-// Karnataka electoral roll: [serial][houseNo][name][relation][relative][sex][age]
-//
-// OCR PROBLEM: Tesseract often splits one table row across 2–3 lines, e.g.:
-//   "685  122-4  ಪಾಚಾ ಬೇಗ್"          ← no relation → dropped before
-//   "ತಂದೆ  ಖಾಸಿಂಬೇಗ್  ಗಂ  72"        ← relation but no name → dropped before
-//
-// FIX: Reconstruct multi-line rows BEFORE token parsing.
-// A line is a CONTINUATION of the previous row when:
-//   (a) It starts with a relation word (ತಂದೆ / ಗಂಡ / ತಾಯಿ…), OR
-//   (b) Its first relation word appears at position ≤1 and it does NOT start with a digit
-// A line STARTS a new row when it begins with a digit (serial number).
-function parseOcrPage(text, pageNum, knownPart){
-  const rawLines=text.split('\n').map(l=>l.trim()).filter(Boolean);
-
-  // Part number
-  let partNo=knownPart||'';
-  if(!partNo){
-    for(const ln of rawLines.slice(0,30)){
-      const pm=ln.match(/ಭಾಗದ?\s*ಸಂಖ್ಯೆ\s*[:\-]?\s*(\d+)/)||ln.match(/ಭಾಗ\s*[:\-#]\s*(\d+)/i)||ln.match(/part\s*[:\-#]\s*(\d+)/i);
-      if(pm){partNo=pm[1];break;}
-    }
-  }
-
-  function cleanLn(ln){
-    return ln.replace(/\|/g,' ').replace(/\$(\d)/g,'$1').replace(/^\$\s*/,'')
-             .replace(/([\u0C80-\u0CFF])\./g,'$1').replace(/\s+/g,' ').trim();
-  }
-  function canon(t){return t.replace(/[.\-\s]/g,'');}
-
-  const REL=new Set(['ತಂದೆ','ಗಂಡ','ತಾಯಿ','ಇತರೆ','ಪತಿ','ಸ್ವಂತ','ಮಗ','ಮಗಳು']);
-  const SEX=new Set(['ಗಂ','ಹೆಂ']);
-  const SKIP=/ಕ್ರಮ\s*ಸಂಖ್ಯೆ|ಮನೆ.*ಫ್ಲಾಟ್|ಮತದಾರರ\s*ಹೆಸರು|ಭಾಗದ?\s*ಸಂಖ್ಯೆ|ರಾಜ್ಯದ\s*ಕೋಡ್|ವಿಧಾನ\s*ಸಭಾ|ಭಾರತ\s*ಚುನಾ|ಸಂಬಂಧ|ಮ\.ಗು\.ಚೀ|ವಿಭಾಗ\s*[:\-]|ಸಂಖ್ಯೆ\s*ಮತ್ತು|ಮತದಾರರ\s*ಪಟ್ಟಿ/;
-
-  // ── Step 1: Reconstruct multi-line rows ──────────────────────────────────
-  const rows=[];
-  let pending='';
-  for(const raw of rawLines){
-    if(SKIP.test(raw)) continue;
-    const ln=cleanLn(raw);
-    if(!ln||ln.length<2) continue;
-
-    const toks=ln.split(/\s+/).filter(Boolean);
-    if(!toks.length) continue;
-
-    const firstCanon=canon(toks[0]);
-    const startsWithDigit=/^\d+$/.test(firstCanon);
-    const startsWithRel=REL.has(firstCanon);
-
-    // Find position of first relation word
-    let relPos=-1;
-    for(let i=0;i<toks.length;i++){if(REL.has(canon(toks[i]))){relPos=i;break;}}
-
-    // Continuation: starts with relation, OR relation at pos≤1 with no leading digit
-    const isContinuation = startsWithRel || (relPos>=0 && relPos<=1 && !startsWithDigit);
-
-    if(isContinuation && pending){
-      pending = pending+' '+ln;
-    } else {
-      if(pending) rows.push(pending);
-      pending = ln;
-    }
-  }
-  if(pending) rows.push(pending);
-
-  // ── Step 2: Parse each reconstructed row ────────────────────────────────
-  const entries=[];
-  const nfc=s=>s.normalize('NFC');
-
-  for(const row of rows){
-    const tokens=row.split(/\s+/).filter(Boolean);
-
-    // Find relation anchor
-    let relIdx=-1;
-    for(let t=0;t<tokens.length;t++){if(REL.has(canon(tokens[t]))){relIdx=t;break;}}
-    if(relIdx<0) continue;
-
-    // Find sex anchor (after relation)
-    let sexIdx=-1;
-    for(let t=relIdx+1;t<tokens.length;t++){if(SEX.has(canon(tokens[t]))){sexIdx=t;break;}}
-
-    // Pre-relation: [serial?] [houseNo?] [name words…]
-    const pre=tokens.slice(0,relIdx);
-    let serial='',houseNo='',ps=0;
-    if(pre.length>0 && /^\d+$/.test(canon(pre[0]))){serial=canon(pre[0]);ps++;}
-    if(pre.length>ps && /^\d+$/.test(canon(pre[ps]))){houseNo=canon(pre[ps]);ps++;}
-    const nameKan=pre.slice(ps).map(t=>canon(t)).filter(t=>/[\u0C80-\u0CFF]/.test(t)).join(' ').trim();
-
-    if(!nameKan || nameKan.length<2) continue;
-
-    const relationType=canon(tokens[relIdx]);
-    const relEnd=sexIdx>=0?sexIdx:tokens.length;
-    const relativeKan=tokens.slice(relIdx+1,relEnd).map(t=>canon(t)).filter(t=>/[\u0C80-\u0CFF]/.test(t)).join(' ').trim();
-
-    let sex='',age='',epicNo='';
-    if(sexIdx>=0){
-      sex=canon(tokens[sexIdx])==='ಗಂ'?'ಗಂ (Male)':'ಹೆಂ (Female)';
-      for(const t of tokens.slice(sexIdx+1)){
-        const ct=canon(t);
-        if(/^\d{1,3}$/.test(ct)&&parseInt(ct)>0&&parseInt(ct)<120&&!age) age=ct;
-        else if(/^[A-Z]{3}\d{7}$/.test(ct)) epicNo=ct;
       }
     }
-
-    entries.push({serial,houseNo,partNo,pageNum,
-      nameKan:nfc(nameKan),name:'',
-      relativeKan:nfc(relativeKan),relative:'',
-      relationType,sex,age,epicNo,
-      address:houseNo?'House No. '+houseNo:''});
   }
-
-  if(entries.length===0) return parseOcrFallback(text,partNo,pageNum);
-  return entries;
+  return '';
 }
 
-
-function parseOcrFallback(text,partNo,pageNum){
-  const entries=[];
-  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
-  let i=0;
-  while(i<lines.length){
-    const ln=lines[i];
-    const ser=ln.match(/^(\d{1,4})[.)]\s*(.*)$/)||ln.match(/^(\d{1,4})\s*$/);
-    if(ser&&parseInt(ser[1])>=1&&parseInt(ser[1])<=9999){
-      const serial=ser[1];const block=ser[2]?[ser[2].trim()]:[];
-      let j=i+1;
-      while(j<lines.length&&j<i+10){
-        const nx=lines[j];
-        if(/^(\d{1,4})[.)]/.test(nx)||/^(\d{1,4})\s*$/.test(nx)) break;
-        if(/ಚುನಾ|ಭಾರತ\s*ಸರ್ಕಾರ/i.test(nx)) break;
-        block.push(nx);j++;
+function matchEngField(text, patterns) {
+  const lines = text.split('\n').map(l=>l.trim());
+  for(const re of patterns) {
+    for(let i=0; i<lines.length; i++) {
+      if(re.test(lines[i])) {
+        let val = lines[i].replace(re, '').replace(/^[:\s\-|–]+/, '').trim();
+        if(!val && lines[i+1]) val = lines[i+1].trim();
+        if(val && val.length > 2 && !/name|elector/i.test(val)) return cleanText(val);
       }
-      let nameKan='',relativeKan='',sex='',age='';
-      for(const b of block){
-        const am=b.match(/(\d{2,3})/);const sm=b.match(/\b(ಗಂ|ಹೆಂ)\b/);const rm=b.match(/\b(ತಂದೆ|ಗಂಡ|ತಾಯಿ|ಇತರೆ)\b/);
-        if(am&&parseInt(am[1])>0&&parseInt(am[1])<120&&!age) age=am[1];
-        if(sm) sex=sm[1].includes('ಗಂ')?'ಗಂ (Male)':'ಹೆಂ (Female)';
-        if(!nameKan&&/[\u0C80-\u0CFF]{3,}/.test(b)&&!rm&&!sm) nameKan=b;
-        else if(rm&&/[\u0C80-\u0CFF]{3,}/.test(b)) relativeKan=b.replace(rm[0],'').trim();
-      }
-      if(nameKan) entries.push({serial,partNo,pageNum,nameKan,name:'',relativeKan,relative:'',sex,age,address:'',houseNo:'',relationType:'',epicNo:''});
-      i=j;continue;
     }
-    i++;
   }
-  return entries;
+  return '';
 }
 
-// ── SEARCH ───────────────────────────────────────────────────
-// Word-level scorer — no character-level fuzzy matching.
-// Fuse.js is removed. Every result must have a genuine word match.
-//
-// Scoring per field (0–100):
-//   100 — every query word exactly matches a stored word
-//    80 — every query word is a prefix of a stored word
-//    60 — every query word is contained inside a stored word (≥3 chars)
-//     0 — any query word has no match at all → entry excluded
-//
-// Final score = nameScore×70% + relScore×30%
-// Results with score 0 are never shown.
+function cleanText(s) { return s.replace(/\s+/g, ' ').trim(); }
 
-function nfc(s){ return (s||'').normalize('NFC').replace(/[\u200B-\u200D\uFEFF\u200C]/g,'').trim(); }
+function renderResults(f, raw) {
+  const fields = [
+    {k: "Elector Name", v: f.electorName},
+    {k: "Name (Kannada)", v: f.electorNameKan},
+    {k: "Father Name", v: f.fatherName},
+    {k: "Father Name (Kan)", v: f.fatherNameKan},
+    {k: "Sex", v: f.sex},
+    {k: "EPIC No", v: f.epicNo},
+    {k: "Address", v: f.addr}
+  ];
 
-// Strip zero-width chars from a single token (OCR inserts these inside words)
-function cleanTok(t){
-  return t.replace(/[\u200B-\u200D\u200C\uFEFF\u00AD]/g,'');
+  document.getElementById('id-fields').innerHTML = fields.map(field => `
+    <div class="field-item">
+      <div class="field-k">${field.k}</div>
+      <div class="field-v">${field.v || '---'}</div>
+      ${field.v ? `<button class="copy-btn" onclick="copyText('${field.v.replace(/'/g, "\\'")}')">Copy</button>` : ''}
+    </div>
+  `).join('');
+  
+  document.getElementById('id-raw').textContent = raw;
+  document.getElementById('id-out').style.display = 'block';
 }
 
-// Compare one query word against one stored word.
-// Tiers (highest wins):
-//   100 — exact
-//    80 — prefix match (either is prefix of the other) — catches missing vowel signs
-//    60 — query is a substring of stored (≥3 chars)
-//    50 — first ⌈2/3 × len⌉ chars match, minimum 3 — catches single-codepoint OCR errors
-//     0 — no meaningful match
-function wordSim(qwRaw, swRaw){
-  const q = cleanTok(nfc(qwRaw));
-  const s = cleanTok(nfc(swRaw));
-  if(!q || !s) return 0;
-  if(s === q)                                  return 100;
-  if(s.startsWith(q) || q.startsWith(s))      return 80;
-  if(q.length >= 3 && s.includes(q))          return 60;
-  // Leading-codepoints match: at least 3, at least 2/3 of query length
-  const lead = Math.max(3, Math.ceil(q.length * 2 / 3));
-  if(q.length >= 3 && s.length >= lead && s.slice(0,lead) === q.slice(0,lead)) return 50;
-  return 0;
+function copyText(txt) {
+  navigator.clipboard.writeText(txt);
+  alert("Copied: " + txt);
 }
-
-// Score how well queryWords match against the words in a stored field.
-// Returns 0 if any query word has zero match across all stored words (hard exclusion).
-function wordScore(queryWords, storedText){
-  if(!queryWords.length) return 100;
-  const stored = nfc(storedText);
-  if(!stored) return 0;
-  const sWords = stored.split(/\s+/).filter(Boolean);
-  let total = 0;
-  for(const qw of queryWords){
-    if(!qw) continue;
-    let best = 0;
-    for(const sw of sWords){ best = Math.max(best, wordSim(qw, sw)); if(best===100) break; }
-    if(best === 0) return 0;   // hard exclusion — this word matched nothing
-    total += best;
-  }
-  return Math.round(total / queryWords.length);
-}
-
-function doSearch(){
-  const rawName = document.getElementById('s-name').value.trim();
-  const rawRel  = document.getElementById('s-rel').value.trim();
-  if(!rawName && !rawRel){ alert('Enter at least a name to search.'); return; }
-  if(!G.entries.length){ alert('Please process a PDF first.'); return; }
-
-  const qName = nfc(rawName).split(/\s+/).filter(Boolean);
-  const qRel  = nfc(rawRel).split(/\s+/).filter(Boolean);
-
-  const scored = [];
-  for(const e of G.entries){
-    // Score against all available name fields
-    const ns = Math.max(
-      wordScore(qName, e.nameKan),
-      wordScore(qName, e.name)
-    );
-    // Score against all available relative fields
-    const rs = qRel.length
-      ? Math.max(wordScore(qRel, e.relativeKan), wordScore(qRel, e.relative))
-      : 100;
-
-    // Hard exclusion: if a constraint was given and score is 0, skip
-    if(qName.length && ns === 0) continue;
-    if(qRel.length  && rs === 0) continue;
-
-    const combined = Math.round(ns * 0.7 + rs * 0.3);
-    if(combined > 0) scored.push({ item: e, score: combined });
-  }
-
-  // Sort: highest score first, then by serial number for ties
-  scored.sort((a,b) => b.score - a.score || (+a.item.serial||0) - (+b.item.serial||0));
-
-  showResults(scored.slice(0, 8), nfc(rawName)||nfc(rawRel));
-}
-
-function showResults(list, query){
-  const wrap  = document.getElementById('roll-out');
-  const cards = document.getElementById('roll-cards');
-  wrap.style.display = 'block';
-
-  if(!list.length){
-    cards.innerHTML = `<div class="empty"><div class="e-ico">🔍</div>
-      <p>No matches found for "<b>${query}</b>".<br>
-      Check spelling or try fewer words.</p></div>`;
-    wrap.scrollIntoView({behavior:'smooth',block:'start'});
-    return;
-  }
-
-  const relMap = {ತಂದೆ:'Father',ಗಂಡ:'Husband',ತಾಯಿ:'Mother',ಪತಿ:'Husband',ಇತರೆ:'Other',ಸ್ವಂತ:'Self',ಮಗ:'Son',ಮಗಳು:'Daughter'};
-
-  cards.innerHTML = list.map((r,idx) => {
-    const e   = r.item;
-    const pct = r.score;
-    const bc  = pct >= 80 ? 'hi' : pct >= 60 ? 'mid' : 'lo';
-    const nm  = e.nameKan || e.name || '—';
-    const nmAlt = (e.nameKan && e.name) ? e.name : '';
-    const rel = e.relativeKan || e.relative || '';
-    const relAlt = (e.relativeKan && e.relative) ? e.relative : '';
-    const relLbl = relMap[e.relationType] || e.relationType || '';
-
-    return `
-      <div class="result-item${idx===0?' top':''}">
-        ${idx===0?'<div class="best-pin">Best Match</div>':''}
-        <div class="result-top-row">
-          <div style="min-width:0;flex:1">
-            <div class="result-name">${nm}</div>
-            ${nmAlt?`<div class="result-rel" style="margin-top:3px">${nmAlt}</div>`:''}
-            ${rel?`<div class="result-rel" style="margin-top:6px">${relLbl?relLbl+': ':''}<b>${rel}</b>${relAlt?' · '+relAlt:''}</div>`:''}
-          </div>
-          <span class="badge ${bc}">${pct}%</span>
-        </div>
-        <div class="result-tags">
-          ${e.serial?`<div class="tag hl">ಕ್ರಮ ಸಂ. <b>${e.serial}</b></div>`:''}
-          ${e.houseNo?`<div class="tag">ಮನೆ <b>${e.houseNo}</b></div>`:''}
-          ${e.partNo?`<div class="tag hl">ಭಾಗ <b>${e.partNo}</b></div>`:''}
-          <div class="tag">ಪುಟ <b>${e.pageNum}</b></div>
-          ${e.age?`<div class="tag">ವಯಸ್ಸು <b>${e.age}</b></div>`:''}
-          ${e.sex?`<div class="tag">${e.sex}</div>`:''}
-          ${e.epicNo?`<div class="tag">EPIC <b>${e.epicNo}</b></div>`:''}
-        </div>
-      </div>`;
-  }).join('');
-
-  wrap.scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-// ── BROWSE BY PART / SERIAL ──────────────────────────────────
-// Lets users find entries by part number or serial — bypasses search entirely.
-// Critical for cases where OCR mangled a name beyond search recognition.
-function doBrowse(){
-  const partQ  = document.getElementById('br-part').value.trim();
-  const serialQ= document.getElementById('br-serial').value.trim();
-  if(!partQ && !serialQ){ alert('Enter a Part No. or Serial No. to browse.'); return; }
-
-  let matches = G.entries.filter(e=>{
-    const partOk   = !partQ   || String(e.partNo)===partQ || String(e.partNo).padStart(4,'0')===partQ;
-    const serialOk = !serialQ || String(e.serial)===serialQ;
-    return partOk && serialOk;
-  });
-
-  // If only part given, sort by serial and show up to 30 entries
-  matches.sort((a,b)=>(+a.serial||0)-(+b.serial||0));
-  if(matches.length>30) matches=matches.slice(0,30);
-
-  const relMap = {ತಂದೆ:'Father',ಗಂಡ:'Husband',ತಾಯಿ:'Mother',ಪತಿ:'Husband',ಇತರೆ:'Other',ಸ್ವಂತ:'Self',ಮಗ:'Son',ಮಗಳು:'Daughter'};
-  const cards = document.getElementById('browse-cards');
-  if(!matches.length){
-    cards.innerHTML='<p style="color:#94a3b8;font-size:13px">No entries found. Try a different part or serial number.</p>';
-    return;
-  }
-  cards.innerHTML = matches.map(e=>{
-    const rel    = e.relativeKan||e.relative||'';
-    const relLbl = relMap[e.relationType]||e.relationType||'';
-    return `<div class="result-item" style="margin-bottom:8px">
-      <div class="result-top-row">
-        <div style="min-width:0;flex:1">
-          <div class="result-name" style="font-size:16px">${e.nameKan||e.name||'—'}</div>
-          ${rel?`<div class="result-rel" style="margin-top:4px">${relLbl?relLbl+': ':''}<b>${rel}</b></div>`:''}
-        </div>
-      </div>
-      <div class="result-tags" style="margin-top:8px">
-        ${e.serial?`<div class="tag hl">ಕ್ರಮ ಸಂ. <b>${e.serial}</b></div>`:''}
-        ${e.houseNo?`<div class="tag">ಮನೆ <b>${e.houseNo}</b></div>`:''}
-        ${e.partNo?`<div class="tag hl">ಭಾಗ <b>${e.partNo}</b></div>`:''}
-        <div class="tag">ಪುಟ <b>${e.pageNum}</b></div>
-        ${e.age?`<div class="tag">ವಯಸ್ಸು <b>${e.age}</b></div>`:''}
-        ${e.sex?`<div class="tag">${e.sex}</div>`:''}
-      </div>
-    </div>`;
-  }).join('');
-  document.getElementById('browse-box').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-// ── INIT ─────────────────────────────────────────────────────
-wireFile('fi-front','front-btn','front-lbl','front-thumb',file=>{G.frontFile=file;document.getElementById('id-btn').disabled=false;});
-wireFile('fi-back','back-btn','back-lbl','back-thumb',file=>{G.backFile=file;});
-wireFile('fi-pdf','pdf-btn','pdf-lbl',null,file=>{
-  if(file.type!=='application/pdf'){alert('Please upload a PDF file.');return;}
-  G.pdfFile=file;document.getElementById('pdf-btn-go').disabled=false;
-});
-document.getElementById('s-name').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
-document.getElementById('s-rel').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
-
-// Debug: Ctrl+Shift+D dumps first 20 stored entries to console
-document.addEventListener('keydown',e=>{
-  if(e.ctrlKey&&e.shiftKey&&e.key==='D'){
-    console.log('=== G.entries sample (first 20) ===');
-    G.entries.slice(0,20).forEach((e,i)=>console.log(i,JSON.stringify(e)));
-    console.log('Total:',G.entries.length);
-    alert('Check browser console (F12) for stored entries dump.');
-  }
-});
 </script>
 </body>
 </html>
