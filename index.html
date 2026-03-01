@@ -451,11 +451,13 @@ function scanForName(text, epicNo, alreadyFound){
     // so "8 Abdullah Shareef" → "Abdullah Shareef"
     const cleaned = ln.replace(/^[^A-Za-z]+/, '').replace(/[^A-Za-z\s]+$/, '').trim();
     if(!cleaned) continue;
-    // Match: 1-5 words, all alphabetic, at least one capital letter
+    // Match: 1-5 words, all alphabetic, EACH word must start with capital
+    // This rejects OCR garbage like "etd A" or "BU fi eu TA"
     const m = cleaned.match(/^([A-Za-z]+(?:\s+[A-Za-z]+){0,4})$/);
     if(!m) continue;
     const candidate = m[1].trim();
-    if(!/[A-Z]/.test(candidate)) continue;  // must have at least one capital
+    const scanWords = candidate.split(/\s+/);
+    if(!scanWords.every(w => /^[A-Z]/.test(w))) continue;  // every word must start with capital
     if(alreadyFound && candidate.toLowerCase()===alreadyFound.toLowerCase()) continue;
     // Require at least 2 words (single word is too ambiguous)
     if(candidate.split(/\s+/).length < 2) continue;
@@ -484,19 +486,26 @@ function matchEngField(text, labelPatterns){
   // We strip leading punctuation/digits/pipes before testing.
   function extractName(s){
     if(!s) return '';
-    s = s.trim()
-         .replace(/^[\d\s|.:,;\-]+/, '')   // strip leading noise (handles "81001075 Name :" residue)
-         .replace(/[,:;.!?]+$/, '')           // strip trailing punctuation
-         .trim();
-    // 1–5 space-separated words, each purely alphabetic (allows all-caps)
-    if(s.length >= 3 && /^[A-Za-z]+(?:\s+[A-Za-z]+){0,4}$/.test(s)){
-      // Reject single common non-name words
-      const lower = s.toLowerCase();
-      if(/^(male|female|india|photo|card|date|age|sex|election|commission)$/.test(lower)) return '';
-      // At least one word must start with a capital letter (excludes all-lowercase OCR noise)
-      if(/[A-Z]/.test(s)) return s;
+    // Strip ALL leading non-alpha chars: digits, pipes, dots, apostrophes, quotes, spaces
+    s = s.replace(/^[^A-Za-z]+/, '').trim();
+    if(!s) return '';
+    // Take only the LEADING alphabetic words — stop at first token containing non-alpha
+    // This handles "Pacha Baig ८८ ८ TU" → ["Pacha","Baig"] ✓
+    const allWords = s.split(/\s+/);
+    const nameWords = [];
+    for(const w of allWords){
+      if(/^[A-Za-z]+$/.test(w)) nameWords.push(w);
+      else break;  // stop at "८८", "TA", digits, etc.
     }
-    return '';
+    if(nameWords.length < 1) return '';
+    const candidate = nameWords.join(' ');
+    if(candidate.length < 3) return '';
+    // Each word must start with a capital (rejects "etd A", "fi eu")
+    if(!nameWords.every(w => /^[A-Z]/.test(w))) return '';
+    // Reject single common non-name words
+    const lower = candidate.toLowerCase();
+    if(/^(male|female|india|photo|card|date|age|sex|election|commission|identity)$/.test(lower)) return '';
+    return candidate;
   }
 
   for(const re of labelPatterns){
@@ -537,6 +546,8 @@ function kanField(kanText, labelPatterns){
   // Keep only leading tokens that are >50% Kannada characters.
   // Stops at the first token that is predominantly non-Kannada.
   function kanOnly(s){
+    // Strip zero-width chars that OCR embeds inside Kannada words
+    s = s.replace(/[\u200B-\u200D\u200C\uFEFF\u00AD]/g, '');
     const tokens=s.split(/\s+/);
     const kept=[];
     for(const tok of tokens){
