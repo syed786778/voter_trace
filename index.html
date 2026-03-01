@@ -242,6 +242,23 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
   <div id="roll-out" style="display:none">
     <div id="roll-cards"></div>
   </div>
+
+  <!-- Browse panel: lets user find entries even when OCR mangled the name -->
+  <div class="box" id="browse-box" style="display:none">
+    <div class="box-head">Browse Entries by Part / Page</div>
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+      <div class="input-group" style="flex:1;min-width:140px">
+        <label for="br-part">Part No. (ಭಾಗ)</label>
+        <input id="br-part" type="number" min="1" placeholder="e.g. 214">
+      </div>
+      <div class="input-group" style="flex:1;min-width:140px">
+        <label for="br-serial">Serial No. (ಕ್ರಮ ಸಂ.)</label>
+        <input id="br-serial" type="number" min="1" placeholder="e.g. 685">
+      </div>
+      <button class="btn btn-blue" style="margin-top:0;width:auto;padding:11px 20px;flex-shrink:0" onclick="doBrowse()">Browse</button>
+    </div>
+    <div id="browse-cards" style="margin-top:14px"></div>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -657,6 +674,7 @@ async function scanPdf(){
     document.getElementById('s-name').disabled=false;
     document.getElementById('s-rel').disabled=false;
     document.getElementById('search-btn').disabled=false;
+    document.getElementById('browse-box').style.display='block';
     document.getElementById('search-box').scrollIntoView({behavior:'smooth',block:'start'});
   }catch(e){console.error(e);alert('PDF error: '+e.message);}
   finally{btn.disabled=false;btn.innerHTML='Process PDF';}
@@ -676,11 +694,21 @@ function parseNativePage(tc, pageNum){
 }
 
 // ── PARSE OCR PAGE ────────────────────────────────────────────
-// Karnataka electoral roll: pure Kannada table
-//   [serial] [houseNo] [voterName] [relation] [relativeName] [sex] [age]
-// Relation: ತಂದೆ / ಗಂಡ / ತಾಯಿ / ಇತರೆ     Sex: ಗಂ / ಹೆಂ
+// Karnataka electoral roll: [serial][houseNo][name][relation][relative][sex][age]
+//
+// OCR PROBLEM: Tesseract often splits one table row across 2–3 lines, e.g.:
+//   "685  122-4  ಪಾಚಾ ಬೇಗ್"          ← no relation → dropped before
+//   "ತಂದೆ  ಖಾಸಿಂಬೇಗ್  ಗಂ  72"        ← relation but no name → dropped before
+//
+// FIX: Reconstruct multi-line rows BEFORE token parsing.
+// A line is a CONTINUATION of the previous row when:
+//   (a) It starts with a relation word (ತಂದೆ / ಗಂಡ / ತಾಯಿ…), OR
+//   (b) Its first relation word appears at position ≤1 and it does NOT start with a digit
+// A line STARTS a new row when it begins with a digit (serial number).
 function parseOcrPage(text, pageNum, knownPart){
   const rawLines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+
+  // Part number
   let partNo=knownPart||'';
   if(!partNo){
     for(const ln of rawLines.slice(0,30)){
@@ -689,40 +717,71 @@ function parseOcrPage(text, pageNum, knownPart){
     }
   }
 
-  // Strip OCR noise from a line
   function cleanLn(ln){
     return ln.replace(/\|/g,' ').replace(/\$(\d)/g,'$1').replace(/^\$\s*/,'')
              .replace(/([\u0C80-\u0CFF])\./g,'$1').replace(/\s+/g,' ').trim();
   }
-  // Canonical form for token matching (strip dots, dashes)
   function canon(t){return t.replace(/[.\-\s]/g,'');}
 
   const REL=new Set(['ತಂದೆ','ಗಂಡ','ತಾಯಿ','ಇತರೆ','ಪತಿ','ಸ್ವಂತ','ಮಗ','ಮಗಳು']);
   const SEX=new Set(['ಗಂ','ಹೆಂ']);
   const SKIP=/ಕ್ರಮ\s*ಸಂಖ್ಯೆ|ಮನೆ.*ಫ್ಲಾಟ್|ಮತದಾರರ\s*ಹೆಸರು|ಭಾಗದ?\s*ಸಂಖ್ಯೆ|ರಾಜ್ಯದ\s*ಕೋಡ್|ವಿಧಾನ\s*ಸಭಾ|ಭಾರತ\s*ಚುನಾ|ಸಂಬಂಧ|ಮ\.ಗು\.ಚೀ|ವಿಭಾಗ\s*[:\-]|ಸಂಖ್ಯೆ\s*ಮತ್ತು|ಮತದಾರರ\s*ಪಟ್ಟಿ/;
 
+  // ── Step 1: Reconstruct multi-line rows ──────────────────────────────────
+  const rows=[];
+  let pending='';
+  for(const raw of rawLines){
+    if(SKIP.test(raw)) continue;
+    const ln=cleanLn(raw);
+    if(!ln||ln.length<2) continue;
+
+    const toks=ln.split(/\s+/).filter(Boolean);
+    if(!toks.length) continue;
+
+    const firstCanon=canon(toks[0]);
+    const startsWithDigit=/^\d+$/.test(firstCanon);
+    const startsWithRel=REL.has(firstCanon);
+
+    // Find position of first relation word
+    let relPos=-1;
+    for(let i=0;i<toks.length;i++){if(REL.has(canon(toks[i]))){relPos=i;break;}}
+
+    // Continuation: starts with relation, OR relation at pos≤1 with no leading digit
+    const isContinuation = startsWithRel || (relPos>=0 && relPos<=1 && !startsWithDigit);
+
+    if(isContinuation && pending){
+      pending = pending+' '+ln;
+    } else {
+      if(pending) rows.push(pending);
+      pending = ln;
+    }
+  }
+  if(pending) rows.push(pending);
+
+  // ── Step 2: Parse each reconstructed row ────────────────────────────────
   const entries=[];
-  for(const rawLn of rawLines){
-    if(SKIP.test(rawLn)) continue;
-    const ln=cleanLn(rawLn);
-    if(!ln||ln.length<3) continue;
-    const tokens=ln.split(/\s+/);
+  const nfc=s=>s.normalize('NFC');
+
+  for(const row of rows){
+    const tokens=row.split(/\s+/).filter(Boolean);
 
     // Find relation anchor
     let relIdx=-1;
     for(let t=0;t<tokens.length;t++){if(REL.has(canon(tokens[t]))){relIdx=t;break;}}
     if(relIdx<0) continue;
 
-    // Find sex anchor
+    // Find sex anchor (after relation)
     let sexIdx=-1;
     for(let t=relIdx+1;t<tokens.length;t++){if(SEX.has(canon(tokens[t]))){sexIdx=t;break;}}
 
-    // Pre-relation: [serial] [houseNo] [name…]
+    // Pre-relation: [serial?] [houseNo?] [name words…]
     const pre=tokens.slice(0,relIdx);
     let serial='',houseNo='',ps=0;
-    if(pre.length>0&&/^\d+$/.test(canon(pre[0]))){serial=canon(pre[0]);ps++;}
-    if(pre.length>ps&&/^\d+$/.test(canon(pre[ps]))){houseNo=canon(pre[ps]);ps++;}
+    if(pre.length>0 && /^\d+$/.test(canon(pre[0]))){serial=canon(pre[0]);ps++;}
+    if(pre.length>ps && /^\d+$/.test(canon(pre[ps]))){houseNo=canon(pre[ps]);ps++;}
     const nameKan=pre.slice(ps).map(t=>canon(t)).filter(t=>/[\u0C80-\u0CFF]/.test(t)).join(' ').trim();
+
+    if(!nameKan || nameKan.length<2) continue;
 
     const relationType=canon(tokens[relIdx]);
     const relEnd=sexIdx>=0?sexIdx:tokens.length;
@@ -737,19 +796,18 @@ function parseOcrPage(text, pageNum, knownPart){
         else if(/^[A-Z]{3}\d{7}$/.test(ct)) epicNo=ct;
       }
     }
-    if(nameKan.length>1){
-      // NFC-normalise stored Kannada text so substring search works regardless of OCR encoding
-      const nfc=s=>s.normalize('NFC');
-      entries.push({serial,houseNo,partNo,pageNum,
-        nameKan:nfc(nameKan),name:'',
-        relativeKan:nfc(relativeKan),relative:'',
-        relationType,sex,age,epicNo,
-        address:houseNo?'House No. '+houseNo:''});
-    }
+
+    entries.push({serial,houseNo,partNo,pageNum,
+      nameKan:nfc(nameKan),name:'',
+      relativeKan:nfc(relativeKan),relative:'',
+      relationType,sex,age,epicNo,
+      address:houseNo?'House No. '+houseNo:''});
   }
+
   if(entries.length===0) return parseOcrFallback(text,partNo,pageNum);
   return entries;
 }
+
 
 function parseOcrFallback(text,partNo,pageNum){
   const entries=[];
@@ -798,27 +856,47 @@ function parseOcrFallback(text,partNo,pageNum){
 
 function nfc(s){ return (s||'').normalize('NFC').replace(/[\u200B-\u200D\uFEFF\u200C]/g,'').trim(); }
 
+// Strip zero-width chars from a single token (OCR inserts these inside words)
+function cleanTok(t){
+  return t.replace(/[\u200B-\u200D\u200C\uFEFF\u00AD]/g,'');
+}
+
+// Compare one query word against one stored word.
+// Tiers (highest wins):
+//   100 — exact
+//    80 — prefix match (either is prefix of the other) — catches missing vowel signs
+//    60 — query is a substring of stored (≥3 chars)
+//    50 — first ⌈2/3 × len⌉ chars match, minimum 3 — catches single-codepoint OCR errors
+//     0 — no meaningful match
+function wordSim(qwRaw, swRaw){
+  const q = cleanTok(nfc(qwRaw));
+  const s = cleanTok(nfc(swRaw));
+  if(!q || !s) return 0;
+  if(s === q)                                  return 100;
+  if(s.startsWith(q) || q.startsWith(s))      return 80;
+  if(q.length >= 3 && s.includes(q))          return 60;
+  // Leading-codepoints match: at least 3, at least 2/3 of query length
+  const lead = Math.max(3, Math.ceil(q.length * 2 / 3));
+  if(q.length >= 3 && s.length >= lead && s.slice(0,lead) === q.slice(0,lead)) return 50;
+  return 0;
+}
+
 // Score how well queryWords match against the words in a stored field.
-// Returns 0 if any query word has zero match (hard exclusion).
+// Returns 0 if any query word has zero match across all stored words (hard exclusion).
 function wordScore(queryWords, storedText){
-  if(!queryWords.length) return 100;           // no constraint → perfect
+  if(!queryWords.length) return 100;
   const stored = nfc(storedText);
   if(!stored) return 0;
   const sWords = stored.split(/\s+/).filter(Boolean);
-  let totalScore = 0;
-
+  let total = 0;
   for(const qw of queryWords){
-    if(qw.length < 1) continue;
+    if(!qw) continue;
     let best = 0;
-    for(const sw of sWords){
-      if(sw === qw)                              { best = 100; break; }       // exact
-      if(sw.startsWith(qw) || qw.startsWith(sw)){ best = Math.max(best, 80); }// prefix either way
-      if(qw.length >= 3 && sw.includes(qw))     { best = Math.max(best, 60); }// contains
-    }
-    if(best === 0) return 0;   // this query word has NO match → exclude entry
-    totalScore += best;
+    for(const sw of sWords){ best = Math.max(best, wordSim(qw, sw)); if(best===100) break; }
+    if(best === 0) return 0;   // hard exclusion — this word matched nothing
+    total += best;
   }
-  return Math.round(totalScore / queryWords.length);
+  return Math.round(total / queryWords.length);
 }
 
 function doSearch(){
@@ -907,6 +985,53 @@ function showResults(list, query){
   wrap.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
+// ── BROWSE BY PART / SERIAL ──────────────────────────────────
+// Lets users find entries by part number or serial — bypasses search entirely.
+// Critical for cases where OCR mangled a name beyond search recognition.
+function doBrowse(){
+  const partQ  = document.getElementById('br-part').value.trim();
+  const serialQ= document.getElementById('br-serial').value.trim();
+  if(!partQ && !serialQ){ alert('Enter a Part No. or Serial No. to browse.'); return; }
+
+  let matches = G.entries.filter(e=>{
+    const partOk   = !partQ   || String(e.partNo)===partQ || String(e.partNo).padStart(4,'0')===partQ;
+    const serialOk = !serialQ || String(e.serial)===serialQ;
+    return partOk && serialOk;
+  });
+
+  // If only part given, sort by serial and show up to 30 entries
+  matches.sort((a,b)=>(+a.serial||0)-(+b.serial||0));
+  if(matches.length>30) matches=matches.slice(0,30);
+
+  const relMap = {ತಂದೆ:'Father',ಗಂಡ:'Husband',ತಾಯಿ:'Mother',ಪತಿ:'Husband',ಇತರೆ:'Other',ಸ್ವಂತ:'Self',ಮಗ:'Son',ಮಗಳು:'Daughter'};
+  const cards = document.getElementById('browse-cards');
+  if(!matches.length){
+    cards.innerHTML='<p style="color:#94a3b8;font-size:13px">No entries found. Try a different part or serial number.</p>';
+    return;
+  }
+  cards.innerHTML = matches.map(e=>{
+    const rel    = e.relativeKan||e.relative||'';
+    const relLbl = relMap[e.relationType]||e.relationType||'';
+    return `<div class="result-item" style="margin-bottom:8px">
+      <div class="result-top-row">
+        <div style="min-width:0;flex:1">
+          <div class="result-name" style="font-size:16px">${e.nameKan||e.name||'—'}</div>
+          ${rel?`<div class="result-rel" style="margin-top:4px">${relLbl?relLbl+': ':''}<b>${rel}</b></div>`:''}
+        </div>
+      </div>
+      <div class="result-tags" style="margin-top:8px">
+        ${e.serial?`<div class="tag hl">ಕ್ರಮ ಸಂ. <b>${e.serial}</b></div>`:''}
+        ${e.houseNo?`<div class="tag">ಮನೆ <b>${e.houseNo}</b></div>`:''}
+        ${e.partNo?`<div class="tag hl">ಭಾಗ <b>${e.partNo}</b></div>`:''}
+        <div class="tag">ಪುಟ <b>${e.pageNum}</b></div>
+        ${e.age?`<div class="tag">ವಯಸ್ಸು <b>${e.age}</b></div>`:''}
+        ${e.sex?`<div class="tag">${e.sex}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('browse-box').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
 // ── INIT ─────────────────────────────────────────────────────
 wireFile('fi-front','front-btn','front-lbl','front-thumb',file=>{G.frontFile=file;document.getElementById('id-btn').disabled=false;});
 wireFile('fi-back','back-btn','back-lbl','back-thumb',file=>{G.backFile=file;});
@@ -916,6 +1041,16 @@ wireFile('fi-pdf','pdf-btn','pdf-lbl',null,file=>{
 });
 document.getElementById('s-name').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
 document.getElementById('s-rel').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
+
+// Debug: Ctrl+Shift+D dumps first 20 stored entries to console
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey&&e.shiftKey&&e.key==='D'){
+    console.log('=== G.entries sample (first 20) ===');
+    G.entries.slice(0,20).forEach((e,i)=>console.log(i,JSON.stringify(e)));
+    console.log('Total:',G.entries.length);
+    alert('Check browser console (F12) for stored entries dump.');
+  }
+});
 </script>
 </body>
 </html>
