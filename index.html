@@ -481,30 +481,55 @@ function matchEngField(text, labelPatterns){
   return '';
 }
 
-// Kannada field extractor — strict label anchor, truncates at English/numeric noise.
+// Kannada field extractor — label anchor + token-by-token Kannada filter.
+// Token filter is the ONLY reliable way to strip OCR garbage like "ಪಾಚಾ ಬೇಗ್ 5 Ae"
+// because the garbage can appear in the middle or end, and may itself contain Kannada.
 function kanField(kanText, labelPatterns){
   const lines=kanText.split('\n').map(l=>l.trim()).filter(Boolean);
-  const noiseRe=/\d{4,}|Date|ದಿನಾಂಕ|ಸರ್ಕಾರ|ಯೋಜನ|ಚುನಾ|ಭಾರತ|ಆಯೋಗ|ಗುರುತಿನ|ಚೀಟಿ|ಪಟ್ಟಿ|ಮಾಹಿತಿ|ವ್ಯಾಪ್ತಿ/;
+
+  // Keep only leading tokens that are >50% Kannada characters.
+  // Stops at the first token that is predominantly non-Kannada.
+  function kanOnly(s){
+    const tokens=s.split(/\s+/);
+    const kept=[];
+    for(const tok of tokens){
+      if(!tok) continue;
+      const chars=[...tok];
+      const kanCount=chars.filter(ch=>ch>='\u0C80'&&ch<='\u0CFF').length;
+      if(chars.length>0 && kanCount/chars.length>0.5){
+        kept.push(tok);
+      } else {
+        break; // stop at first non-Kannada token
+      }
+    }
+    return kept.join(' ').trim();
+  }
+
+  const noiseRe=/ಸರ್ಕಾರ|ಯೋಜನ|ಚುನಾ|ಭಾರತ|ಆಯೋಗ|ಗುರುತಿನ|ಚೀಟಿ|ಪಟ್ಟಿ|ಮಾಹಿತಿ|ವ್ಯಾಪ್ತಿ/;
+
   for(const re of labelPatterns){
     for(let i=0;i<lines.length;i++){
       if(!re.test(lines[i])) continue;
+
+      // Get text after the label on the same line
       const sameLine=lines[i].replace(re,'').replace(/^[\s:|–\-]+/,'').trim();
       let cand='';
       if(sameLine && /[\u0C80-\u0CFF]{2,}/.test(sameLine)){
         cand=sameLine;
       } else if(i+1<lines.length){
+        // Next line — accept even if it has some Latin (we'll strip it with kanOnly)
         const nx=lines[i+1].trim();
-        if(/[\u0C80-\u0CFF]{3,}/.test(nx)&&!/:/.test(nx)&&!/[A-Za-z]{4,}/.test(nx)) cand=nx;
+        if(/[\u0C80-\u0CFF]{3,}/.test(nx) && !/:/.test(nx)) cand=nx;
       }
-      if(!cand||noiseRe.test(cand)) continue;
-      // Strip leading OCR artifacts
-      cand=cand.replace(/^[\s\d|.:–\-]+/,'').replace(/[\s\-–|]+$/,'').trim();
-      // CRITICAL: truncate at first significant English/numeric noise sequence
-      // e.g. "ಪಾಚಾ ಬೇಗ್ 5 Ae" → "ಪಾಚಾ ಬೇಗ್"
-      // Keep Kannada chars and inter-word spaces; stop at [A-Za-z0-9]{2,} not preceded by ಕ
-      cand = cand.replace(/\s+[A-Za-z0-9][A-Za-z0-9\s"'.\-]*$/, '').trim();
-      // Also strip trailing single Latin chars / digits
-      cand = cand.replace(/[\s\d]+[A-Za-z]{0,2}\s*$/, '').trim();
+      if(!cand) continue;
+
+      // Strip leading OCR artifacts (digits, pipes, colons)
+      cand=cand.replace(/^[\s\d|.:–\-]+/,'').trim();
+
+      // Token-by-token filter: keep only Kannada-dominant tokens from the start
+      cand=kanOnly(cand);
+
+      if(!cand || noiseRe.test(cand)) continue;
       if((cand.match(/[\u0C80-\u0CFF]/g)||[]).length>=3) return cand;
     }
   }
