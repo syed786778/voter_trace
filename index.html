@@ -345,8 +345,6 @@ async function scanId(){
 }
 
 // ── EXTRACT VOTER ID FIELDS ──────────────────────────────────
-// Core principle: only show a field if found via explicit label.
-// Never fall back to random lines — blank beats wrong.
 function extractId(fe, fk, be, bk){
   be=be||''; bk=bk||''; fk=fk||'';
   const f={electorName:'',electorNameKan:'',fatherName:'',fatherNameKan:'',sex:'',epicNo:'',addr:'',part:'',serial:''};
@@ -358,30 +356,32 @@ function extractId(fe, fk, be, bk){
            ||epicAll.match(/\b([A-Z]{3}[O][0-9]{6,7})\b/i);
   if(epicM) f.epicNo=epicM[1].toUpperCase().replace(/([A-Z]{3})O/,'$10');
 
-  // ── English fields — multi-attempt label matching ──────────
-  // OCR often garbles apostrophes: "Elector's" → "Elector s" or "Electors"
-  // We try many label variants and also scan across line boundaries.
+  // English fields — label-based first, positional fallback second
   f.electorName = matchEngField(fe, [
     /elector[''s]*\s*name\s*[:\-]\s*/i,
     /voters?\s*name\s*[:\-]\s*/i,
     /name\s*of\s*elector\s*[:\-]\s*/i,
-    // OCR without apostrophe or space
-    /electors\s+name\s*[:\-]\s*/i,
+    /electors?\s+name\s*[:\-]\s*/i,
     /elector\s+s\s+name\s*[:\-]\s*/i,
   ]);
+  // Positional fallback: if label-based failed, scan all lines for a name-like string
+  // positioned BEFORE the sex/epic fields. On voter IDs the name is always above those.
+  if(!f.electorName) f.electorName = scanForName(fe, f.epicNo);
 
   f.fatherName = matchEngField(fe, [
     /father[''s]*\s*name\s*[:\-]\s*/i,
     /husband[''s]*\s*name\s*[:\-]\s*/i,
     /father\s+s\s+name\s*[:\-]\s*/i,
-    /fathers\s+name\s*[:\-]\s*/i,
+    /fathers?\s+name\s*[:\-]\s*/i,
+    /relation\s*[:\-]\s*/i,
   ]);
+  if(!f.fatherName) f.fatherName = scanForName(fe, f.epicNo, f.electorName);
 
   // Sex
   const sexM=fe.match(/\bsex\s*[:\-]\s*(male|female|m\b|f\b)/i);
   if(sexM){const s=sexM[1].toLowerCase();f.sex=(s==='m'||s==='male')?'Male':'Female';}
 
-  // ── Kannada fields — label-anchored, noise-filtered ────────
+  // Kannada fields — label-anchored, noise-filtered
   f.electorNameKan = kanField(fk, [
     /ಮತದಾರರ\s*ಹೆಸರು\s*[:\-]?/,
     /ಮತದಾರ\s*ಹೆಸರ\s*[:\-]?/,
@@ -390,11 +390,10 @@ function extractId(fe, fk, be, bk){
     /ತಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,
     /ತಂದೆ\s*ಹೆಸರ\s*[:\-]?/,
     /ಪತಿಯ\s*ಹೆಸರು\s*[:\-]?/,
-    /ಕಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,  // common OCR variant
+    /ಕಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,
   ]);
 
-  // ── Address + Part/Serial — BACK SIDE ONLY ─────────────────
-  // Part/Serial are NEVER extracted from front side to avoid address number clashes.
+  // Address + Part/Serial — BACK SIDE ONLY
   if(be && be.trim().length > 20){
     const addrM=be.match(/address\s*[:\-]\s*([^\n]{5,100})/i);
     if(addrM) f.addr=clean(addrM[1]);
@@ -405,14 +404,10 @@ function extractId(fe, fk, be, bk){
     if(talukM) pts.push(clean(talukM[1])+' Taluk');
     if(distM) pts.push(clean(distM[1])+' District');
     if(pts.length) f.addr=pts.join(', ');
-
-    // Part/Serial: look for explicit labels first, then "NNN / NNN" at END of text only
     const partLabelM=be.match(/part\s*no\.?\s*[:\-]\s*(\d{1,4})/i);
     const serialLabelM=be.match(/serial\s*no\.?\s*[:\-]\s*(\d{1,4})/i)||be.match(/sl\.?\s*no\.?\s*[:\-]\s*(\d{1,4})/i);
     if(partLabelM) f.part=partLabelM[1];
     if(serialLabelM) f.serial=serialLabelM[1];
-
-    // Fallback: "NNN / NNN" at the very end of the back text (last 60 chars)
     if(!f.part && !f.serial){
       const tail=be.slice(-60);
       const slM=tail.match(/\b(\d{1,4})\s*\/\s*(\d{1,4})\s*$/);
@@ -422,56 +417,71 @@ function extractId(fe, fk, be, bk){
   return f;
 }
 
-// Match English labelled field — multi-strategy, tolerates OCR apostrophe variants.
+// Positional name scanner — fallback when label matching fails.
+// Scans every line of the English OCR for plausible proper names,
+// skipping known non-name lines (EPIC, labels, single words, all-caps headings).
+// Returns the best candidate, or '' if none found.
+function scanForName(text, epicNo, alreadyFound){
+  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+  const skipRe = /\b(election|commission|india|government|voter|elector|father|husband|sex|address|taluk|district|house|name|male|female|photo|identity|card|date|age|serial|part|no\.?)\b/i;
+  const results = [];
+  for(const ln of lines){
+    // Skip line if it contains the EPIC or non-name keywords
+    if(epicNo && ln.includes(epicNo)) continue;
+    if(skipRe.test(ln)) continue;
+    // Name pattern: 2-4 capitalized words, only letters/spaces/hyphens/dots
+    // Also allow all-upper names like "SYED ABDUL NASEER"
+    const m = ln.match(/^([A-Z][A-Za-z]+(?:\s+[A-Za-z]+){1,4})$/);
+    if(!m) continue;
+    const candidate = m[1].trim();
+    // Skip if it matches what we already found
+    if(alreadyFound && candidate.toLowerCase()===alreadyFound.toLowerCase()) continue;
+    // Skip single common English words
+    if(candidate.split(/\s+/).length < 2) continue;
+    results.push(candidate);
+  }
+  // Return first result — on a voter ID the name appears near the top
+  return results[0] ? clean(results[0]) : '';
+}
+
+// Label-based English field matcher — normalises apostrophes, checks same/next/next+1 lines.
 function matchEngField(text, labelPatterns){
-  // Normalize apostrophes/quotes in OCR text before matching
   const norm = s => s
-    .replace(/[\u2018\u2019\u201A\u201B\u2032\u0060]/g, "'") // smart quotes → straight
-    .replace(/[\u201C\u201D\u201E]/g, '"');
+    .replace(/[\u2018\u2019\u201A\u201B\u2032\u0060]/g,"'")
+    .replace(/[\u201C\u201D\u201E]/g,'"');
+  const raw=norm(text);
+  const lines=raw.split('\n').map(l=>l.trim()).filter(Boolean);
 
-  const raw = norm(text);
-  const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
-
-  // A valid English name: starts with capital, only letters/spaces/dots/apostrophes/hyphens
-  // We also allow trailing noise like a period or comma which OCR sometimes adds
   function extractName(s){
-    s = s.trim().replace(/[,:;.]+$/, '').trim(); // strip trailing punctuation
-    // Must start with capital letter and be a plausible name (2–4 words, all alpha)
-    if(/^[A-Z][A-Za-z]+([ .'-][A-Za-z]+){0,4}$/.test(s) && s.length >= 3) return s;
+    s=s.trim().replace(/^[:\s\-|]+/,'').replace(/[,:;.]+$/,'').trim();
+    // Allow: 2-4 words, each starting with capital (or all-upper word)
+    if(/^[A-Z][A-Za-z]+(?:\s+[A-Za-z]+){1,4}$/.test(s) && s.length>=3) return s;
     return '';
   }
 
   for(const re of labelPatterns){
     for(let i=0;i<lines.length;i++){
       if(!re.test(lines[i])) continue;
-      // Try: value on same line after label
-      const after = lines[i].replace(re,'').replace(/^[:\s|-]+/,'').trim();
-      const n1 = extractName(after);
-      if(n1) return clean(n1);
-      // Try: value on next line
-      if(i+1<lines.length){
-        const n2 = extractName(lines[i+1]);
-        if(n2) return clean(n2);
-      }
-      // Try: value 2 lines ahead (OCR sometimes inserts blank line)
-      if(i+2<lines.length){
-        const n3 = extractName(lines[i+2]);
-        if(n3) return clean(n3);
+      // Same line after label
+      const after=lines[i].replace(re,'').trim();
+      const n1=extractName(after); if(n1) return clean(n1);
+      // Next 3 lines
+      for(let d=1;d<=3;d++){
+        if(i+d<lines.length){const n=extractName(lines[i+d]); if(n) return clean(n);}
       }
     }
-    // Try joining adjacent lines (label split across lines)
+    // Join adjacent line pairs (label split across OCR lines)
     for(let i=0;i<lines.length-1;i++){
-      const joined = lines[i]+' '+lines[i+1];
+      const joined=lines[i]+' '+lines[i+1];
       if(!re.test(joined)) continue;
-      const after = joined.replace(re,'').replace(/^[:\s|-]+/,'').trim();
-      const n = extractName(after);
-      if(n) return clean(n);
+      const after=joined.replace(re,'').trim();
+      const n=extractName(after); if(n) return clean(n);
     }
   }
   return '';
 }
 
-// Match Kannada labelled field — strict noise filter, strip trailing OCR junk.
+// Kannada field extractor — strict label anchor, truncates at English/numeric noise.
 function kanField(kanText, labelPatterns){
   const lines=kanText.split('\n').map(l=>l.trim()).filter(Boolean);
   const noiseRe=/\d{4,}|Date|ದಿನಾಂಕ|ಸರ್ಕಾರ|ಯೋಜನ|ಚುನಾ|ಭಾರತ|ಆಯೋಗ|ಗುರುತಿನ|ಚೀಟಿ|ಪಟ್ಟಿ|ಮಾಹಿತಿ|ವ್ಯಾಪ್ತಿ/;
@@ -484,14 +494,17 @@ function kanField(kanText, labelPatterns){
         cand=sameLine;
       } else if(i+1<lines.length){
         const nx=lines[i+1].trim();
-        if(/[\u0C80-\u0CFF]{3,}/.test(nx)&&!/:/.test(nx)&&!/[A-Za-z]{3,}/.test(nx)) cand=nx;
+        if(/[\u0C80-\u0CFF]{3,}/.test(nx)&&!/:/.test(nx)&&!/[A-Za-z]{4,}/.test(nx)) cand=nx;
       }
       if(!cand||noiseRe.test(cand)) continue;
-      // Strip leading OCR artifacts and trailing dashes/pipes
-      cand=cand
-        .replace(/^[\s\d|.:–\-]+/,'')
-        .replace(/[\s\-–|]+$/,'')   // ← removes trailing " -" artifacts
-        .trim();
+      // Strip leading OCR artifacts
+      cand=cand.replace(/^[\s\d|.:–\-]+/,'').replace(/[\s\-–|]+$/,'').trim();
+      // CRITICAL: truncate at first significant English/numeric noise sequence
+      // e.g. "ಪಾಚಾ ಬೇಗ್ 5 Ae" → "ಪಾಚಾ ಬೇಗ್"
+      // Keep Kannada chars and inter-word spaces; stop at [A-Za-z0-9]{2,} not preceded by ಕ
+      cand = cand.replace(/\s+[A-Za-z0-9][A-Za-z0-9\s"'.\-]*$/, '').trim();
+      // Also strip trailing single Latin chars / digits
+      cand = cand.replace(/[\s\d]+[A-Za-z]{0,2}\s*$/, '').trim();
       if((cand.match(/[\u0C80-\u0CFF]/g)||[]).length>=3) return cand;
     }
   }
@@ -699,7 +712,15 @@ function parseOcrPage(text, pageNum, knownPart){
         else if(/^[A-Z]{3}\d{7}$/.test(ct)) epicNo=ct;
       }
     }
-    if(nameKan.length>1) entries.push({serial,houseNo,partNo,pageNum,nameKan,name:'',relativeKan,relative:'',relationType,sex,age,epicNo,address:houseNo?'House No. '+houseNo:''});
+    if(nameKan.length>1){
+      // NFC-normalise stored Kannada text so substring search works regardless of OCR encoding
+      const nfc=s=>s.normalize('NFC');
+      entries.push({serial,houseNo,partNo,pageNum,
+        nameKan:nfc(nameKan),name:'',
+        relativeKan:nfc(relativeKan),relative:'',
+        relationType,sex,age,epicNo,
+        address:houseNo?'House No. '+houseNo:''});
+    }
   }
   if(entries.length===0) return parseOcrFallback(text,partNo,pageNum);
   return entries;
@@ -749,20 +770,30 @@ function doSearch(){
   if(!G.entries.length){alert('Please process a PDF first.');return;}
 
   const isKan=str=>/[\u0C80-\u0CFF]/.test(str);
-  const norm=str=>str.replace(/[\u200B-\u200D\uFEFF\u200C]/g,'').replace(/\s+/g,' ').trim();
+  // NFC normalization is CRITICAL for Kannada:
+  // Tesseract stores characters in NFD (decomposed) form; user types NFC.
+  // Without this, 'ಪಾಚಾ'.includes('ಪಾಚಾ') can return false even for identical-looking text.
+  const norm=str=>str
+    .normalize('NFC')                          // unify Unicode compositions
+    .replace(/[\u200B-\u200D\uFEFF\u200C]/g,'')  // strip zero-width chars
+    .replace(/\s+/g,' ')
+    .trim();
 
   const qName=norm(name);
   const qRel=norm(rel);
 
   // ── Layer 1: substring match ──────────────────────────────
-  // For each query word, check if entry's nameKan contains it
+  // Each word of the query must appear somewhere in the stored field.
+  // We also try matching each stored word STARTING with the query word
+  // to handle OCR truncation (e.g. "ಖಾಸಿಂ" matches "ಖಾಸಿಂಬೇಗ್").
   function subMatch(entry, q, field){
     if(!q) return false;
     const val=norm(entry[field]||'');
     if(!val) return false;
-    // All words of query must appear in field
-    const words=q.split(/\s+/).filter(Boolean);
-    return words.every(w=>val.includes(w));
+    const qWords=q.split(/\s+/).filter(Boolean);
+    const vWords=val.split(/\s+/);
+    // Every query word must match at least one stored word (prefix or full)
+    return qWords.every(qw => vWords.some(vw => vw.startsWith(qw) || vw.includes(qw)));
   }
 
   const subResults=[];
