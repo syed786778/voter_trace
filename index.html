@@ -445,17 +445,19 @@ function scanForName(text, epicNo, alreadyFound){
   const skipRe = /\b(election|commission|india|government|voter|elector|father|husband|sex|address|taluk|district|house|name|male|female|photo|identity|card|date|age|serial|part|no\.?)\b/i;
   const results = [];
   for(const ln of lines){
-    // Skip line if it contains the EPIC or non-name keywords
     if(epicNo && ln.includes(epicNo)) continue;
     if(skipRe.test(ln)) continue;
-    // Name pattern: 2-4 capitalized words, only letters/spaces/hyphens/dots
-    // Also allow all-upper names like "SYED ABDUL NASEER"
-    const m = ln.match(/^([A-Z][A-Za-z]+(?:\s+[A-Za-z]+){1,4})$/);
+    // Pre-clean: strip leading/trailing non-alpha chars (digits, pipes, dots)
+    // so "8 Abdullah Shareef" → "Abdullah Shareef"
+    const cleaned = ln.replace(/^[^A-Za-z]+/, '').replace(/[^A-Za-z\s]+$/, '').trim();
+    if(!cleaned) continue;
+    // Match: 1-5 words, all alphabetic, at least one capital letter
+    const m = cleaned.match(/^([A-Za-z]+(?:\s+[A-Za-z]+){0,4})$/);
     if(!m) continue;
     const candidate = m[1].trim();
-    // Skip if it matches what we already found
+    if(!/[A-Z]/.test(candidate)) continue;  // must have at least one capital
     if(alreadyFound && candidate.toLowerCase()===alreadyFound.toLowerCase()) continue;
-    // Skip single common English words
+    // Require at least 2 words (single word is too ambiguous)
     if(candidate.split(/\s+/).length < 2) continue;
     results.push(candidate);
   }
@@ -541,10 +543,12 @@ function kanField(kanText, labelPatterns){
       if(!tok) continue;
       const chars=[...tok];
       const kanCount=chars.filter(ch=>ch>='\u0C80'&&ch<='\u0CFF').length;
-      if(chars.length>0 && kanCount/chars.length>0.5){
+      // Require ≥ 2 Kannada codepoints AND >50% Kannada.
+      // Single-char tokens like "ಚ" or "ಮ" are OCR noise, not name words.
+      if(kanCount >= 2 && kanCount/chars.length > 0.5){
         kept.push(tok);
       } else {
-        break; // stop at first non-Kannada token
+        break; // stop at first non-Kannada / single-char token
       }
     }
     return kept.join(' ').trim();
