@@ -784,111 +784,103 @@ function parseOcrFallback(text,partNo,pageNum){
 }
 
 // ── SEARCH ───────────────────────────────────────────────────
-// For Kannada electoral rolls we use a two-layer strategy:
-//   Layer 1: Direct substring / includes check (handles partial word matches perfectly)
-//   Layer 2: Fuse.js fuzzy for typo tolerance / alternate spellings
-// This ensures ಪಾಚಾ ಬೇಗ್ is found even if OCR rendered it slightly differently.
-function doSearch(){
-  const name=document.getElementById('s-name').value.trim();
-  const rel=document.getElementById('s-rel').value.trim();
-  if(!name&&!rel){alert('Enter at least a name to search.');return;}
-  if(!G.entries.length){alert('Please process a PDF first.');return;}
+// Word-level scorer — no character-level fuzzy matching.
+// Fuse.js is removed. Every result must have a genuine word match.
+//
+// Scoring per field (0–100):
+//   100 — every query word exactly matches a stored word
+//    80 — every query word is a prefix of a stored word
+//    60 — every query word is contained inside a stored word (≥3 chars)
+//     0 — any query word has no match at all → entry excluded
+//
+// Final score = nameScore×70% + relScore×30%
+// Results with score 0 are never shown.
 
-  const isKan=str=>/[\u0C80-\u0CFF]/.test(str);
-  // NFC normalization is CRITICAL for Kannada:
-  // Tesseract stores characters in NFD (decomposed) form; user types NFC.
-  // Without this, 'ಪಾಚಾ'.includes('ಪಾಚಾ') can return false even for identical-looking text.
-  const norm=str=>str
-    .normalize('NFC')                          // unify Unicode compositions
-    .replace(/[\u200B-\u200D\uFEFF\u200C]/g,'')  // strip zero-width chars
-    .replace(/\s+/g,' ')
-    .trim();
+function nfc(s){ return (s||'').normalize('NFC').replace(/[\u200B-\u200D\uFEFF\u200C]/g,'').trim(); }
 
-  const qName=norm(name);
-  const qRel=norm(rel);
+// Score how well queryWords match against the words in a stored field.
+// Returns 0 if any query word has zero match (hard exclusion).
+function wordScore(queryWords, storedText){
+  if(!queryWords.length) return 100;           // no constraint → perfect
+  const stored = nfc(storedText);
+  if(!stored) return 0;
+  const sWords = stored.split(/\s+/).filter(Boolean);
+  let totalScore = 0;
 
-  // ── Layer 1: substring match ──────────────────────────────
-  // Each word of the query must appear somewhere in the stored field.
-  // We also try matching each stored word STARTING with the query word
-  // to handle OCR truncation (e.g. "ಖಾಸಿಂ" matches "ಖಾಸಿಂಬೇಗ್").
-  function subMatch(entry, q, field){
-    if(!q) return false;
-    const val=norm(entry[field]||'');
-    if(!val) return false;
-    const qWords=q.split(/\s+/).filter(Boolean);
-    const vWords=val.split(/\s+/);
-    // Every query word must match at least one stored word (prefix or full)
-    return qWords.every(qw => vWords.some(vw => vw.startsWith(qw) || vw.includes(qw)));
-  }
-
-  const subResults=[];
-  const seenSub=new Set();
-  for(const e of G.entries){
-    const nameHit = !qName || subMatch(e,qName,'nameKan') || subMatch(e,qName,'name');
-    const relHit  = !qRel  || subMatch(e,qRel,'relativeKan') || subMatch(e,qRel,'relative');
-    if(nameHit&&relHit){
-      const k=`${e.pageNum}-${e.serial}`;
-      if(!seenSub.has(k)){seenSub.add(k);subResults.push({item:e,score:0.0,exact:true});}
+  for(const qw of queryWords){
+    if(qw.length < 1) continue;
+    let best = 0;
+    for(const sw of sWords){
+      if(sw === qw)                              { best = 100; break; }       // exact
+      if(sw.startsWith(qw) || qw.startsWith(sw)){ best = Math.max(best, 80); }// prefix either way
+      if(qw.length >= 3 && sw.includes(qw))     { best = Math.max(best, 60); }// contains
     }
+    if(best === 0) return 0;   // this query word has NO match → exclude entry
+    totalScore += best;
   }
-
-  // ── Layer 2: Fuse.js fuzzy ────────────────────────────────
-  const fuse=new Fuse(G.entries,{
-    includeScore:true,
-    threshold:0.55,       // more lenient to catch OCR variations
-    ignoreLocation:true,
-    useExtendedSearch:false,
-    keys:[
-      {name:'nameKan',    weight: isKan(qName)?0.55:0.20},
-      {name:'name',       weight: isKan(qName)?0.15:0.50},
-      {name:'relativeKan',weight: isKan(qRel||qName)?0.25:0.10},
-      {name:'relative',   weight: isKan(qRel||qName)?0.05:0.20},
-    ]
-  });
-
-  const seen=new Set(seenSub);
-  const fuseResults=[];
-  function addFuse(more){
-    for(const r of more){
-      const k=`${r.item.pageNum}-${r.item.serial}`;
-      if(!seen.has(k)){seen.add(k);fuseResults.push(r);}
-    }
-  }
-  if(qName&&qRel){
-    addFuse(fuse.search({$and:[
-      {$or:isKan(qName)?[{nameKan:qName}]:[{name:qName},{nameKan:qName}]},
-      {$or:isKan(qRel)?[{relativeKan:qRel}]:[{relative:qRel},{relativeKan:qRel}]}
-    ]}));
-  }
-  if(qName) addFuse(isKan(qName)?fuse.search({nameKan:qName}):fuse.search({name:qName}));
-  if(qRel)  addFuse(isKan(qRel) ?fuse.search({relativeKan:qRel}):fuse.search({relative:qRel}));
-
-  fuseResults.sort((a,b)=>(a.score||1)-(b.score||1));
-
-  // Combine: exact substring matches first, then fuzzy
-  const combined=[...subResults,...fuseResults.slice(0,5)].slice(0,8);
-  showResults(combined,qName||qRel);
+  return Math.round(totalScore / queryWords.length);
 }
 
-function showResults(list,query){
-  const wrap=document.getElementById('roll-out');
-  const cards=document.getElementById('roll-cards');
-  wrap.style.display='block';
-  if(!list.length){
-    cards.innerHTML=`<div class="empty"><div class="e-ico">🔍</div><p>No matches found for "<b>${query}</b>".<br>Try different spelling or check Kannada script.</p></div>`;
-    wrap.scrollIntoView({behavior:'smooth',block:'start'});return;
+function doSearch(){
+  const rawName = document.getElementById('s-name').value.trim();
+  const rawRel  = document.getElementById('s-rel').value.trim();
+  if(!rawName && !rawRel){ alert('Enter at least a name to search.'); return; }
+  if(!G.entries.length){ alert('Please process a PDF first.'); return; }
+
+  const qName = nfc(rawName).split(/\s+/).filter(Boolean);
+  const qRel  = nfc(rawRel).split(/\s+/).filter(Boolean);
+
+  const scored = [];
+  for(const e of G.entries){
+    // Score against all available name fields
+    const ns = Math.max(
+      wordScore(qName, e.nameKan),
+      wordScore(qName, e.name)
+    );
+    // Score against all available relative fields
+    const rs = qRel.length
+      ? Math.max(wordScore(qRel, e.relativeKan), wordScore(qRel, e.relative))
+      : 100;
+
+    // Hard exclusion: if a constraint was given and score is 0, skip
+    if(qName.length && ns === 0) continue;
+    if(qRel.length  && rs === 0) continue;
+
+    const combined = Math.round(ns * 0.7 + rs * 0.3);
+    if(combined > 0) scored.push({ item: e, score: combined });
   }
-  const relMap={'ತಂದೆ':'Father','ಗಂಡ':'Husband','ತಾಯಿ':'Mother','ಪತಿ':'Husband','ಇತರೆ':'Other','ಸ್ವಂತ':'Self','ಮಗ':'Son','ಮಗಳು':'Daughter'};
-  cards.innerHTML=list.map((r,idx)=>{
-    const e=r.item;
-    const isExact=r.exact===true;
-    const pct=isExact?100:Math.max(0,Math.round((1-(r.score||0))*100));
-    const bc=pct>=75?'hi':pct>=50?'mid':'lo';
-    const nm=e.nameKan||e.name||'—';
-    const nmAlt=(e.nameKan&&e.name)?e.name:'';
-    const rel=e.relativeKan||e.relative||'';
-    const relAlt=(e.relativeKan&&e.relative)?e.relative:'';
-    const relLbl=(relMap[e.relationType]||e.relationType||'');
+
+  // Sort: highest score first, then by serial number for ties
+  scored.sort((a,b) => b.score - a.score || (+a.item.serial||0) - (+b.item.serial||0));
+
+  showResults(scored.slice(0, 8), nfc(rawName)||nfc(rawRel));
+}
+
+function showResults(list, query){
+  const wrap  = document.getElementById('roll-out');
+  const cards = document.getElementById('roll-cards');
+  wrap.style.display = 'block';
+
+  if(!list.length){
+    cards.innerHTML = `<div class="empty"><div class="e-ico">🔍</div>
+      <p>No matches found for "<b>${query}</b>".<br>
+      Check spelling or try fewer words.</p></div>`;
+    wrap.scrollIntoView({behavior:'smooth',block:'start'});
+    return;
+  }
+
+  const relMap = {ತಂದೆ:'Father',ಗಂಡ:'Husband',ತಾಯಿ:'Mother',ಪತಿ:'Husband',ಇತರೆ:'Other',ಸ್ವಂತ:'Self',ಮಗ:'Son',ಮಗಳು:'Daughter'};
+
+  cards.innerHTML = list.map((r,idx) => {
+    const e   = r.item;
+    const pct = r.score;
+    const bc  = pct >= 80 ? 'hi' : pct >= 60 ? 'mid' : 'lo';
+    const nm  = e.nameKan || e.name || '—';
+    const nmAlt = (e.nameKan && e.name) ? e.name : '';
+    const rel = e.relativeKan || e.relative || '';
+    const relAlt = (e.relativeKan && e.relative) ? e.relative : '';
+    const relLbl = relMap[e.relationType] || e.relationType || '';
+
     return `
       <div class="result-item${idx===0?' top':''}">
         ${idx===0?'<div class="best-pin">Best Match</div>':''}
@@ -898,7 +890,7 @@ function showResults(list,query){
             ${nmAlt?`<div class="result-rel" style="margin-top:3px">${nmAlt}</div>`:''}
             ${rel?`<div class="result-rel" style="margin-top:6px">${relLbl?relLbl+': ':''}<b>${rel}</b>${relAlt?' · '+relAlt:''}</div>`:''}
           </div>
-          <span class="badge ${bc}">${isExact?'Exact':pct+'%'}</span>
+          <span class="badge ${bc}">${pct}%</span>
         </div>
         <div class="result-tags">
           ${e.serial?`<div class="tag hl">ಕ್ರಮ ಸಂ. <b>${e.serial}</b></div>`:''}
@@ -911,6 +903,7 @@ function showResults(list,query){
         </div>
       </div>`;
   }).join('');
+
   wrap.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
