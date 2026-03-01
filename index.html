@@ -375,22 +375,24 @@ function extractId(fe, fk, be, bk){
 
   // English fields — label-based first, positional fallback second
   f.electorName = matchEngField(fe, [
-    /elector[''s]*\s*name\s*[:\-]\s*/i,
-    /voters?\s*name\s*[:\-]\s*/i,
-    /name\s*of\s*elector\s*[:\-]\s*/i,
-    /electors?\s+name\s*[:\-]\s*/i,
-    /elector\s+s\s+name\s*[:\-]\s*/i,
+    /elector[''s]*\s*name\s*[:\-]?\s*/i,   // "Elector's Name :" or "Elector's Name"
+    /voters?\s*name\s*[:\-]?\s*/i,
+    /name\s*of\s*elector\s*[:\-]?\s*/i,
+    /electors?\s+name\s*[:\-]?\s*/i,
+    /elector\s+s\s+name\s*[:\-]?\s*/i,
+    /\d+\s+name\s*[:\-]\s*/i,             // "81001075 Name : Syed Abdul Naseer"
+    /(?<!father[''s]* )(?<!husband[''s]* )\bname\s*[:\-]\s*/i,  // bare "Name :" fallback
   ]);
   // Positional fallback: if label-based failed, scan all lines for a name-like string
   // positioned BEFORE the sex/epic fields. On voter IDs the name is always above those.
   if(!f.electorName) f.electorName = scanForName(fe, f.epicNo);
 
   f.fatherName = matchEngField(fe, [
-    /father[''s]*\s*name\s*[:\-]\s*/i,
-    /husband[''s]*\s*name\s*[:\-]\s*/i,
-    /father\s+s\s+name\s*[:\-]\s*/i,
-    /fathers?\s+name\s*[:\-]\s*/i,
-    /relation\s*[:\-]\s*/i,
+    /father[''s]*\s*name\s*[:\-]?\s*/i,
+    /husband[''s]*\s*name\s*[:\-]?\s*/i,
+    /father\s+s\s+name\s*[:\-]?\s*/i,
+    /fathers?\s+name\s*[:\-]?\s*/i,
+    /relation\s*[:\-]?\s*/i,
   ]);
   if(!f.fatherName) f.fatherName = scanForName(fe, f.epicNo, f.electorName);
 
