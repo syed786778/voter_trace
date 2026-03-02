@@ -291,6 +291,11 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
       <button class="btn btn-blue" style="margin-top:0;width:auto;padding:11px 20px;flex-shrink:0" onclick="doBrowse()">Browse</button>
     </div>
     <div id="browse-cards" style="margin-top:14px"></div>
+    <details style="margin-top:12px">
+      <summary style="font-size:11px;color:#94a3b8;cursor:pointer">🔧 Debug: show sample stored entries</summary>
+      <div id="debug-entries" style="margin-top:8px;font-size:11px;color:#64748b;font-family:monospace;background:#f8fafc;padding:10px;border-radius:8px;max-height:200px;overflow-y:auto"></div>
+      <button onclick="showDebugEntries()" style="margin-top:6px;font-size:11px;padding:4px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;cursor:pointer">Show first 10 entries</button>
+    </details>
   </div>
 </div>
 
@@ -948,9 +953,11 @@ function parseOcrPage(text, pageNum, knownPart){
       }
     }
 
+    // Inline normalize: strip ZW chars + NFC + NFKC — no global function dependency
+    const _n=s=>(s||'').replace(/[\u200B-\u200D\u200C\uFEFF\u00AD]/g,'').normalize('NFC').normalize('NFKC');
     entries.push({serial,houseNo,partNo,pageNum,
-      nameKan:nfc(nameKan),name:'',
-      relativeKan:nfc(relativeKan),relative:'',
+      nameKan:_n(nameKan),name:'',
+      relativeKan:_n(relativeKan),relative:'',
       relationType,sex,age,epicNo,
       address:houseNo?'House No. '+houseNo:''});
   }
@@ -984,7 +991,10 @@ function parseOcrFallback(text,partNo,pageNum){
         if(!nameKan&&/[\u0C80-\u0CFF]{3,}/.test(b)&&!rm&&!sm) nameKan=b;
         else if(rm&&/[\u0C80-\u0CFF]{3,}/.test(b)) relativeKan=b.replace(rm[0],'').trim();
       }
-      if(nameKan) entries.push({serial,partNo,pageNum,nameKan,name:'',relativeKan,relative:'',sex,age,address:'',houseNo:'',relationType:'',epicNo:''});
+      if(nameKan){
+        const _n=s=>(s||'').replace(/[\u200B-\u200D\u200C\uFEFF]/g,'').normalize('NFC').normalize('NFKC');
+        entries.push({serial,partNo,pageNum,nameKan:_n(nameKan),name:'',relativeKan:_n(relativeKan),relative:'',sex,age,address:'',houseNo:'',relationType:'',epicNo:''});
+      }
       i=j;continue;
     }
     i++;
@@ -1020,8 +1030,10 @@ function cleanTok(t){
 //    50 — first ⌈2/3 × len⌉ chars match, minimum 3 — catches single-codepoint OCR errors
 //     0 — no meaningful match
 function wordSim(qwRaw, swRaw){
-  const q = cleanTok(nfc(qwRaw));
-  const s = cleanTok(nfc(swRaw));
+  // Aggressive normalization: NFC + strip ZW + NFKC for compatibility equivalents
+  function norm(x){ return cleanTok((x||'').normalize('NFC')).normalize('NFKC'); }
+  const q = norm(qwRaw);
+  const s = norm(swRaw);
   if(!q || !s) return 0;
   if(s === q)                                  return 100;
   if(s.startsWith(q) || q.startsWith(s))      return 80;
@@ -1145,9 +1157,15 @@ function doBrowse(){
   if(!partQ && !serialQ){ alert('Enter a Part No. or Serial No. to browse.'); return; }
 
   let matches = G.entries.filter(e=>{
-    const partOk   = !partQ   || String(e.partNo)===partQ || String(e.partNo).padStart(4,'0')===partQ;
-    const serialOk = !serialQ || String(e.serial)===serialQ;
-    return partOk && serialOk;
+    // Serial match: exact string match, tolerating leading zeros
+    const serialOk = !serialQ || String(e.serial)===serialQ ||
+                     String(e.serial).replace(/^0+/,'')===serialQ.replace(/^0+/,'');
+    if(!serialOk) return false;
+    // Part match: if the entry has no partNo stored, don't exclude it on part filter —
+    // just let serial do the work. This handles PDFs where the header isn't readable.
+    if(!partQ) return true;
+    if(!e.partNo) return true; // partNo not extracted — include anyway
+    return String(e.partNo)===partQ || String(e.partNo).replace(/^0+/,'')===partQ.replace(/^0+/,'');
   });
 
   // If only part given, sort by serial and show up to 30 entries
@@ -1181,6 +1199,20 @@ function doBrowse(){
     </div>`;
   }).join('');
   document.getElementById('browse-box').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ── DEBUG ────────────────────────────────────────────────────
+function showDebugEntries(){
+  const el=document.getElementById('debug-entries');
+  if(!G.entries.length){el.textContent='No entries loaded yet.';return;}
+  el.innerHTML=G.entries.slice(0,10).map((e,i)=>
+    `<div style="border-bottom:1px solid #e2e8f0;padding:4px 0">
+      #${i+1} serial=<b>${e.serial||'?'}</b> part=<b>${e.partNo||'(empty)'}</b>
+      page=<b>${e.pageNum}</b><br>
+      name=<b>${e.nameKan||'—'}</b><br>
+      relative=<b>${e.relativeKan||'—'}</b> (${e.relationType||'?'})
+    </div>`
+  ).join('');
 }
 
 // ── INIT ─────────────────────────────────────────────────────
