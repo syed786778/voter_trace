@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VoterTrace</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -142,6 +143,30 @@ details summary{font-size:12px;color:#94a3b8;cursor:pointer;user-select:none}
 details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;font-size:10px;color:#64748b;white-space:pre-wrap;word-break:break-word;max-height:180px;overflow-y:auto;font-family:monospace}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:3px}
+
+/* ── DISCLAIMER ── */
+.disclaimer{
+  background:linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%);
+  border:1px solid #bfdbfe;border-radius:14px;padding:20px 24px;
+  margin-bottom:20px;
+}
+.disclaimer h3{font-size:14px;font-weight:700;color:#1e40af;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.disclaimer p{font-size:13px;color:#334155;line-height:1.65;margin-bottom:8px}
+.disclaimer p:last-child{margin-bottom:0}
+.disclaimer .shield{font-size:18px}
+.disclaimer h3{font-size:13px;}
+
+/* ── LINKS SECTION ── */
+.links-grid{display:grid;grid-template-columns:1fr;gap:12px}
+.link-card{display:flex;align-items:flex-start;gap:14px;padding:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;text-decoration:none;transition:all .18s;cursor:pointer}
+.link-card:hover{border-color:#bfdbfe;background:#eff6ff;box-shadow:0 2px 8px rgba(37,99,235,.08)}
+.link-icon{font-size:22px;flex-shrink:0;margin-top:1px}
+.link-body{flex:1;min-width:0}
+.link-title{font-size:14px;font-weight:700;color:#0f172a;margin-bottom:3px}
+.link-url{font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.link-desc{font-size:12px;color:#475569;margin-top:3px;line-height:1.4}
+.qr-wrap{flex-shrink:0;width:64px;height:64px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.qr-wrap canvas,.qr-wrap img{width:60px!important;height:60px!important}
 </style>
 </head>
 <body>
@@ -150,12 +175,13 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
   <span class="topbar-logo">VoterTrace</span>
   <button class="tab-btn on" id="t1" onclick="go('voter-id','t1')">Voter ID Reader</button>
   <button class="tab-btn"    id="t2" onclick="go('roll-search','t2')">Electoral Roll Search</button>
+  <button class="tab-btn"    id="t3" onclick="go('links-page','t3')">Important Links</button>
 </div>
 
 <!-- PAGE 1: VOTER ID -->
 <div class="page on" id="voter-id">
   <p class="page-title">Voter ID Reader</p>
-  <p class="page-sub">Upload your voter ID card images to extract all details automatically.</p>
+  <p class="page-sub">Upload your Voter ID card to instantly read and extract all your details.</p>
 
   <div class="box">
     <div class="box-head">Upload Card Images</div>
@@ -173,7 +199,7 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
       <div>
         <span class="slot-label b">▼ Back side (optional)</span>
         <button class="upload-btn" id="back-btn" onclick="document.getElementById('fi-back').click()">
-          <span class="ico">🏠</span>
+          <span class="ico" style="transform:scaleX(-1);display:inline-block">🪪</span>
           <span id="back-lbl">Tap to upload back</span>
           <span class="sub">For address details</span>
         </button>
@@ -197,6 +223,13 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
         <pre id="id-raw"></pre>
       </details>
     </div>
+  </div>
+
+  <!-- SLIM DISCLAIMER -->
+  <div class="disclaimer">
+    <h3><span class="shield">🔒</span> Your details are safe &amp; private</h3>
+    <p>Everything happens on your device — your photos and personal information are <strong>never uploaded, saved, or shared</strong> with anyone. This tool simply reads the text visible on your card, the same way you would read it yourself.</p>
+    <p>VoterTrace is an independent tool built to help citizens easily extract their voter details and search for their name in Kannada electoral rolls. It is <strong>not affiliated with the Election Commission of India</strong> and cannot submit or alter any official records.</p>
   </div>
 </div>
 
@@ -261,6 +294,79 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
   </div>
 </div>
 
+<!-- PAGE 3: IMPORTANT LINKS -->
+<div class="page" id="links-page">
+  <p class="page-title">Important Links</p>
+  <p class="page-sub">Official Election Commission of India services — all in one place.</p>
+
+  <div class="box">
+    <div class="box-head">Online Services</div>
+    <div class="links-grid">
+
+      <a class="link-card" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">
+        <span class="link-icon">🗳️</span>
+        <div class="link-body">
+          <div class="link-title">Voters' Service Portal</div>
+          <div class="link-desc">Enroll as a new voter, update your address, or download your e-EPIC voter card</div>
+          <div class="link-url">voters.eci.gov.in</div>
+        </div>
+      </a>
+
+      <a class="link-card" href="https://voters.eci.gov.in/searchInSIR/S2UA4DPDF-JK4QWODSE" target="_blank" rel="noopener">
+        <span class="link-icon">📋</span>
+        <div class="link-body">
+          <div class="link-title">Search Your Name — SIR 2002</div>
+          <div class="link-desc">Find your name in the last Summary Intensive Revision draft list</div>
+          <div class="link-url">voters.eci.gov.in / searchInSIR</div>
+        </div>
+      </a>
+
+      <a class="link-card" href="https://electoralsearch.eci.gov.in/uesfmempmlkypo" target="_blank" rel="noopener">
+        <span class="link-icon">🔍</span>
+        <div class="link-body">
+          <div class="link-title">Search Your Name — Voter List</div>
+          <div class="link-desc">Check if your name appears on the current official electoral roll</div>
+          <div class="link-url">electoralsearch.eci.gov.in</div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <div class="box">
+    <div class="box-head">Official ECI Mobile App — ECINet</div>
+    <div class="links-grid">
+
+      <div class="link-card" onclick="window.open('https://play.google.com/store/apps/details?id=in.gov.eci.app','_blank')">
+        <span class="link-icon">🤖</span>
+        <div class="link-body">
+          <div class="link-title">ECINet — Android</div>
+          <div class="link-desc">Check your voter status, find your polling booth, and more — from Google Play</div>
+          <div class="link-url">Google Play Store</div>
+        </div>
+        <div class="qr-wrap" id="qr-android"></div>
+      </div>
+
+      <div class="link-card" onclick="window.open('https://apps.apple.com/in/app/ecinet/id6745955212','_blank')">
+        <span class="link-icon">🍎</span>
+        <div class="link-body">
+          <div class="link-title">ECINet — iPhone / iPad</div>
+          <div class="link-desc">Same features built for iPhone and iPad — from the Apple App Store</div>
+          <div class="link-url">Apple App Store</div>
+        </div>
+        <div class="qr-wrap" id="qr-ios"></div>
+      </div>
+
+    </div>
+    <p style="font-size:12px;color:#94a3b8;margin-top:14px;text-align:center">📷 Point your phone camera at the QR code to download directly</p>
+  </div>
+
+  <div class="disclaimer" style="margin-top:4px">
+    <h3>ℹ️ About VoterTrace</h3>
+    <p>VoterTrace is a free, independent civic tool — not affiliated with the Election Commission of India. For any official voter services, please use the links above.</p>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/7.0.0/fuse.min.js"></script>
 <script>
@@ -275,6 +381,7 @@ function go(pageId, tabId) {
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById(pageId).classList.add('on');
   document.getElementById(tabId).classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 // ── FILE WIRING ───────────────────────────────────────────────
@@ -764,7 +871,7 @@ function parseOcrPage(text, pageNum, knownPart){
     return ln.replace(/\|/g,' ').replace(/\$(\d)/g,'$1').replace(/^\$\s*/,'')
              .replace(/([\u0C80-\u0CFF])\./g,'$1').replace(/\s+/g,' ').trim();
   }
-  function canon(t){return t.replace(/[.\-\s]/g,'');}
+  function canon(t){return t.replace(/[.\-\s\u200B-\u200D\u200C\uFEFF]/g,'');}
 
   const REL=new Set(['ತಂದೆ','ಗಂಡ','ತಾಯಿ','ಇತರೆ','ಪತಿ','ಸ್ವಂತ','ಮಗ','ಮಗಳು']);
   const SEX=new Set(['ಗಂ','ಹೆಂ']);
@@ -802,8 +909,9 @@ function parseOcrPage(text, pageNum, knownPart){
   if(pending) rows.push(pending);
 
   // ── Step 2: Parse each reconstructed row ────────────────────────────────
+  // NOTE: use global nfc() which ALSO strips zero-width chars (ZWNJ etc.)
+  // Local nfc was overriding the global and causing search mismatches.
   const entries=[];
-  const nfc=s=>s.normalize('NFC');
 
   for(const row of rows){
     const tokens=row.split(/\s+/).filter(Boolean);
@@ -1094,6 +1202,22 @@ document.addEventListener('keydown',e=>{
     alert('Check browser console (F12) for stored entries dump.');
   }
 });
+
+// ── QR CODES ──────────────────────────────────────────────────
+function makeQR(elementId, url){
+  try{
+    const el=document.getElementById(elementId);
+    if(!el) return;
+    new QRCode(el,{text:url,width:60,height:60,
+      colorDark:'#0f172a',colorLight:'#ffffff',
+      correctLevel:QRCode.CorrectLevel.M});
+  }catch(e){console.warn('QR:',e);}
+}
+setTimeout(()=>{
+  makeQR('qr-android','https://play.google.com/store/apps/details?id=in.gov.eci.app');
+  makeQR('qr-ios','https://apps.apple.com/in/app/ecinet/id6745955212');
+},900);
+
 </script>
 </body>
 </html>
