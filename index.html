@@ -229,7 +229,7 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
   <div class="disclaimer">
     <h3><span class="shield">🔒</span> Your details are safe &amp; private</h3>
     <p>Everything happens on your device — your photos and personal information are <strong>never uploaded, saved, or shared</strong> with anyone. This tool simply reads the text visible on your card, the same way you would read it yourself.</p>
-    <p>VoterTrace is an independent tool built to help citizens easily extract their voter details and search for their name in Kannada electoral rolls. It is <strong>not affiliated with the Election Commission of India</strong> and cannot submit or alter any official records.</p>
+    <p>VoterTrace is an independent tool built to help citizens easily extract their voter details and search for their name in electoral rolls. It is <strong>not affiliated with the Election Commission of India</strong> and cannot submit or alter any official records.</p>
   </div>
 </div>
 
@@ -875,22 +875,17 @@ function parseOcrPage(text, pageNum, knownPart){
   function cleanLn(ln){
     return ln
       .replace(/\|/g,' ')
-      .replace(/\*(?:\s|$)/g,' ')
       .replace(/\$(\d)/g,'$1').replace(/^\$\s*/,'')
       .replace(/([\u0C80-\u0CFF])\./g,'$1')
-      .replace(/[#@%^&~`]/g,' ')
+      .replace(/\u0CCD\u0CCD/g,'\u0CCD')
+      .replace(/[*#@!]+/g,' ')
       .replace(/\s+/g,' ').trim();
   }
   function canon(t){return t.replace(/[.\-\s\u200B-\u200D\u200C\uFEFF]/g,'');}
 
   const REL=new Set(['ತಂದೆ','ಗಂಡ','ತಾಯಿ','ಇತರೆ','ಪತಿ','ಸ್ವಂತ','ಮಗ','ಮಗಳು']);
   const SEX=new Set(['ಗಂ','ಹೆಂ']);
-  const SKIP=/ಕ್ರಮ\s*ಸಂಖ್ಯೆ|ಮನೆ.*ಫ್ಲಾಟ್|ಮತದಾರರ\s*ಹೆಸರು|ಭಾಗದ?\s*ಸಂಖ್ಯೆ|
-    ರಾಜ್ಯದ\s*ಕೋಡ್|ವಿಧಾನ\s*ಸಭಾ|ಭಾರತ\s*ಚುನಾ|ಸಂಬಂಧ|ಮ\.ಗು\.ಚೀ|ವಿಭಾಗ\s*[:\-]|
-    ಸಂಖ್ಯೆ\s*ಮತ್ತು|ಮತದಾರರ\s*ಪಟ್ಟಿ|
-    ಕ್ಷೇತ್ರದ\s*ವಿವರ|ಮತಗಟ್ಟೆಯ\s*ವಿವರ|ಮತದಾರರ\s*ಸಂಖ|ಹದ್ದುಬಸ್ತ್|
-    ರಾಷ್ಟ್ರೀಯ\s*ಮತದಾರ|ಮತಗಟ್ಟೆ\s*ಸಂಖ್ಯೆ|ಮುಖ್ಯರಸ್ತೆ|ಶಾಮಣ್ಣ|
-    ವಿಧಾನಸಭಾ\s*ಕ್ಷೇತ್ರ|ಮತ\s*ಎಣಿಕೆ|ಒಟ್ಟು\s*ಮತದಾರ/x;
+  const SKIP=/ಕ್ರಮ\s*ಸಂಖ್ಯೆ|ಮನೆ.*ಫ್ಲಾಟ್|ಮತದಾರರ\s*ಹೆಸರು|ಭಾಗದ?\s*ಸಂಖ್ಯೆ|ರಾಜ್ಯದ\s*ಕೋಡ್|ವಿಧಾನ\s*ಸಭಾ|ಭಾರತ\s*ಚುನಾ|ಸಂಬಂಧ|ಮ\.ಗು\.ಚೀ|ವಿಭಾಗ\s*[:\-]|ಸಂಖ್ಯೆ\s*ಮತ್ತು|ಮತದಾರರ\s*ಪಟ್ಟಿ|ವಿವರಗಳು|ಮತಗಟ್ಟೆ|ಹದ್ದುಬಸ್ತ್|ಕ್ಷೇತ್ರದ|ಮತದಾರರ\s*ಸಂಖ|ಮುಖ್ಯರಸ್ತೆ|ಮತಕ್ಷೇತ್ರ|ವಿಧಾನಸಭಾ|ಕಛೇರಿ/
 
   // ── Step 1: Reconstruct multi-line rows ──────────────────────────────────
   const rows=[];
@@ -948,6 +943,10 @@ function parseOcrPage(text, pageNum, knownPart){
     const nameKan=pre.slice(ps).map(t=>canon(t).replace(/[*|#@%]/g,'')).filter(t=>/[\u0C80-\u0CFF]/.test(t)&&t.length>0).join(' ').trim();
 
     if(!nameKan || nameKan.length<2) continue;
+    // Reject header/address content parsed as names:
+    // Real names are pure Kannada words; headers contain digits, conjunctions, addresses
+    const _headerRe=/\d|ಮತ್ತು|ರಸ್ತೆ|ವಿವರ|ಸಂಖ್ಯೆ|ಹದ್ದು|ಮತಗಟ್ಟೆ|ಕ್ಷೇತ್ರ|ಮನೆ\s*ಸಂ|ಹಳ್ಳಿ|ನಗರ|ವಾರ್ಡ್|ಸಂಖೆ|ಮಂಡಳಿ/;
+    if(_headerRe.test(nameKan)) continue;
     // Skip rows where the "name" is clearly header/address metadata
     if(/[,:]/.test(nameKan)) continue;                              // address text has commas/colons
     if(/\d/.test(nameKan) && nameKan.split(/\s+/).length < 3) continue; // short name with digits = not a name
