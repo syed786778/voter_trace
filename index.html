@@ -486,8 +486,8 @@ function extractId(fe, fk, be, bk){
     return (s||'')
       .replace(/[\u2018\u2019\u201A\u201B\u2032\u0060]/g,"'")
       .replace(/[\u201C\u201D\u201E]/g,'"')
-      .replace(/[|]/g,'I')           // pipe → I (common OCR swap)
-      .replace(/\b0(?=[A-Za-z])/g,'O') // 0X → OX (O/0 swap in card IDs)
+      .replace(/[|¦]/g,' ')          // pipe → space (NOT I — was breaking name extraction)
+      .replace(/\b0(?=[A-Za-z])/g,'O')
       .replace(/\s+/g,' ');
   }
   const allEng = norm(fe+'\n'+be);
@@ -509,11 +509,13 @@ function extractId(fe, fk, be, bk){
     const words = s.split(/\s+/);
     const nameWords=[];
     for(const w of words){
+      // Single isolated letter at start = OCR artifact (pipe→I, separator→I etc.) — skip, don't break
+      if(w.length===1 && nameWords.length===0 && /^[A-Z]$/.test(w)) continue;
       // Allow alpha + optional trailing dot (for initials like "K.")
-      if(/^[A-Za-z][A-Za-z.]*$/.test(w) && !(w.length===1 && nameWords.length===0)){
+      if(/^[A-Za-z][A-Za-z.]*$/.test(w)){
         nameWords.push(w);
       } else {
-        break; // stop at first non-name token
+        break; // stop at first non-alpha token (digit, symbol, Kannada etc.)
       }
     }
     if(!nameWords.length) return '';
@@ -662,8 +664,26 @@ function extractId(fe, fk, be, bk){
   const backText = norm(be+'\n'+bk);
   if(backText.trim().length>20){
     // Address: try labelled first, then full lines after 'Address' label
-    const addrM = backText.match(/address\s*[:\-]\s*([^\n]{5,150})/i);
-    if(addrM) f.addr = addrM[1].trim();
+    const addrM = backText.match(/address\s*[:\-]\s*([^\n]{5,200})/i);
+    if(addrM){
+      // Clean OCR noise: remove symbols that never appear in real addresses
+      let raw = addrM[1].trim();
+      // Strip known OCR artefact tokens: single special chars, ¥ ¢ = ¤ § etc.
+      raw = raw.replace(/[¥¢§¤=@#~`^*<>{}[\]\\]+/g,' ');
+      // Remove obviously garbled tokens: any token that has no letters/digits (e.g. ":/")
+      raw = raw.split(/\s+/).filter(tok=>/[A-Za-z0-9,.\/()\-]/.test(tok)).join(' ');
+      // Stop at first clearly garbled sequence (3+ consonant-only uppercase tokens in a row)
+      const addrToks = raw.split(/\s+/);
+      const cleanToks=[];
+      let garbCount=0;
+      for(const tok of addrToks){
+        if(/^[A-Z]{3,}$/.test(tok)&&!/^(NORTH|SOUTH|EAST|WEST|TALUK|DIST|WARD|NAGAR|ROAD|MAIN|CROSS|TOWN|VILL|VILLAGE|LAYOUT|COLONY|CIRCLE|POST|PIN|PO|PS|ADDL|NO)$/i.test(tok)) garbCount++;
+        else garbCount=0;
+        if(garbCount>=2) break;
+        cleanToks.push(tok);
+      }
+      f.addr = cleanToks.join(' ').replace(/\s+/g,' ').trim();
+    }
     // Enrich with taluk/district
     const talukM = backText.match(/taluk\s*[:\-]\s*([A-Za-z (),\-]{3,50})/i);
     const distM  = backText.match(/district\s*[:\-]\s*([A-Za-z ]{3,40})/i);
@@ -1110,6 +1130,108 @@ function parseOcrFallback(text,partNo,pageNum){
   return entries;
 }
 
+
+// ── KANNADA TRANSLITERATOR ────────────────────────────────────
+// Phonetic Kannada→English for displaying names in electoral results.
+// Based on ITRANS/ISO-15919 mappings for South Indian scripts.
+function translitKan(str){
+  if(!str) return '';
+  str = str.replace(/[\u200B-\u200D\u200C\uFEFF]/g,'').normalize('NFC');
+
+  // Independent vowels
+  const IV = {
+    'ಅ':'a','ಆ':'aa','ಇ':'i','ಈ':'ee','ಉ':'u','ಊ':'oo',
+    'ಋ':'ru','ಎ':'e','ಏ':'ae','ಐ':'ai','ಒ':'o','ಓ':'oo','ಔ':'au',
+    'ಅಂ':'am','ಅಃ':'ah'
+  };
+  // Consonants (with inherent 'a')
+  const CON = {
+    'ಕ':'k','ಖ':'kh','ಗ':'g','ಘ':'gh','ಙ':'ng',
+    'ಚ':'ch','ಛ':'chh','ಜ':'j','ಝ':'jh','ಞ':'ny',
+    'ಟ':'t','ಠ':'th','ಡ':'d','ಢ':'dh','ಣ':'n',
+    'ತ':'t','ಥ':'th','ದ':'d','ಧ':'dh','ನ':'n',
+    'ಪ':'p','ಫ':'ph','ಬ':'b','ಭ':'bh','ಮ':'m',
+    'ಯ':'y','ರ':'r','ಱ':'r','ಲ':'l','ವ':'v',
+    'ಶ':'sh','ಷ':'sh','ಸ':'s','ಹ':'h',
+    'ಳ':'l','ೞ':'l','ಕ್ಷ':'ksh','ಜ್ಞ':'gn'
+  };
+  // Vowel diacritics (matras)
+  const MAT = {
+    'ಾ':'aa','ಿ':'i','ೀ':'ee','ು':'u','ೂ':'oo',
+    'ೃ':'ru','ೆ':'e','ೇ':'ae','ೈ':'ai',
+    'ೊ':'o','ೋ':'oo','ೌ':'au',
+    'ಂ':'m','ಃ':'h',
+    '\u0CCD':''  // virama — suppress inherent 'a'
+  };
+
+  let out = '';
+  const chars = [...str];
+  let i = 0;
+
+  while(i < chars.length){
+    const ch = chars[i];
+    const cp = ch.codePointAt(0);
+
+    // Space / non-Kannada passthrough
+    if(cp < 0x0C80 || cp > 0x0CFF){
+      // Capitalise first letter of each word for readability
+      out += (out==='' || out.endsWith(' ')) ? ch.toUpperCase() : ch;
+      i++; continue;
+    }
+
+    // Check two-char combos first (ಕ್ಷ, ಜ್ಞ)
+    const two = ch + (chars[i+1]||'') + (chars[i+2]||'');
+    if(two.startsWith('ಕ್ಷ')){ out += (out===''||out.endsWith(' '))?'Ksh':'ksh'; i+=3; continue; }
+    if(two.startsWith('ಜ್ಞ')){ out += (out===''||out.endsWith(' '))?'Gn':'gn';   i+=3; continue; }
+
+    // Independent vowel
+    if(IV[ch] !== undefined){
+      const v = IV[ch];
+      out += (out===''||out.endsWith(' ')) ? v[0].toUpperCase()+v.slice(1) : v;
+      i++; continue;
+    }
+
+    // Consonant
+    if(CON[ch] !== undefined){
+      const base = CON[ch];
+      // Peek at next char for matra or virama
+      const nxt = chars[i+1]||'';
+      const ncp = nxt.codePointAt(0)||0;
+      const isMatra = ncp>=0x0CBE && ncp<=0x0CCC;
+      const isVirama = ncp===0x0CCD;
+      const isAnu = ncp===0x0C82; // anusvara ಂ
+      const isVis = ncp===0x0C83; // visarga ಃ
+
+      const prefix = (out===''||out.endsWith(' '));
+      const bs = prefix ? base[0].toUpperCase()+base.slice(1) : base;
+
+      if(isVirama){
+        out += bs; // no inherent vowel
+        i+=2; continue;
+      }
+      if(isMatra){
+        const v = MAT[nxt]||'';
+        out += bs + v;
+        i+=2; continue;
+      }
+      if(isAnu){ out += bs+'a'+'m'; i+=2; continue; }
+      if(isVis){ out += bs+'a'+'h'; i+=2; continue; }
+      // Default: consonant + inherent 'a'
+      out += bs + 'a';
+      i++; continue;
+    }
+
+    // Matra / anusvara / visarga standalone (shouldn't normally appear alone, but handle)
+    if(MAT[ch] !== undefined){ out += MAT[ch]||''; i++; continue; }
+
+    // Digits and other Kannada chars — passthrough
+    out += ch; i++;
+  }
+
+  // Capitalize each word
+  return out.replace(/\b\w/g, c=>c.toUpperCase()).trim();
+}
+
 // ── SEARCH ───────────────────────────────────────────────────
 // Word-level scorer — no character-level fuzzy matching.
 // Fuse.js is removed. Every result must have a genuine word match.
@@ -1240,8 +1362,11 @@ function showResults(list, query){
         <div class="result-top-row">
           <div style="min-width:0;flex:1">
             <div class="result-name">${nm}</div>
-            ${nmAlt?`<div class="result-rel" style="margin-top:3px">${nmAlt}</div>`:''}
-            ${rel?`<div class="result-rel" style="margin-top:6px">${relLbl?relLbl+': ':''}<b>${rel}</b>${relAlt?' · '+relAlt:''}</div>`:''}
+            <div style="font-size:13px;color:#2563eb;font-weight:600;margin-top:2px">${translitKan(nm)}</div>
+            ${rel?`<div class="result-rel" style="margin-top:6px">
+              <span style="color:#64748b">${relLbl?relLbl+': ':''}</span><b>${rel}</b>
+              <span style="font-size:12px;color:#2563eb;font-weight:500;margin-left:4px">(${translitKan(rel)})</span>
+            </div>`:''}
           </div>
           <span class="badge ${bc}">${pct}%</span>
         </div>
@@ -1297,7 +1422,11 @@ function doBrowse(){
       <div class="result-top-row">
         <div style="min-width:0;flex:1">
           <div class="result-name" style="font-size:16px">${e.nameKan||e.name||'—'}</div>
-          ${rel?`<div class="result-rel" style="margin-top:4px">${relLbl?relLbl+': ':''}<b>${rel}</b></div>`:''}
+          <div style="font-size:12px;color:#2563eb;font-weight:600;margin-top:1px">${translitKan(e.nameKan||e.name||'')}</div>
+          ${rel?`<div class="result-rel" style="margin-top:4px">
+            <span style="color:#64748b">${relLbl?relLbl+': ':''}</span><b>${rel}</b>
+            <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:4px">(${translitKan(rel)})</span>
+          </div>`:''}
         </div>
       </div>
       <div class="result-tags" style="margin-top:8px">
