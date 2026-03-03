@@ -474,235 +474,283 @@ async function scanId(){
 }
 
 // ── EXTRACT VOTER ID FIELDS ──────────────────────────────────
+// Comprehensive multi-strategy extractor for all Indian Voter ID designs.
+// Strategy order: label-based → structural → positional.
 function extractId(fe, fk, be, bk){
-  be=be||''; bk=bk||''; fk=fk||'';
-  const f={electorName:'',electorNameKan:'',fatherName:'',fatherNameKan:'',sex:'',epicNo:'',addr:'',part:'',serial:''};
+  be=be||''; bk=bk||''; fk=fk||''; fe=fe||'';
+  const f={electorName:'',electorNameKan:'',fatherName:'',fatherNameKan:'',
+           dob:'',sex:'',epicNo:'',addr:'',part:'',serial:''};
 
-  // EPIC No — 3 letters + 7 digits, OCR may swap O↔0
-  const epicAll=fe+' '+be;
-  const epicM=epicAll.match(/\b([A-Z]{3}[0-9]{7})\b/)
-           ||epicAll.match(/IDENTITY\s*CARD\s+([A-Z]{3}[A-Z0-9]{6,8})/i)
-           ||epicAll.match(/\b([A-Z]{3}[O][0-9]{6,7})\b/i);
-  if(epicM) f.epicNo=epicM[1].toUpperCase().replace(/([A-Z]{3})O/,'$10');
+  // ── Normalise OCR text ──────────────────────────────────────
+  function norm(s){
+    return (s||'')
+      .replace(/[\u2018\u2019\u201A\u201B\u2032\u0060]/g,"'")
+      .replace(/[\u201C\u201D\u201E]/g,'"')
+      .replace(/[|]/g,'I')           // pipe → I (common OCR swap)
+      .replace(/\b0(?=[A-Za-z])/g,'O') // 0X → OX (O/0 swap in card IDs)
+      .replace(/\s+/g,' ');
+  }
+  const allEng = norm(fe+'\n'+be);
 
-  // English fields — label-based first, positional fallback second
-  f.electorName = matchEngField(fe, [
+  // ── EPIC No ─────────────────────────────────────────────────
+  const epicM = allEng.match(/\b([A-Z]{3}[\d]{7})\b/)
+             || allEng.match(/\b([A-Z]{3}[O0]\d{6})\b/i)
+             || allEng.match(/(?:EPIC|Card\s*No\.?)[:\s]*([A-Z]{3}[A-Z0-9]{6,8})/i);
+  if(epicM) f.epicNo=epicM[1].toUpperCase().replace(/O(?=\d)/g,'0').replace(/(?<=[A-Z]{3})0(?=[A-Z])/g,'O');
+
+  // ── Core field extractor ─────────────────────────────────────
+  // extractName: much more lenient than before.
+  // Accept: any alpha words (any case), initials (single letters), dots OK in initials.
+  // Reject: known label words, pure numbers, too short.
+  function extractName(s, strict){
+    if(!s) return '';
+    s = s.replace(/^[\s\d|.:\-–'"'"']+/,'').trim();  // strip leading noise
+    if(!s) return '';
+    const words = s.split(/\s+/);
+    const nameWords=[];
+    for(const w of words){
+      // Allow alpha + optional trailing dot (for initials like "K.")
+      if(/^[A-Za-z][A-Za-z.]*$/.test(w) && !(w.length===1 && nameWords.length===0)){
+        nameWords.push(w);
+      } else {
+        break; // stop at first non-name token
+      }
+    }
+    if(!nameWords.length) return '';
+    // If strict mode: require at least first word to start with uppercase
+    if(strict && !/^[A-Z]/.test(nameWords[0])) return '';
+    const out = nameWords.join(' ');
+    if(out.length < 2) return '';
+    const lo = out.toLowerCase().replace(/\./g,'');
+    // Reject known label words
+    if(/^(male|female|india|photo|card|date|age|sex|election|commission|identity|voter|elector|government|republic|karnataka|the|and|of|no|sl|part|serial)$/.test(lo)) return '';
+    return out;
+  }
+
+  // Find text after a label pattern in a block of text.
+  // Searches same line and next 3 lines.
+  function afterLabel(text, patterns){
+    const lines = norm(text).split('\n').map(l=>l.trim()).filter(Boolean);
+    for(const re of patterns){
+      for(let i=0;i<lines.length;i++){
+        if(!re.test(lines[i])) continue;
+        // 1. Same line: strip label, take rest
+        const after = lines[i].replace(re,'').trim();
+        const n1 = extractName(after, false);
+        if(n1) return n1;
+        // 2. Next 1-4 lines
+        for(let d=1;d<=4;d++){
+          if(i+d<lines.length){
+            // Skip if this next line IS itself a label line
+            if(/(?:name|father|husband|sex|dob|address|part|serial|epic)/i.test(lines[i+d].slice(0,20))) continue;
+            const n2 = extractName(lines[i+d], false);
+            if(n2) return n2;
+          }
+        }
+      }
+      // Also try joining adjacent lines in case label wraps
+      for(let i=0;i<lines.length-1;i++){
+        const joined = lines[i]+' '+lines[i+1];
+        if(!re.test(joined)) continue;
+        const after = joined.replace(re,'').trim();
+        const n = extractName(after, false);
+        if(n) return n;
+      }
+    }
+    return '';
+  }
+
+  // ── Elector's Name ───────────────────────────────────────────
+  f.electorName = afterLabel(fe, [
     /elector[''s]*\s*name\s*[:\-]?\s*/i,
-    /voters?\s*name\s*[:\-]?\s*/i,
-    /name\s*of\s*elector\s*[:\-]?\s*/i,
+    /name\s*of\s*(the\s*)?elector\s*[:\-]?\s*/i,
+    /voter[''s]*\s*name\s*[:\-]?\s*/i,
     /electors?\s+name\s*[:\-]?\s*/i,
-    /elector\s+s\s+name\s*[:\-]?\s*/i,
+    /(?:^|\n)\s*name\s*[:\-]\s*/i,
     /\d+\s+name\s*[:\-]\s*/i,
-    /^name\s*[:\-]\s*/i,
+    /नाम\s*[:\-]?\s*/i,                          // Hindi fallback
   ]);
-  // Positional fallback: if label-based failed, scan all lines for a name-like string
-  // positioned BEFORE the sex/epic fields. On voter IDs the name is always above those.
-  if(!f.electorName) f.electorName = scanForName(fe, f.epicNo);
 
-  f.fatherName = matchEngField(fe, [
+  // ── Father / Husband Name ────────────────────────────────────
+  f.fatherName = afterLabel(fe, [
     /father[''s]*\s*name\s*[:\-]?\s*/i,
     /husband[''s]*\s*name\s*[:\-]?\s*/i,
-    /father\s+s\s+name\s*[:\-]?\s*/i,
-    /fathers?\s+name\s*[:\-]?\s*/i,
-    /relation\s*[:\-]?\s*/i,
+    /father\s*\/\s*husband[''s]*\s*name\s*[:\-]?\s*/i,
+    /guardian[''s]*\s*name\s*[:\-]?\s*/i,
+    /relation\s*(?:name)?\s*[:\-]?\s*/i,
+    /पिता[\/\s]*पति\s*का\s*नाम\s*[:\-]?\s*/i,   // Hindi
+    /\bs[\/.]?o\s*[:\-]?\s*/i,                    // S/O shorthand
+    /\bd[\/.]?o\s*[:\-]?\s*/i,                    // D/O shorthand
+    /\bw[\/.]?o\s*[:\-]?\s*/i,                    // W/O shorthand
   ]);
-  if(!f.fatherName) f.fatherName = scanForName(fe, f.epicNo, f.electorName);
 
-  // Sex
-  const sexM=fe.match(/\bsex\s*[:\-]\s*(male|female|m\b|f\b)/i);
-  if(sexM){const s=sexM[1].toLowerCase();f.sex=(s==='m'||s==='male')?'Male':'Female';}
+  // ── Sex ─────────────────────────────────────────────────────
+  const sexM = allEng.match(/\bsex\s*[:\-]\s*(male|female|m\b|f\b)/i)
+            || allEng.match(/\bgender\s*[:\-]\s*(male|female|m\b|f\b)/i)
+            || allEng.match(/\b(male|female)\b/i);
+  if(sexM){const s=sexM[1].toLowerCase();f.sex=(s[0]==='m')?'Male':'Female';}
+  // From Kannada side
+  if(!f.sex){
+    if(/ಪುರುಷ|ಗಂಡು/.test(fk+bk)) f.sex='Male';
+    else if(/ಮಹಿಳೆ|ಸ್ತ್ರೀ/.test(fk+bk)) f.sex='Female';
+  }
 
-  // Kannada fields — label-anchored, noise-filtered
+  // ── Date of Birth ────────────────────────────────────────────
+  const dobM = allEng.match(/(?:dob|date\s*of\s*birth)\s*[:\-]?\s*([\d]{1,2}[\/\-.][\d]{1,2}[\/\-.][\d]{2,4})/i)
+            || allEng.match(/\b([\d]{1,2}[\/\-.][\d]{1,2}[\/\-.][\d]{2,4})\b/);
+  if(dobM) f.dob = dobM[1].replace(/\-/g,'/');
+
+  // ── STRUCTURAL FALLBACK for electorName and fatherName ───────
+  // If label-based failed, use position: on an Indian voter ID the elector name
+  // almost always appears in lines 3-10, father name shortly after.
+  // We look for "runs" of Title-Case or ALL-CAPS words that aren't labels.
+  if(!f.electorName || !f.fatherName){
+    const skipRe=/\b(election|commission|india|government|voter|elector|father|husband|sex|address|taluk|district|house|photo|identity|card|date|dob|age|serial|part|republic|of|the|and)\b/i;
+    const epicRe = f.epicNo ? new RegExp(f.epicNo.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')) : null;
+    const feLines = norm(fe).split('\n').map(l=>l.trim()).filter(Boolean);
+
+    const candidates=[];
+    for(const ln of feLines){
+      if(epicRe && epicRe.test(ln)) continue;
+      if(skipRe.test(ln)) continue;
+      if(/^\d/.test(ln) && ln.length<6) continue;  // short serial-like lines
+      const n = extractName(ln, false);
+      if(n && n.split(/\s+/).length>=1 && n.length>=3) candidates.push(n);
+    }
+    // Deduplicate and assign
+    const uniq=[...new Set(candidates)];
+    if(!f.electorName && uniq.length>0) f.electorName=uniq[0];
+    if(!f.fatherName  && uniq.length>1 && uniq[1]!==f.electorName) f.fatherName=uniq[1];
+  }
+
+  // ── Kannada: Elector Name ────────────────────────────────────
   f.electorNameKan = kanField(fk, [
     /ಮತದಾರರ\s*ಹೆಸರು\s*[:\-]?/,
     /ಮತದಾರ\s*ಹೆಸರ\s*[:\-]?/,
-  ]);
-  f.fatherNameKan = kanField(fk, [
-    /ತಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,
-    /ತಂದೆ\s*ಹೆಸರ\s*[:\-]?/,
-    /ಪತಿಯ\s*ಹೆಸರು\s*[:\-]?/,
-    /ಕಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,
+    /ಹೆಸರು\s*[:\-]?\s*$/,            // bare "ಹೆಸರು" at line end
+    /ಮತದಾರನ\s*ಹೆಸರು\s*[:\-]?/,
   ]);
 
-  // Address + Part/Serial — BACK SIDE ONLY
-  if(be && be.trim().length > 20){
-    const addrM=be.match(/address\s*[:\-]\s*([^\n]{5,100})/i);
-    if(addrM) f.addr=clean(addrM[1]);
-    const talukM=be.match(/taluk\s*[:\-]\s*([A-Za-z ()\-]{3,50})/i);
-    const distM=be.match(/district\s*[:\-]\s*([A-Za-z ]{3,40})/i);
+  // ── Kannada: Father/Husband Name ─────────────────────────────
+  f.fatherNameKan = kanField(fk, [
+    /ತಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,
+    /ತಂದೆ\s*[\/]\s*ಗಂಡನ\s*ಹೆಸರು\s*[:\-]?/,
+    /ತಂದೆ\s*ಹೆಸರ\s*[:\-]?/,
+    /ಪತಿಯ\s*ಹೆಸರು\s*[:\-]?/,
+    /ಗಂಡನ\s*ಹೆಸರು\s*[:\-]?/,
+    /ಕಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,      // OCR variant ಕ→ತ
+    /ಹೆಂಡತಿಯ\s*ಹೆಸರು\s*[:\-]?/,
+  ]);
+
+  // ── Kannada structural fallback ───────────────────────────────
+  // If Kannada labels failed, extract first two distinct multi-char Kannada runs
+  if(!f.electorNameKan || !f.fatherNameKan){
+    const kanRuns=[];
+    const kanLines=fk.split('\n').map(l=>l.trim()).filter(Boolean);
+    const noiseRe=/ಸರ್ಕಾರ|ಯೋಜನ|ಚುನಾ|ಭಾರತ|ಆಯೋಗ|ಗುರುತಿನ|ಚೀಟಿ|ಪಟ್ಟಿ|ಮಾಹಿತಿ|ಮತದಾರ|ಮತಗಟ್ಟ|ಸಂಖ್ಯೆ/;
+    for(const ln of kanLines){
+      const cleaned=kanOnly(ln.replace(/[\u200B-\u200D\u200C\uFEFF]/g,''));
+      if(!cleaned || noiseRe.test(cleaned)) continue;
+      const kanChars=(cleaned.match(/[\u0C80-\u0CFF]/g)||[]).length;
+      if(kanChars>=3 && !kanRuns.includes(cleaned)) kanRuns.push(cleaned);
+    }
+    if(!f.electorNameKan && kanRuns[0]) f.electorNameKan=kanRuns[0];
+    if(!f.fatherNameKan  && kanRuns[1] && kanRuns[1]!==f.electorNameKan) f.fatherNameKan=kanRuns[1];
+  }
+
+  // ── Address, Part, Serial — back side ────────────────────────
+  const backText = norm(be+'\n'+bk);
+  if(backText.trim().length>20){
+    // Address: try labelled first, then full lines after 'Address' label
+    const addrM = backText.match(/address\s*[:\-]\s*([^\n]{5,150})/i);
+    if(addrM) f.addr = addrM[1].trim();
+    // Enrich with taluk/district
+    const talukM = backText.match(/taluk\s*[:\-]\s*([A-Za-z (),\-]{3,50})/i);
+    const distM  = backText.match(/district\s*[:\-]\s*([A-Za-z ]{3,40})/i);
+    const pinM   = backText.match(/(?:pin|pincode)\s*[:\-]?\s*(\d{6})/i)
+                || backText.match(/\b(\d{6})\b/);
     const pts=[];
     if(f.addr) pts.push(f.addr);
-    if(talukM) pts.push(clean(talukM[1])+' Taluk');
-    if(distM) pts.push(clean(distM[1])+' District');
+    if(talukM) pts.push(talukM[1].trim()+' Taluk');
+    if(distM)  pts.push(distM[1].trim()+' District');
+    if(pinM)   pts.push('PIN '+pinM[1]);
     if(pts.length) f.addr=pts.join(', ');
-    const partLabelM=be.match(/part\s*no\.?\s*[:\-]\s*(\d{1,4})/i);
-    const serialLabelM=be.match(/serial\s*no\.?\s*[:\-]\s*(\d{1,4})/i)||be.match(/sl\.?\s*no\.?\s*[:\-]\s*(\d{1,4})/i);
-    if(partLabelM) f.part=partLabelM[1];
-    if(serialLabelM) f.serial=serialLabelM[1];
+
+    // Also try Kannada address
+    if(!f.addr){
+      const bkLines=bk.split('\n').map(l=>l.trim()).filter(l=>l.length>5);
+      // Take first long Kannada line from back
+      for(const ln of bkLines){
+        if((ln.match(/[\u0C80-\u0CFF]/g)||[]).length>6){f.addr=ln.slice(0,120);break;}
+      }
+    }
+
+    // Part / Serial
+    const partM   = backText.match(/part\s*no\.?\s*[:\-]\s*(\d{1,4})/i)
+                 || backText.match(/(?:ಭಾಗ|ಭಾಗ\s*ಸಂ)\s*[:\-]?\s*(\d{1,4})/);
+    const serialM = backText.match(/serial\s*no\.?\s*[:\-]\s*(\d{1,5})/i)
+                 || backText.match(/sl\.?\s*no\.?\s*[:\-]\s*(\d{1,5})/i)
+                 || backText.match(/ಕ್ರಮ\s*ಸಂ\.?\s*[:\-]?\s*(\d{1,5})/);
+    if(partM)   f.part   = partM[1];
+    if(serialM) f.serial = serialM[1];
+    // Bare "NNN/PPP" at end of back
     if(!f.part && !f.serial){
-      const tail=be.slice(-60);
-      const slM=tail.match(/\b(\d{1,4})\s*\/\s*(\d{1,4})\s*$/);
+      const slM=backText.match(/\b(\d{1,5})\s*\/\s*(\d{1,4})\s*$/);
       if(slM){f.serial=slM[1];f.part=slM[2];}
     }
   }
+
+  // Finalise: clean all string fields
+  Object.keys(f).forEach(k=>{if(typeof f[k]==='string') f[k]=f[k].replace(/\s+/g,' ').trim();});
   return f;
 }
 
-// Positional name scanner — fallback when label matching fails.
-// Scans every line of the English OCR for plausible proper names,
-// skipping known non-name lines (EPIC, labels, single words, all-caps headings).
-// Returns the best candidate, or '' if none found.
-function scanForName(text, epicNo, alreadyFound){
-  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
-  const skipRe = /\b(election|commission|india|government|voter|elector|father|husband|sex|address|taluk|district|house|name|male|female|photo|identity|card|date|age|serial|part|no\.?)\b/i;
-  const results = [];
-  for(const ln of lines){
-    if(epicNo && ln.includes(epicNo)) continue;
-    if(skipRe.test(ln)) continue;
-    // Pre-clean: strip leading/trailing non-alpha chars (digits, pipes, dots)
-    // so "8 Abdullah Shareef" → "Abdullah Shareef"
-    const cleaned = ln.replace(/^[^A-Za-z]+/, '').replace(/[^A-Za-z\s]+$/, '').trim();
-    if(!cleaned) continue;
-    // Match: 1-5 words, all alphabetic, EACH word must start with capital
-    // This rejects OCR garbage like "etd A" or "BU fi eu TA"
-    const m = cleaned.match(/^([A-Za-z]+(?:\s+[A-Za-z]+){0,4})$/);
-    if(!m) continue;
-    const candidate = m[1].trim();
-    const scanWords = candidate.split(/\s+/);
-    if(!scanWords.every(w => /^[A-Z]/.test(w))) continue;  // every word must start with capital
-    if(alreadyFound && candidate.toLowerCase()===alreadyFound.toLowerCase()) continue;
-    // Require at least 2 words (single word is too ambiguous)
-    if(candidate.split(/\s+/).length < 2) continue;
-    results.push(candidate);
+// Standalone kanOnly used by Kannada structural fallback above
+function kanOnly(s){
+  s=(s||'').replace(/[\u200B-\u200D\u200C\uFEFF\u00AD]/g,'');
+  const tokens=s.split(/\s+/);
+  const kept=[];
+  for(const tok of tokens){
+    if(!tok) continue;
+    const chars=[...tok];
+    const kanCount=chars.filter(ch=>ch>='\u0C80'&&ch<='\u0CFF').length;
+    if(kanCount>=2 && kanCount/chars.length>0.5) kept.push(tok);
+    else break;
   }
-  // Return first result — on a voter ID the name appears near the top
-  return results[0] ? clean(results[0]) : '';
+  return kept.join(' ').trim();
 }
 
-// Label-based English field matcher.
-// Normalises apostrophes/quotes, then for each label pattern:
-//   1. Checks if the pattern matches anywhere in the line
-//   2. Strips the matched label prefix → value on SAME line
-//   3. If same-line value empty, checks next 3 lines for a name
-//   4. Also tries joining adjacent lines (label split by OCR line break)
-function matchEngField(text, labelPatterns){
-  // Normalise smart quotes → straight so patterns work uniformly
-  const norm = s => s
-    .replace(/[\u2018\u2019\u201A\u201B\u2032\u0060]/g,"'")
-    .replace(/[\u201C\u201D\u201E]/g,'"');
-
-  const raw  = norm(text);
-  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
-
-  // A valid English proper name: 1–5 words, all letters (any case).
-  // We strip leading punctuation/digits/pipes before testing.
-  function extractName(s){
-    if(!s) return '';
-    // Strip ALL leading non-alpha chars: digits, pipes, dots, apostrophes, quotes, spaces
-    s = s.replace(/^[^A-Za-z]+/, '').trim();
-    if(!s) return '';
-    // Take only the LEADING alphabetic words — stop at first token containing non-alpha
-    // This handles "Pacha Baig ८८ ८ TU" → ["Pacha","Baig"] ✓
-    const allWords = s.split(/\s+/);
-    const nameWords = [];
-    for(const w of allWords){
-      if(/^[A-Za-z]+$/.test(w)) nameWords.push(w);
-      else break;  // stop at "८८", "TA", digits, etc.
-    }
-    if(nameWords.length < 1) return '';
-    const candidate = nameWords.join(' ');
-    if(candidate.length < 3) return '';
-    // Each word must start with a capital (rejects "etd A", "fi eu")
-    if(!nameWords.every(w => /^[A-Z]/.test(w))) return '';
-    // Reject single common non-name words
-    const lower = candidate.toLowerCase();
-    if(/^(male|female|india|photo|card|date|age|sex|election|commission|identity)$/.test(lower)) return '';
-    return candidate;
-  }
-
-  for(const re of labelPatterns){
-    for(let i = 0; i < lines.length; i++){
-      if(!re.test(lines[i])) continue;
-
-      // Value on same line — strip the label prefix
-      const after = lines[i].replace(re, '').trim();
-      const n1 = extractName(after);
-      if(n1) return clean(n1);
-
-      // Value on next 1-3 lines
-      for(let d = 1; d <= 3; d++){
-        if(i + d < lines.length){
-          const n = extractName(lines[i + d]);
-          if(n) return clean(n);
-        }
-      }
-    }
-    // Also try joining adjacent line pairs (label wraps across OCR line)
-    for(let i = 0; i < lines.length - 1; i++){
-      const joined = lines[i] + ' ' + lines[i+1];
-      if(!re.test(joined)) continue;
-      const after = joined.replace(re, '').trim();
-      const n = extractName(after);
-      if(n) return clean(n);
-    }
-  }
-  return '';
-}
-
-// Kannada field extractor — label anchor + token-by-token Kannada filter.
-// Token filter is the ONLY reliable way to strip OCR garbage like "ಪಾಚಾ ಬೇಗ್ 5 Ae"
-// because the garbage can appear in the middle or end, and may itself contain Kannada.
+// Label-based Kannada field extractor — checks up to 4 lines ahead
 function kanField(kanText, labelPatterns){
-  const lines=kanText.split('\n').map(l=>l.trim()).filter(Boolean);
-
-  // Keep only leading tokens that are >50% Kannada characters.
-  // Stops at the first token that is predominantly non-Kannada.
-  function kanOnly(s){
-    // Strip zero-width chars that OCR embeds inside Kannada words
-    s = s.replace(/[\u200B-\u200D\u200C\uFEFF\u00AD]/g, '');
-    const tokens=s.split(/\s+/);
-    const kept=[];
-    for(const tok of tokens){
-      if(!tok) continue;
-      const chars=[...tok];
-      const kanCount=chars.filter(ch=>ch>='\u0C80'&&ch<='\u0CFF').length;
-      // Require ≥ 2 Kannada codepoints AND >50% Kannada.
-      // Single-char tokens like "ಚ" or "ಮ" are OCR noise, not name words.
-      if(kanCount >= 2 && kanCount/chars.length > 0.5){
-        kept.push(tok);
-      } else {
-        break; // stop at first non-Kannada / single-char token
-      }
-    }
-    return kept.join(' ').trim();
-  }
-
+  const lines=(kanText||'').split('\n').map(l=>l.trim()).filter(Boolean);
   const noiseRe=/ಸರ್ಕಾರ|ಯೋಜನ|ಚುನಾ|ಭಾರತ|ಆಯೋಗ|ಗುರುತಿನ|ಚೀಟಿ|ಪಟ್ಟಿ|ಮಾಹಿತಿ|ವ್ಯಾಪ್ತಿ/;
+
+  function extractKan(s){
+    s=(s||'').replace(/[\u200B-\u200D\u200C\uFEFF]/g,'');
+    const cleaned=kanOnly(s.replace(/^[\s\d|.:–\-]+/,'').trim());
+    if(!cleaned || noiseRe.test(cleaned)) return '';
+    if((cleaned.match(/[\u0C80-\u0CFF]/g)||[]).length<3) return '';
+    return cleaned;
+  }
 
   for(const re of labelPatterns){
     for(let i=0;i<lines.length;i++){
       if(!re.test(lines[i])) continue;
-
-      // Get text after the label on the same line
-      const sameLine=lines[i].replace(re,'').replace(/^[\s:|–\-]+/,'').trim();
-      let cand='';
-      if(sameLine && /[\u0C80-\u0CFF]{2,}/.test(sameLine)){
-        cand=sameLine;
-      } else if(i+1<lines.length){
-        // Next line — accept even if it has some Latin (we'll strip it with kanOnly)
-        const nx=lines[i+1].trim();
-        if(/[\u0C80-\u0CFF]{3,}/.test(nx) && !/:/.test(nx)) cand=nx;
+      // Same line
+      const after=lines[i].replace(re,'').replace(/^[\s:|–\-]+/,'').trim();
+      if(after && /[\u0C80-\u0CFF]{2,}/.test(after)){
+        const k=extractKan(after);
+        if(k) return k;
       }
-      if(!cand) continue;
-
-      // Strip leading OCR artifacts (digits, pipes, colons)
-      cand=cand.replace(/^[\s\d|.:–\-]+/,'').trim();
-
-      // Token-by-token filter: keep only Kannada-dominant tokens from the start
-      cand=kanOnly(cand);
-
-      if(!cand || noiseRe.test(cand)) continue;
-      if((cand.match(/[\u0C80-\u0CFF]/g)||[]).length>=3) return cand;
+      // Next 1-4 lines
+      for(let d=1;d<=4;d++){
+        if(i+d>=lines.length) break;
+        const nx=lines[i+d];
+        if(/[\u0C80-\u0CFF]{3,}/.test(nx) && !/:/.test(nx.slice(0,15))){
+          const k=extractKan(nx);
+          if(k) return k;
+        }
+      }
     }
   }
   return '';
@@ -710,15 +758,16 @@ function kanField(kanText, labelPatterns){
 
 function renderIdFields(f, raw){
   const rows=[
-    {k:"Elector's Name",           v:f.electorName,    copy:true},
-    {k:"Elector's Name (Kannada)", v:f.electorNameKan, copy:true, h:!f.electorNameKan},
-    {k:"Father's Name",            v:f.fatherName,     copy:true},
-    {k:"Father's Name (Kannada)",  v:f.fatherNameKan,  copy:true, h:!f.fatherNameKan},
-    {k:"Sex",                      v:f.sex,                       h:!f.sex},
-    {k:"EPIC No.",                 v:f.epicNo,         copy:true},
-    {k:"Address",                  v:f.addr,           copy:true, w:true, h:!f.addr},
-    {k:"Part No.",                 v:f.part,                      h:!f.part},
-    {k:"Serial No.",               v:f.serial,                    h:!f.serial},
+    {k:"Elector's Name",            v:f.electorName,    copy:true},
+    {k:"ಮತದಾರರ ಹೆಸರು",              v:f.electorNameKan, copy:true, h:!f.electorNameKan},
+    {k:"Father's / Husband's Name", v:f.fatherName,     copy:true},
+    {k:"ತಂದೆ / ಗಂಡನ ಹೆಸರು",         v:f.fatherNameKan,  copy:true, h:!f.fatherNameKan},
+    {k:"Date of Birth",             v:f.dob,                       h:!f.dob},
+    {k:"Sex",                       v:f.sex,                       h:!f.sex},
+    {k:"EPIC No.",                  v:f.epicNo,         copy:true},
+    {k:"Address",                   v:f.addr,           copy:true, w:true, h:!f.addr},
+    {k:"Part No.",                  v:f.part,                      h:!f.part},
+    {k:"Serial No.",                v:f.serial,                    h:!f.serial},
   ].filter(r=>!r.h);
 
   document.getElementById('id-fields').innerHTML=rows.map(r=>`
@@ -731,6 +780,7 @@ function renderIdFields(f, raw){
   document.getElementById('id-out').style.display='block';
   document.getElementById('id-out').scrollIntoView({behavior:'smooth',block:'start'});
 }
+
 
 function copyField(btn){
   const text=btn.dataset.val||'';
@@ -820,7 +870,14 @@ async function scanPdf(){
       for(const {pn,text} of allR) G.entries.push(...parseOcrPage(text,pn));
     }
 
-    G.entries.sort((a,b)=>(a.pageNum-b.pageNum)||((+a.serial||0)-(+b.serial||0)));
+    // Deduplicate: same serial+partNo+pageNum may appear from main+fallback parsers
+  const seen=new Set();
+  G.entries=G.entries.filter(e=>{
+    const key=`${e.pageNum}-${e.serial}-${e.partNo}`;
+    if(seen.has(key)) return false;
+    seen.add(key);return true;
+  });
+  G.entries.sort((a,b)=>(a.pageNum-b.pageNum)||((+a.serial||0)-(+b.serial||0)));
     setPb('pdf-bar','pdf-txt',100,`Done — ${G.entries.length} voter entries found across ${total} pages`);
     document.getElementById('pdf-not-ready').style.display='none';
     const rb=document.getElementById('pdf-ready-banner');
@@ -849,25 +906,23 @@ function parseNativePage(tc, pageNum){
 }
 
 // ── PARSE OCR PAGE ────────────────────────────────────────────
-// Karnataka electoral roll: [serial][houseNo][name][relation][relative][sex][age]
-//
-// OCR PROBLEM: Tesseract often splits one table row across 2–3 lines, e.g.:
-//   "685  122-4  ಪಾಚಾ ಬೇಗ್"          ← no relation → dropped before
-//   "ತಂದೆ  ಖಾಸಿಂಬೇಗ್  ಗಂ  72"        ← relation but no name → dropped before
-//
-// FIX: Reconstruct multi-line rows BEFORE token parsing.
-// A line is a CONTINUATION of the previous row when:
-//   (a) It starts with a relation word (ತಂದೆ / ಗಂಡ / ತಾಯಿ…), OR
-//   (b) Its first relation word appears at position ≤1 and it does NOT start with a digit
-// A line STARTS a new row when it begins with a digit (serial number).
+// Two-phase approach:
+//   Phase 1: every line that starts with a serial number → candidate name row
+//   Phase 2: every line that starts with a relation word → candidate relation row
+//   Phase 3: merge — relation row attaches to most recent serial row
+// This way entries are NEVER dropped just because OCR garbled the relation word.
+// The fallback (parseOcrFallback) also runs in parallel and results are merged.
 function parseOcrPage(text, pageNum, knownPart){
   const rawLines=text.split('\n').map(l=>l.trim()).filter(Boolean);
 
-  // Part number
+  // Extract part number from page header
   let partNo=knownPart||'';
   if(!partNo){
     for(const ln of rawLines.slice(0,30)){
-      const pm=ln.match(/ಭಾಗದ?\s*ಸಂಖ್ಯೆ\s*[:\-]?\s*(\d+)/)||ln.match(/ಭಾಗ\s*[:\-#]\s*(\d+)/i)||ln.match(/part\s*[:\-#]\s*(\d+)/i);
+      const pm=ln.match(/ಭಾಗದ?\s*ಸಂಖ್ಯೆ\s*[:\-]?\s*(\d+)/)
+            ||ln.match(/ಭಾಗ\s*[:\-#]\s*(\d+)/i)
+            ||ln.match(/part\s*[:\-#]\s*(\d+)/i)
+            ||ln.match(/\bpart\b.*?(\d{1,4})/i);
       if(pm){partNo=pm[1];break;}
     }
   }
@@ -877,24 +932,29 @@ function parseOcrPage(text, pageNum, knownPart){
       .replace(/\|/g,' ')
       .replace(/\$(\d)/g,'$1').replace(/^\$\s*/,'')
       .replace(/([\u0C80-\u0CFF])\./g,'$1')
-      .replace(/\u0CCD\u0CCD/g,'\u0CCD')
-      .replace(/[*#@!]+/g,' ')
+      .replace(/\u0CCD\u0CCD/g,'\u0CCD')          // double virama → single
+      .replace(/[*#@!]+/g,' ')                     // asterisks, hash etc.
       .replace(/\s+/g,' ').trim();
   }
-  function canon(t){return t.replace(/[.\-\s\u200B-\u200D\u200C\uFEFF]/g,'');}
+  function canon(t){
+    return t.replace(/[.\-\s\u200B-\u200D\u200C\uFEFF]/g,'');
+  }
+  // Inline normaliser: strip ZW + NFC + NFKC
+  const _n=s=>(s||'').replace(/[\u200B-\u200D\u200C\uFEFF\u00AD]/g,'').normalize('NFC').normalize('NFKC');
 
-  const REL=new Set(['ತಂದೆ','ಗಂಡ','ತಾಯಿ','ಇತರೆ','ಪತಿ','ಸ್ವಂತ','ಮಗ','ಮಗಳು']);
+  const REL=new Set(['ತಂದೆ','ಗಂಡ','ತಾಯಿ','ಇತರೆ','ಪತಿ','ಸ್ವಂತ','ಮಗ','ಮಗಳು','ಪತ್ನಿ']);
   const SEX=new Set(['ಗಂ','ಹೆಂ']);
-  const SKIP=/ಕ್ರಮ\s*ಸಂಖ್ಯೆ|ಮನೆ.*ಫ್ಲಾಟ್|ಮತದಾರರ\s*ಹೆಸರು|ಭಾಗದ?\s*ಸಂಖ್ಯೆ|ರಾಜ್ಯದ\s*ಕೋಡ್|ವಿಧಾನ\s*ಸಭಾ|ಭಾರತ\s*ಚುನಾ|ಸಂಬಂಧ|ಮ\.ಗು\.ಚೀ|ವಿಭಾಗ\s*[:\-]|ಸಂಖ್ಯೆ\s*ಮತ್ತು|ಮತದಾರರ\s*ಪಟ್ಟಿ|ವಿವರಗಳು|ಮತಗಟ್ಟೆ|ಹದ್ದುಬಸ್ತ್|ಕ್ಷೇತ್ರದ|ಮತದಾರರ\s*ಸಂಖ|ಮುಖ್ಯರಸ್ತೆ|ಮತಕ್ಷೇತ್ರ|ವಿಧಾನಸಭಾ|ಕಛೇರಿ/
+  const SKIP=/ಕ್ರಮ\s*ಸಂಖ್ಯೆ|ಮನೆ.*ಫ್ಲಾಟ್|ಮತದಾರರ\s*ಹೆಸರು|ಭಾಗದ?\s*ಸಂಖ್ಯೆ|ರಾಜ್ಯದ\s*ಕೋಡ್|ವಿಧಾನ\s*ಸಭಾ|ಭಾರತ\s*ಚುನಾ|ಸಂಬಂಧ|ಮ\.ಗು\.ಚೀ|ವಿಭಾಗ\s*[:\-]|ಸಂಖ್ಯೆ\s*ಮತ್ತು|ಮತದಾರರ\s*ಪಟ್ಟಿ|ವಿವರಗಳು|ಮತಗಟ್ಟೆ|ಹದ್ದುಬಸ್ತ್|ಕ್ಷೇತ್ರದ|ಮತದಾರರ\s*ಸಂಖ|ಮುಖ್ಯರಸ್ತೆ|ಮತಕ್ಷೇತ್ರ|ವಿಧಾನಸಭಾ|ಕಛೇರಿ/;
+  const HEADER_NAME=/\d|ಮತ್ತು|ರಸ್ತೆ|ವಿವರ|ಸಂಖ್ಯೆ|ಸಂಖೆ|ಹದ್ದು|ಮತಗಟ್ಟೆ|ಕ್ಷೇತ್ರ|ಮನೆ\s*ಸಂ|ಹಳ್ಳಿ|ನಗರ|ವಾರ್ಡ್|ಮಂಡಳಿ|ಮತದಾರ|[,:]/;
 
-  // ── Step 1: Reconstruct multi-line rows ──────────────────────────────────
+  // ── Step 1: Reconstruct multi-line rows ──────────────────────
+  // A row continues when: starts with relation word, or relation is at pos≤1 without leading digit
   const rows=[];
   let pending='';
   for(const raw of rawLines){
     if(SKIP.test(raw)) continue;
     const ln=cleanLn(raw);
     if(!ln||ln.length<2) continue;
-
     const toks=ln.split(/\s+/).filter(Boolean);
     if(!toks.length) continue;
 
@@ -902,60 +962,74 @@ function parseOcrPage(text, pageNum, knownPart){
     const startsWithDigit=/^\d+$/.test(firstCanon);
     const startsWithRel=REL.has(firstCanon);
 
-    // Find position of first relation word
     let relPos=-1;
     for(let i=0;i<toks.length;i++){if(REL.has(canon(toks[i]))){relPos=i;break;}}
 
-    // Continuation: starts with relation, OR relation at pos≤1 with no leading digit
-    const isContinuation = startsWithRel || (relPos>=0 && relPos<=1 && !startsWithDigit);
+    const isContinuation=startsWithRel||(relPos>=0&&relPos<=1&&!startsWithDigit);
 
-    if(isContinuation && pending){
-      pending = pending+' '+ln;
+    if(isContinuation&&pending){
+      pending=pending+' '+ln;
     } else {
       if(pending) rows.push(pending);
-      pending = ln;
+      pending=ln;
     }
   }
   if(pending) rows.push(pending);
 
-  // ── Step 2: Parse each reconstructed row ────────────────────────────────
-  // NOTE: use global nfc() which ALSO strips zero-width chars (ZWNJ etc.)
-  // Local nfc was overriding the global and causing search mismatches.
+  // ── Step 2: Parse each row using multi-anchor strategy ───────
+  // CRITICAL CHANGE: we no longer drop rows with no relation word.
+  // Anchor priority: (1) relation word → (2) sex word → (3) serial + position only
   const entries=[];
 
   for(const row of rows){
     const tokens=row.split(/\s+/).filter(Boolean);
 
-    // Find relation anchor
+    // --- Anchor 1: relation word ---
     let relIdx=-1;
-    for(let t=0;t<tokens.length;t++){if(REL.has(canon(tokens[t]))){relIdx=t;break;}}
-    if(relIdx<0) continue;
+    for(let t=0;t<tokens.length;t++){
+      if(REL.has(canon(tokens[t]))){relIdx=t;break;}
+    }
 
-    // Find sex anchor (after relation)
+    // --- Anchor 2: sex word ---
     let sexIdx=-1;
-    for(let t=relIdx+1;t<tokens.length;t++){if(SEX.has(canon(tokens[t]))){sexIdx=t;break;}}
+    const sexSearchFrom = relIdx>=0 ? relIdx+1 : 0;
+    for(let t=sexSearchFrom;t<tokens.length;t++){
+      if(SEX.has(canon(tokens[t]))){sexIdx=t;break;}
+    }
 
-    // Pre-relation: [serial?] [houseNo?] [name words…]
-    const pre=tokens.slice(0,relIdx);
+    // --- Determine name region cutoff ---
+    // If we have relation: name is before relation.
+    // If no relation but have sex: name is before sex.
+    // If neither: name is the Kannada tokens after serial/house — still capture.
+    const nameCutoff = relIdx>=0 ? relIdx : (sexIdx>=0 ? sexIdx : tokens.length);
+
+    // --- Extract serial + houseNo + name from pre-anchor region ---
+    const pre=tokens.slice(0,nameCutoff);
     let serial='',houseNo='',ps=0;
     if(pre.length>0 && /^\d+$/.test(canon(pre[0]))){serial=canon(pre[0]);ps++;}
     if(pre.length>ps && /^\d+$/.test(canon(pre[ps]))){houseNo=canon(pre[ps]);ps++;}
-    const nameKan=pre.slice(ps).map(t=>canon(t).replace(/[*|#@%]/g,'')).filter(t=>/[\u0C80-\u0CFF]/.test(t)&&t.length>0).join(' ').trim();
 
-    if(!nameKan || nameKan.length<2) continue;
-    // Reject header/address content parsed as names:
-    // Real names are pure Kannada words; headers contain digits, conjunctions, addresses
-    const _headerRe=/\d|ಮತ್ತು|ರಸ್ತೆ|ವಿವರ|ಸಂಖ್ಯೆ|ಹದ್ದು|ಮತಗಟ್ಟೆ|ಕ್ಷೇತ್ರ|ಮನೆ\s*ಸಂ|ಹಳ್ಳಿ|ನಗರ|ವಾರ್ಡ್|ಸಂಖೆ|ಮಂಡಳಿ/;
-    if(_headerRe.test(nameKan)) continue;
-    // Skip rows where the "name" is clearly header/address metadata
-    if(/[,:]/.test(nameKan)) continue;                              // address text has commas/colons
-    if(/\d/.test(nameKan) && nameKan.split(/\s+/).length < 3) continue; // short name with digits = not a name
-    if(/ಮತ್ತು|ಕ್ಷೇತ್ರ|ಮತಗಟ್ಟೆ|ಹದ್ದು|ಸಂಖ|ವಿವರ/.test(nameKan)) continue;  // explicit header words
+    const nameKanRaw=pre.slice(ps)
+      .map(t=>canon(t).replace(/[*|#@%]/g,''))
+      .filter(t=>/[\u0C80-\u0CFF]/.test(t)&&t.length>0)
+      .join(' ').trim();
 
-    const relationType=canon(tokens[relIdx]);
-    const relEnd=sexIdx>=0?sexIdx:tokens.length;
-    const relativeKan=tokens.slice(relIdx+1,relEnd).map(t=>canon(t).replace(/[*|#@%]/g,'')).filter(t=>/[\u0C80-\u0CFF]/.test(t)&&t.length>0).join(' ').trim();
+    if(!nameKanRaw || nameKanRaw.length<2) continue;
+    if(HEADER_NAME.test(nameKanRaw)) continue;
 
+    // --- Extract relative name from post-relation region ---
+    let relativeKanRaw='';
+    let relationType='';
+    if(relIdx>=0){
+      relationType=canon(tokens[relIdx]);
+      const relEnd=sexIdx>=0?sexIdx:tokens.length;
+      relativeKanRaw=tokens.slice(relIdx+1,relEnd)
+        .map(t=>canon(t).replace(/[*|#@%]/g,''))
+        .filter(t=>/[\u0C80-\u0CFF]/.test(t)&&t.length>0)
+        .join(' ').trim();
+    }
+
+    // --- Extract sex, age, EPIC from post-sex region ---
     let sex='',age='',epicNo='';
     if(sexIdx>=0){
       sex=canon(tokens[sexIdx])==='ಗಂ'?'ಗಂ (Male)':'ಹೆಂ (Female)';
@@ -966,16 +1040,25 @@ function parseOcrPage(text, pageNum, knownPart){
       }
     }
 
-    // Inline normalize: strip ZW chars + NFC + NFKC — no global function dependency
-    const _n=s=>(s||'').replace(/[\u200B-\u200D\u200C\uFEFF\u00AD]/g,'').normalize('NFC').normalize('NFKC');
-    entries.push({serial,houseNo,partNo,pageNum,
-      nameKan:_n(nameKan),name:'',
-      relativeKan:_n(relativeKan),relative:'',
-      relationType,sex,age,epicNo,
-      address:houseNo?'House No. '+houseNo:''});
+    entries.push({
+      serial, houseNo, partNo, pageNum,
+      nameKan:_n(nameKanRaw), name:'',
+      relativeKan:_n(relativeKanRaw), relative:'',
+      relationType, sex, age, epicNo,
+      address:houseNo?'House No. '+houseNo:''
+    });
   }
 
-  if(entries.length===0) return parseOcrFallback(text,partNo,pageNum);
+  // ── Step 3: Supplement with fallback for any missed serials ──
+  // Run the number-anchored fallback and add any serials not already captured.
+  const capturedSerials=new Set(entries.map(e=>e.serial).filter(Boolean));
+  const fallbackEntries=parseOcrFallback(text,partNo,pageNum);
+  for(const fe of fallbackEntries){
+    if(!fe.serial || !capturedSerials.has(fe.serial)){
+      entries.push(fe);
+    }
+  }
+
   return entries;
 }
 
@@ -983,32 +1066,42 @@ function parseOcrPage(text, pageNum, knownPart){
 function parseOcrFallback(text,partNo,pageNum){
   const entries=[];
   const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  const _n=s=>(s||'').replace(/[\u200B-\u200D\u200C\uFEFF]/g,'').normalize('NFC').normalize('NFKC');
+  const HEADER_NOISE=/ಕ್ಷೇತ್ರ|ಮತಗಟ್ಟೆ|ಹದ್ದು|ಮುಖ್ಯರಸ್ತೆ|ಸಂಖ|ವಿವರ|ಮತ್ತು|[,:]/;
   let i=0;
   while(i<lines.length){
     const ln=lines[i];
     const ser=ln.match(/^(\d{1,4})[.)]\s*(.*)$/)||ln.match(/^(\d{1,4})\s*$/);
     if(ser&&parseInt(ser[1])>=1&&parseInt(ser[1])<=9999){
-      const serial=ser[1];const block=ser[2]?[ser[2].trim()]:[];
+      const serial=ser[1];
+      const block=ser[2]?[ser[2].trim()]:[];
       let j=i+1;
-      while(j<lines.length&&j<i+10){
+      while(j<lines.length&&j<i+12){
         const nx=lines[j];
         if(/^(\d{1,4})[.)]/.test(nx)||/^(\d{1,4})\s*$/.test(nx)) break;
         if(/ಚುನಾ|ಭಾರತ\s*ಸರ್ಕಾರ/i.test(nx)) break;
         block.push(nx);j++;
       }
-      let nameKan='',relativeKan='',sex='',age='';
+      let nameKan='',relativeKan='',sex='',age='',relationType='';
       for(const b of block){
-        const am=b.match(/(\d{2,3})/);const sm=b.match(/\b(ಗಂ|ಹೆಂ)\b/);const rm=b.match(/\b(ತಂದೆ|ಗಂಡ|ತಾಯಿ|ಇತರೆ)\b/);
+        const ct=b.replace(/[\u200B-\u200D\u200C\uFEFF\u0CCD\u0CCD]/g,m=>m==='\u0CCD\u0CCD'?'\u0CCD':m);
+        const sm=ct.match(/\b(ಗಂ|ಹೆಂ)\b/);
+        const rm=ct.match(/\b(ತಂದೆ|ಗಂಡ|ತಾಯಿ|ಇತರೆ|ಪತಿ|ಪತ್ನಿ)\b/);
+        const am=ct.match(/\b(\d{2,3})\b/);
         if(am&&parseInt(am[1])>0&&parseInt(am[1])<120&&!age) age=am[1];
-        if(sm) sex=sm[1].includes('ಗಂ')?'ಗಂ (Male)':'ಹೆಂ (Female)';
-        if(!nameKan&&/[\u0C80-\u0CFF]{3,}/.test(b)&&!rm&&!sm) nameKan=b;
-        else if(rm&&/[\u0C80-\u0CFF]{3,}/.test(b)) relativeKan=b.replace(rm[0],'').trim();
+        if(sm) sex=sm[1]==='ಗಂ'?'ಗಂ (Male)':'ಹೆಂ (Female)';
+        if(!nameKan&&/[\u0C80-\u0CFF]{3,}/.test(ct)&&!rm&&!sm){
+          if(!HEADER_NOISE.test(ct)) nameKan=ct.replace(/[*#@!]/g,'').trim();
+        } else if(rm&&/[\u0C80-\u0CFF]{3,}/.test(ct)){
+          relationType=rm[1];
+          relativeKan=ct.replace(rm[0],'').replace(/[*#@!]/g,'').trim();
+        }
       }
-      // Skip entries that are clearly header/address text, not voter names
-      const isHeaderNoise = /ಕ್ಷೇತ್ರ|ಮತಗಟ್ಟೆ|ಹದ್ದು|ಮುಖ್ಯರಸ್ತೆ|ಸಂಖ|ವಿವರ|ಶಾಮಣ್ಣ|ಮತ್ತು/.test(nameKan);
-      if(nameKan && !isHeaderNoise){
-        const _n=s=>(s||'').replace(/[\u200B-\u200D\u200C\uFEFF]/g,'').normalize('NFC').normalize('NFKC');
-        entries.push({serial,partNo,pageNum,nameKan:_n(nameKan),name:'',relativeKan:_n(relativeKan),relative:'',sex,age,address:'',houseNo:'',relationType:'',epicNo:''});
+      if(nameKan&&!HEADER_NOISE.test(nameKan)){
+        entries.push({serial,partNo,pageNum,
+          nameKan:_n(nameKan),name:'',
+          relativeKan:_n(relativeKan),relative:'',
+          sex,age,relationType,address:'',houseNo:'',epicNo:''});
       }
       i=j;continue;
     }
@@ -1045,17 +1138,19 @@ function cleanTok(t){
 //    50 — first ⌈2/3 × len⌉ chars match, minimum 3 — catches single-codepoint OCR errors
 //     0 — no meaningful match
 function wordSim(qwRaw, swRaw){
-  // Aggressive normalization: NFC + strip ZW + NFKC for compatibility equivalents
   function norm(x){ return cleanTok((x||'').normalize('NFC')).normalize('NFKC'); }
   const q = norm(qwRaw);
   const s = norm(swRaw);
   if(!q || !s) return 0;
-  if(s === q)                                  return 100;
-  if(s.startsWith(q) || q.startsWith(s))      return 80;
-  if(q.length >= 3 && s.includes(q))          return 60;
-  // Leading-codepoints match: at least 3, at least 2/3 of query length
-  const lead = Math.max(3, Math.ceil(q.length * 2 / 3));
-  if(q.length >= 3 && s.length >= lead && s.slice(0,lead) === q.slice(0,lead)) return 50;
+  if(s === q)                                           return 100;
+  if(s.startsWith(q) || q.startsWith(s))               return 85;
+  if(q.length >= 3 && s.includes(q))                   return 70;
+  // Leading-codepoints match: at least ⌈2/3⌉ of the shorter word
+  const minLen = Math.min(q.length, s.length);
+  const lead = Math.max(3, Math.ceil(minLen * 2 / 3));
+  if(minLen >= 4 && s.slice(0,lead) === q.slice(0,lead)) return 55;
+  // Suffix match: Kannada names often share suffix (ಸ್ವಾಮಿ, ರಾಜ etc.)
+  if(q.length >= 4 && s.length >= 4 && s.slice(-3) === q.slice(-3)) return 40;
   return 0;
 }
 
@@ -1091,7 +1186,9 @@ function doSearch(){
     // Score against all available name fields
     const ns = Math.max(
       wordScore(qName, e.nameKan),
-      wordScore(qName, e.name)
+      wordScore(qName, e.name),
+      // Also try query as single token vs concatenated stored name (no-space variant)
+      wordScore([qName.join('')], e.nameKan.replace(/\s+/g,''))
     );
     // Score against all available relative fields
     const rs = qRel.length
@@ -1109,7 +1206,7 @@ function doSearch(){
   // Sort: highest score first, then by serial number for ties
   scored.sort((a,b) => b.score - a.score || (+a.item.serial||0) - (+b.item.serial||0));
 
-  showResults(scored.slice(0, 8), nfc(rawName)||nfc(rawRel));
+  showResults(scored.slice(0, 15), nfc(rawName)||nfc(rawRel));
 }
 
 function showResults(list, query){
