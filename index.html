@@ -229,7 +229,7 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
   <div class="disclaimer">
     <h3><span class="shield">🔒</span> Your details are safe &amp; private</h3>
     <p>Everything happens on your device — your photos and personal information are <strong>never uploaded, saved, or shared</strong> with anyone. This tool simply reads the text visible on your card, the same way you would read it yourself.</p>
-    <p>VoterTrace is an independent tool built to help citizens easily extract their voter details and search for their name in Kannada electoral rolls. It is <strong>not affiliated with the Election Commission of India</strong> and cannot submit or alter any official records.</p>
+    <p>VoterTrace is an independent tool built to help citizens easily extract their voter details and search for their name in electoral rolls. It is <strong>not affiliated with the Election Commission of India</strong> and cannot submit or alter any official records.</p>
   </div>
 </div>
 
@@ -777,7 +777,24 @@ async function scanPdf(){
       if(newWins) byName.set(key, e);
     }
   }
-  G.entries = [...byName.values()];
+  // Second-pass dedup: same serial+pageNum — keep entry with relationType (main parser)
+  // over one without (fallback), or the one with cleaner (shorter) nameKan
+  const bySerial = new Map();
+  for(const e of [...byName.values()]){
+    if(!e.serial){ bySerial.set(Math.random(),e); continue; }
+    const key2 = e.serial+'|'+e.pageNum+'|'+(e.partNo||'');
+    if(!bySerial.has(key2)){
+      bySerial.set(key2,e);
+    } else {
+      const ex=bySerial.get(key2);
+      // Prefer entry that has a relation type parsed (main parser quality)
+      // If tied, prefer shorter nameKan (less garbage)
+      const newWins = (e.relationType && !ex.relationType)
+                   || (!e.relationType === !ex.relationType && e.nameKan.length < ex.nameKan.length);
+      if(newWins) bySerial.set(key2,e);
+    }
+  }
+  G.entries = [...bySerial.values()];
   G.entries.sort((a,b)=>(a.pageNum-b.pageNum)||((+a.serial||0)-(+b.serial||0)));
     setPb('pdf-bar','pdf-txt',100,`Done — ${G.entries.length} voter entries found across ${total} pages`);
     document.getElementById('pdf-not-ready').style.display='none';
@@ -843,8 +860,10 @@ function parseOcrPage(text, pageNum, knownPart){
   // Inline normaliser: strip ZW + NFC + NFKC
   const _n=s=>(s||'').replace(/[\u200B-\u200D\u200C\uFEFF\u00AD]/g,'').normalize('NFC').normalize('NFKC');
 
-  const REL=new Set(['ತಂದೆ','ಗಂಡ','ತಾಯಿ','ಇತರೆ','ಪತಿ','ಸ್ವಂತ','ಮಗ','ಮಗಳು','ಪತ್ನಿ']);
-  const SEX=new Set(['ಗಂ','ಹೆಂ']);
+  // Normalize set values to NFKC so they match normalized token lookups
+  const _nk=s=>s.normalize('NFC').normalize('NFKC');
+  const REL=new Set(['ತಂದೆ','ಗಂಡ','ತಾಯಿ','ಇತರೆ','ಪತಿ','ಸ್ವಂತ','ಮಗ','ಮಗಳು','ಪತ್ನಿ'].map(_nk));
+  const SEX=new Set(['ಗಂ','ಹೆಂ'].map(_nk));
   const SKIP=/ಕ್ರಮ\s*ಸಂಖ್ಯೆ|ಮನೆ.*ಫ್ಲಾಟ್|ಮತದಾರರ\s*ಹೆಸರು|ಭಾಗದ?\s*ಸಂಖ್ಯೆ|ರಾಜ್ಯದ\s*ಕೋಡ್|ವಿಧಾನ\s*ಸಭಾ|ಭಾರತ\s*ಚುನಾ|ಸಂಬಂಧ|ಮ\.ಗು\.ಚೀ|ವಿಭಾಗ\s*[:\-]|ಸಂಖ್ಯೆ\s*ಮತ್ತು|ಮತದಾರರ\s*ಪಟ್ಟಿ|ವಿವರಗಳು|ಮತಗಟ್ಟೆ|ಹದ್ದುಬಸ್ತ್|ಕ್ಷೇತ್ರದ|ಮತದಾರರ\s*ಸಂಖ|ಮುಖ್ಯರಸ್ತೆ|ಮತಕ್ಷೇತ್ರ|ವಿಧಾನಸಭಾ|ಕಛೇರಿ/;
   const HEADER_NAME=/\d|ಮತ್ತು|ರಸ್ತೆ|ವಿವರ|ಸಂಖ್ಯೆ|ಸಂಖೆ|ಹದ್ದು|ಮತಗಟ್ಟೆ|ಕ್ಷೇತ್ರ|ಮನೆ\s*ಸಂ|ಹಳ್ಳಿ|ನಗರ|ವಾರ್ಡ್|ಮಂಡಳಿ|ಮತದಾರ|[,:]/;
 
@@ -886,16 +905,18 @@ function parseOcrPage(text, pageNum, knownPart){
     const tokens=row.split(/\s+/).filter(Boolean);
 
     // --- Anchor 1: relation word ---
+    // Use _n() (NFC+NFKC) on each token before set lookup — OCR may produce
+    // Unicode-variant forms of ತಂದೆ / ಗಂ that look identical but don't match literally
     let relIdx=-1;
     for(let t=0;t<tokens.length;t++){
-      if(REL.has(canon(tokens[t]))){relIdx=t;break;}
+      if(REL.has(_n(canon(tokens[t])))){relIdx=t;break;}
     }
 
     // --- Anchor 2: sex word ---
     let sexIdx=-1;
     const sexSearchFrom = relIdx>=0 ? relIdx+1 : 0;
     for(let t=sexSearchFrom;t<tokens.length;t++){
-      if(SEX.has(canon(tokens[t]))){sexIdx=t;break;}
+      if(SEX.has(_n(canon(tokens[t])))){sexIdx=t;break;}
     }
 
     // --- Determine name region cutoff ---
@@ -917,6 +938,9 @@ function parseOcrPage(text, pageNum, knownPart){
 
     if(!nameKanRaw || nameKanRaw.length<2) continue;
     if(HEADER_NAME.test(nameKanRaw)) continue;
+    // Reject if nameKan contains digits, slashes, or Latin chars — OCR house/address bleed-in
+    if(/[0-9\/\\]/.test(nameKanRaw)) continue;
+    if(/[A-Za-z]{2,}/.test(nameKanRaw)) continue;  // 2+ consecutive Latin = garbage token
 
     // --- Extract relative name from post-relation region ---
     let relativeKanRaw='';
@@ -999,7 +1023,9 @@ function parseOcrFallback(text,partNo,pageNum){
           relativeKan=ct.replace(rm[0],'').replace(/[*#@!]/g,'').trim();
         }
       }
-      if(nameKan&&!HEADER_NOISE.test(nameKan)){
+      // Also reject nameKan containing digits, slashes, or Latin chars (OCR address bleed-in)
+      const hasGarbage = /[0-9\/]/.test(nameKan) || /[A-Za-z]{2,}/.test(nameKan);
+      if(nameKan&&!HEADER_NOISE.test(nameKan)&&!hasGarbage){
         entries.push({serial,partNo,pageNum,
           nameKan:_n(nameKan),name:'',
           relativeKan:_n(relativeKan),relative:'',
