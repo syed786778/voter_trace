@@ -760,13 +760,24 @@ async function scanPdf(){
       for(const {pn,text} of allR) G.entries.push(...parseOcrPage(text,pn));
     }
 
-    // Deduplicate: same serial+partNo+pageNum may appear from main+fallback parsers
-  const seen=new Set();
-  G.entries=G.entries.filter(e=>{
-    const key=`${e.pageNum}-${e.serial}-${e.partNo}`;
-    if(seen.has(key)) return false;
-    seen.add(key);return true;
-  });
+    // Deduplicate: main parser + fallback can create entries for the same person.
+  // Key by nameKan+pageNum — same person on same page = same name.
+  // When duplicates found, prefer the entry with the longest serial (OCR sometimes
+  // drops digits: "968" → "98"; longer string = more complete OCR read).
+  const byName = new Map();
+  for(const e of G.entries){
+    const key = (e.nameKan||e.name||'?') + '|' + e.pageNum;
+    if(!byName.has(key)){
+      byName.set(key, e);
+    } else {
+      const existing = byName.get(key);
+      // Keep whichever has more serial digits; if tied, prefer the one with a relation
+      const newWins = (String(e.serial||'').length > String(existing.serial||'').length)
+                   || (String(e.serial||'').length === String(existing.serial||'').length && e.relationType && !existing.relationType);
+      if(newWins) byName.set(key, e);
+    }
+  }
+  G.entries = [...byName.values()];
   G.entries.sort((a,b)=>(a.pageNum-b.pageNum)||((+a.serial||0)-(+b.serial||0)));
     setPb('pdf-bar','pdf-txt',100,`Done — ${G.entries.length} voter entries found across ${total} pages`);
     document.getElementById('pdf-not-ready').style.display='none';
@@ -961,7 +972,8 @@ function parseOcrFallback(text,partNo,pageNum){
   let i=0;
   while(i<lines.length){
     const ln=lines[i];
-    const ser=ln.match(/^(\d{1,4})[.)]\s*(.*)$/)||ln.match(/^(\d{1,4})\s*$/);
+    // Require serial ≥ 2 digits (single digit = likely house/age fragment, not serial)
+    const ser=ln.match(/^(\d{2,4})[.)]\s*(.*)$/)||ln.match(/^(\d{2,4})\s*$/);
     if(ser&&parseInt(ser[1])>=1&&parseInt(ser[1])<=9999){
       const serial=ser[1];
       const block=ser[2]?[ser[2].trim()]:[];
@@ -1007,6 +1019,20 @@ function parseOcrFallback(text,partNo,pageNum){
 function translitKan(str){
   if(!str) return '';
   str = str.replace(/[\u200B-\u200D\u200C\uFEFF]/g,'').normalize('NFC');
+  // Substitute known relation/sex words with English BEFORE phonetic conversion
+  // so they render as "Father", "Husband" etc. instead of "TaoDe", "GaoDa"
+  str = str
+    .replace(/ತಂದೆ/g, 'Father')
+    .replace(/ಗಂಡ/g,  'Husband')
+    .replace(/ತಾಯಿ/g, 'Mother')
+    .replace(/ಪತಿ/g,  'Husband')
+    .replace(/ಪತ್ನಿ/g,'Wife')
+    .replace(/ಮಗ/g,   'Son')
+    .replace(/ಮಗಳು/g,'Daughter')
+    .replace(/ಇತರೆ/g, 'Other')
+    .replace(/ಸ್ವಂತ/g,'Self')
+    .replace(/ಗಂ/g,  'Male')
+    .replace(/ಹೆಂ/g, 'Female');
 
   // Independent vowels
   const IV = {
