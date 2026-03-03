@@ -229,7 +229,7 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
   <div class="disclaimer">
     <h3><span class="shield">🔒</span> Your details are safe &amp; private</h3>
     <p>Everything happens on your device — your photos and personal information are <strong>never uploaded, saved, or shared</strong> with anyone. This tool simply reads the text visible on your card, the same way you would read it yourself.</p>
-    <p>VoterTrace is an independent tool built to help citizens easily extract their voter details and search for their name in electoral rolls. It is <strong>not affiliated with the Election Commission of India</strong> and cannot submit or alter any official records.</p>
+    <p>VoterTrace is an independent tool built to help citizens easily extract their voter details and search for their name in Kannada electoral rolls. It is <strong>not affiliated with the Election Commission of India</strong> and cannot submit or alter any official records.</p>
   </div>
 </div>
 
@@ -1013,120 +1013,6 @@ function parseOcrFallback(text,partNo,pageNum){
 }
 
 
-// ── KANNADA TRANSLITERATOR ────────────────────────────────────
-// Phonetic Kannada→English for displaying names in electoral results.
-// Based on ITRANS/ISO-15919 mappings for South Indian scripts.
-function translitKan(str){
-  if(!str) return '';
-  str = str.replace(/[\u200B-\u200D\u200C\uFEFF]/g,'').normalize('NFC');
-  // Substitute known relation/sex words with English BEFORE phonetic conversion
-  // so they render as "Father", "Husband" etc. instead of "TaoDe", "GaoDa"
-  str = str
-    .replace(/ತಂದೆ/g, 'Father')
-    .replace(/ಗಂಡ/g,  'Husband')
-    .replace(/ತಾಯಿ/g, 'Mother')
-    .replace(/ಪತಿ/g,  'Husband')
-    .replace(/ಪತ್ನಿ/g,'Wife')
-    .replace(/ಮಗ/g,   'Son')
-    .replace(/ಮಗಳು/g,'Daughter')
-    .replace(/ಇತರೆ/g, 'Other')
-    .replace(/ಸ್ವಂತ/g,'Self')
-    .replace(/ಗಂ/g,  'Male')
-    .replace(/ಹೆಂ/g, 'Female');
-
-  // Independent vowels
-  const IV = {
-    'ಅ':'a','ಆ':'aa','ಇ':'i','ಈ':'ee','ಉ':'u','ಊ':'oo',
-    'ಋ':'ru','ಎ':'e','ಏ':'ae','ಐ':'ai','ಒ':'o','ಓ':'oo','ಔ':'au',
-    'ಅಂ':'am','ಅಃ':'ah'
-  };
-  // Consonants (with inherent 'a')
-  const CON = {
-    'ಕ':'k','ಖ':'kh','ಗ':'g','ಘ':'gh','ಙ':'ng',
-    'ಚ':'ch','ಛ':'chh','ಜ':'j','ಝ':'jh','ಞ':'ny',
-    'ಟ':'t','ಠ':'th','ಡ':'d','ಢ':'dh','ಣ':'n',
-    'ತ':'t','ಥ':'th','ದ':'d','ಧ':'dh','ನ':'n',
-    'ಪ':'p','ಫ':'ph','ಬ':'b','ಭ':'bh','ಮ':'m',
-    'ಯ':'y','ರ':'r','ಱ':'r','ಲ':'l','ವ':'v',
-    'ಶ':'sh','ಷ':'sh','ಸ':'s','ಹ':'h',
-    'ಳ':'l','ೞ':'l','ಕ್ಷ':'ksh','ಜ್ಞ':'gn'
-  };
-  // Vowel diacritics (matras)
-  const MAT = {
-    'ಾ':'aa','ಿ':'i','ೀ':'ee','ು':'u','ೂ':'oo',
-    'ೃ':'ru','ೆ':'e','ೇ':'ae','ೈ':'ai',
-    'ೊ':'o','ೋ':'oo','ೌ':'au',
-    'ಂ':'m','ಃ':'h',
-    '\u0CCD':''  // virama — suppress inherent 'a'
-  };
-
-  let out = '';
-  const chars = [...str];
-  let i = 0;
-
-  while(i < chars.length){
-    const ch = chars[i];
-    const cp = ch.codePointAt(0);
-
-    // Space / non-Kannada passthrough
-    if(cp < 0x0C80 || cp > 0x0CFF){
-      // Capitalise first letter of each word for readability
-      out += (out==='' || out.endsWith(' ')) ? ch.toUpperCase() : ch;
-      i++; continue;
-    }
-
-    // Check two-char combos first (ಕ್ಷ, ಜ್ಞ)
-    const two = ch + (chars[i+1]||'') + (chars[i+2]||'');
-    if(two.startsWith('ಕ್ಷ')){ out += (out===''||out.endsWith(' '))?'Ksh':'ksh'; i+=3; continue; }
-    if(two.startsWith('ಜ್ಞ')){ out += (out===''||out.endsWith(' '))?'Gn':'gn';   i+=3; continue; }
-
-    // Independent vowel
-    if(IV[ch] !== undefined){
-      const v = IV[ch];
-      out += (out===''||out.endsWith(' ')) ? v[0].toUpperCase()+v.slice(1) : v;
-      i++; continue;
-    }
-
-    // Consonant
-    if(CON[ch] !== undefined){
-      const base = CON[ch];
-      // Peek at next char for matra or virama
-      const nxt = chars[i+1]||'';
-      const ncp = nxt.codePointAt(0)||0;
-      const isMatra = ncp>=0x0CBE && ncp<=0x0CCC;
-      const isVirama = ncp===0x0CCD;
-      const isAnu = ncp===0x0C82; // anusvara ಂ
-      const isVis = ncp===0x0C83; // visarga ಃ
-
-      const prefix = (out===''||out.endsWith(' '));
-      const bs = prefix ? base[0].toUpperCase()+base.slice(1) : base;
-
-      if(isVirama){
-        out += bs; // no inherent vowel
-        i+=2; continue;
-      }
-      if(isMatra){
-        const v = MAT[nxt]||'';
-        out += bs + v;
-        i+=2; continue;
-      }
-      if(isAnu){ out += bs+'a'+'m'; i+=2; continue; }
-      if(isVis){ out += bs+'a'+'h'; i+=2; continue; }
-      // Default: consonant + inherent 'a'
-      out += bs + 'a';
-      i++; continue;
-    }
-
-    // Matra / anusvara / visarga standalone (shouldn't normally appear alone, but handle)
-    if(MAT[ch] !== undefined){ out += MAT[ch]||''; i++; continue; }
-
-    // Digits and other Kannada chars — passthrough
-    out += ch; i++;
-  }
-
-  // Capitalize each word
-  return out.replace(/\b\w/g, c=>c.toUpperCase()).trim();
-}
 
 // ── SEARCH ───────────────────────────────────────────────────
 // Word-level scorer — no character-level fuzzy matching.
@@ -1258,11 +1144,7 @@ function showResults(list, query){
         <div class="result-top-row">
           <div style="min-width:0;flex:1">
             <div class="result-name">${nm}</div>
-            <div style="font-size:13px;color:#2563eb;font-weight:600;margin-top:2px">${translitKan(nm)}</div>
-            ${rel?`<div class="result-rel" style="margin-top:6px">
-              <span style="color:#64748b">${relLbl?relLbl+': ':''}</span><b>${rel}</b>
-              <span style="font-size:12px;color:#2563eb;font-weight:500;margin-left:4px">(${translitKan(rel)})</span>
-            </div>`:''}
+            ${rel?`<div class="result-rel" style="margin-top:6px">${relLbl?relLbl+': ':''}<b>${rel}</b></div>`:''}
           </div>
           <span class="badge ${bc}">${pct}%</span>
         </div>
@@ -1318,11 +1200,7 @@ function doBrowse(){
       <div class="result-top-row">
         <div style="min-width:0;flex:1">
           <div class="result-name" style="font-size:16px">${e.nameKan||e.name||'—'}</div>
-          <div style="font-size:12px;color:#2563eb;font-weight:600;margin-top:1px">${translitKan(e.nameKan||e.name||'')}</div>
-          ${rel?`<div class="result-rel" style="margin-top:4px">
-            <span style="color:#64748b">${relLbl?relLbl+': ':''}</span><b>${rel}</b>
-            <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:4px">(${translitKan(rel)})</span>
-          </div>`:''}
+          ${rel?`<div class="result-rel" style="margin-top:4px">${relLbl?relLbl+': ':''}<b>${rel}</b></div>`:''}
         </div>
       </div>
       <div class="result-tags" style="margin-top:8px">
