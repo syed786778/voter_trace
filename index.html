@@ -592,10 +592,40 @@ function extractId(fe, fk, be, bk){
   ]);
   f.fatherNameKan = kanField(fk, [
     /ತಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,
+    /ತಂದೆ\s*[/]\s*ಗಂಡನ\s*ಹೆಸರು\s*[:\-]?/,
     /ತಂದೆ\s*ಹೆಸರ\s*[:\-]?/,
+    /ತಂದೆ\s*ಹೆಸರು\s*[:\-]?/,
     /ಪತಿಯ\s*ಹೆಸರು\s*[:\-]?/,
+    /ಗಂಡನ\s*ಹೆಸರು\s*[:\-]?/,
     /ಕಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,
+    /ಪತಿ\s*ಹೆಸರ\s*[:\-]?/,
   ]);
+
+  // Positional fallback: if kanField found electorNameKan but not fatherNameKan,
+  // scan all Kannada lines and take the next distinct Kannada name after the elector name
+  if(f.electorNameKan && !f.fatherNameKan){
+    const noiseRe2=/ಸರ್ಕಾರ|ಯೋಜನ|ಚುನಾ|ಭಾರತ|ಆಯೋಗ|ಗುರುತಿನ|ಚೀಟಿ|ಪಟ್ಟಿ|ಮಾಹಿತಿ|ಮತದಾರ|ಸಂಖ್ಯೆ|ವ್ಯಾಪ್ತಿ/;
+    const kanLines=fk.split('\n').map(l=>l.trim()).filter(Boolean);
+    let foundElector=false;
+    for(const ln of kanLines){
+      // Strip zero-width chars
+      const cl=ln.replace(/[\u200B-\u200D\u200C\uFEFF]/g,'');
+      const kanCount=(cl.match(/[\u0C80-\u0CFF]/g)||[]).length;
+      if(kanCount<3 || noiseRe2.test(cl)) continue;
+      // Simple kanOnly: keep leading Kannada tokens
+      const toks=cl.split(/\s+/);
+      const kept=[];
+      for(const t of toks){
+        const chars=[...t];
+        const kc=chars.filter(ch=>ch>='\u0C80'&&ch<='\u0CFF').length;
+        if(kc>=2&&kc/chars.length>0.5) kept.push(t); else break;
+      }
+      const name=kept.join(' ').trim();
+      if(!name||name.length<3) continue;
+      if(name===f.electorNameKan){foundElector=true;continue;}
+      if(foundElector){f.fatherNameKan=name;break;}
+    }
+  }
 
   // Address + Part/Serial — BACK SIDE ONLY
   if(be && be.trim().length > 20){
@@ -725,9 +755,15 @@ function kanField(kanText, labelPatterns){
       let cand='';
       if(sameLine && /[\u0C80-\u0CFF]{2,}/.test(sameLine)){
         cand=sameLine;
-      } else if(i+1<lines.length){
-        const nx=lines[i+1].trim();
-        if(/[\u0C80-\u0CFF]{3,}/.test(nx) && !/:/.test(nx)) cand=nx;
+      } else {
+        // Look up to 3 lines ahead for the value
+        for(let d=1;d<=3;d++){
+          if(i+d>=lines.length) break;
+          const nx=lines[i+d].trim();
+          // Skip if this line looks like another label
+          if(/:/.test(nx.slice(0,20))) continue;
+          if(/[\u0C80-\u0CFF]{3,}/.test(nx)){cand=nx;break;}
+        }
       }
       if(!cand) continue;
       cand=cand.replace(/^[\s\d|.:–\-]+/,'').trim();
@@ -761,6 +797,22 @@ function renderIdFields(f, raw){
   document.getElementById('id-raw').textContent=raw;
   document.getElementById('id-out').style.display='block';
   document.getElementById('id-out').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function copyField(btn){
+  const text = btn.dataset.val || '';
+  if(!text) return;
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='Copied!'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='Copy'; btn.classList.remove('copied'); }, 1800);
+  }).catch(()=>{
+    const ta=document.createElement('textarea');
+    ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent='Copied!'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='Copy'; btn.classList.remove('copied'); }, 1800);
+  });
 }
 
 // ── PDF SCAN ─────────────────────────────────────────────────
