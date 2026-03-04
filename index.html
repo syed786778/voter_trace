@@ -142,6 +142,7 @@ details{margin-top:14px}
 details summary{font-size:12px;color:#94a3b8;cursor:pointer;user-select:none}
 details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;font-size:10px;color:#64748b;white-space:pre-wrap;word-break:break-word;max-height:180px;overflow-y:auto;font-family:monospace}
 ::-webkit-scrollbar{width:5px}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.4)}}
 ::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:3px}
 
 /* ── DISCLAIMER ── */
@@ -175,13 +176,61 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
   <span class="topbar-logo">VoterTrace</span>
   <button class="tab-btn on" id="t1" onclick="go('voter-id','t1')">Voter ID Reader</button>
   <button class="tab-btn"    id="t2" onclick="go('roll-search','t2')">Electoral Roll Search</button>
-  <button class="tab-btn"    id="t3" onclick="go('links-page','t3')">Important Links</button>
+  <button class="tab-btn"    id="t3" onclick="go('links-page','t3')" style="position:relative">🔗 Important Links<span id="links-dot" style="position:absolute;top:6px;right:6px;width:7px;height:7px;background:#f59e0b;border-radius:50%;animation:pulse-dot 2s infinite"></span></button>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0">
+    <button onclick="shareApp()" style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#e2e8f0;font-size:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.16)'" onmouseout="this.style.background='rgba(255,255,255,.08)'">
+      <span style="font-size:14px">🔗</span> Share
+    </button>
+    <span style="font-size:11px;color:#64748b;line-height:1.3;text-align:right;white-space:nowrap">
+      By <strong style="color:#94a3b8">Syed Rashad</strong><br>
+      <span style="color:#475569;font-style:italic">Fee Sabilillah</span>
+    </span>
+  </div>
+</div>
+
+<!-- Share modal -->
+<div id="share-modal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.5);align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:400px;width:90%;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <span style="font-size:16px;font-weight:800;color:#0f172a">🔗 Share VoterTrace</span>
+      <button onclick="closeShare()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;line-height:1">×</button>
+    </div>
+    <p style="font-size:13px;color:#64748b;margin-bottom:16px">Share this tool with friends, family, and your community.</p>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input id="share-url" type="text" readonly style="flex:1;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;color:#0f172a;background:#f8fafc;font-family:Inter,sans-serif;outline:none">
+      <button id="copy-url-btn" onclick="copyShareUrl()" style="padding:10px 16px;background:#2563eb;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap;transition:all .15s">Copy</button>
+    </div>
+    <div id="share-url-hint" style="display:none;margin-top:8px;padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:12px;color:#1e40af;line-height:1.5">
+      💡 <strong>To share:</strong> host this HTML file online (e.g. GitHub Pages, Netlify, Google Drive), then paste your link above. WhatsApp &amp; Telegram will use whatever URL you enter.
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button onclick="shareWhatsApp()" style="flex:1;padding:10px;background:#25D366;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">📱 WhatsApp</button>
+      <button onclick="shareTelegram()" style="flex:1;padding:10px;background:#229ED9;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">✈️ Telegram</button>
+    </div>
+  </div>
 </div>
 
 <!-- PAGE 1: VOTER ID -->
 <div class="page on" id="voter-id">
   <p class="page-title">Voter ID Reader</p>
   <p class="page-sub">Upload your Voter ID card to instantly read and extract all your details.</p>
+
+  <!-- Photo tips -->
+  <div style="background:#fffbeb;border:1.5px solid #fcd34d;border-radius:12px;padding:11px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px">
+    <span style="font-size:20px;flex-shrink:0;margin-top:1px">📸</span>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:5px">Image Upload tips for best results</div>
+      <div style="font-size:12px;color:#78350f;line-height:1.6">
+        <span style="color:#16a34a;font-weight:700">✓</span> Flat, well-lit &amp; straight &nbsp;
+        <span style="color:#16a34a;font-weight:700">✓</span> Card fully in frame &nbsp;
+        <span style="color:#dc2626;font-weight:700">✗</span> Blurry / angled / glare
+      </div>
+      <div style="font-size:11px;color:#92400e;margin-top:5px;display:flex;align-items:flex-start;gap:4px">
+        <span style="flex-shrink:0">⚠️</span>
+        <span><strong>Cards issued before ~2000</strong> may have missing/different EPIC No. or inaccurate fields due to faded print.</span>
+      </div>
+    </div>
+  </div>
 
   <div class="box">
     <div class="box-head">Upload Card Images</div>
@@ -1274,6 +1323,60 @@ document.addEventListener('keydown',e=>{
     console.log('Total:',G.entries.length);
     alert('Check browser console (F12) for stored entries dump.');
   }
+});
+
+// ── SHARE ────────────────────────────────────────────────────
+function shareApp(){
+  const raw = window.location.href;
+  // Detect sandbox/preview environments where no real URL exists
+  const isSandbox = !raw || raw === 'about:srcdoc' || raw.startsWith('about:') || raw.startsWith('blob:') || raw.includes('srcdoc');
+  const url = isSandbox ? '' : raw;
+  const inp = document.getElementById('share-url');
+  const hint = document.getElementById('share-url-hint');
+  if(isSandbox){
+    inp.value = '';
+    inp.placeholder = 'Paste your hosted URL here…';
+    inp.readOnly = false;
+    inp.focus();
+    hint.style.display = 'block';
+  } else {
+    inp.value = url;
+    inp.readOnly = true;
+    hint.style.display = 'none';
+  }
+  document.getElementById('share-modal').style.display = 'flex';
+}
+function closeShare(){
+  document.getElementById('share-modal').style.display = 'none';
+}
+function copyShareUrl(){
+  const inp = document.getElementById('share-url');
+  const url = inp.value.trim();
+  if(!url){ inp.focus(); return; }
+  const btn = document.getElementById('copy-url-btn');
+  navigator.clipboard.writeText(url).then(()=>{
+    btn.textContent = '✓ Copied!'; btn.style.background = '#16a34a';
+    setTimeout(()=>{ btn.textContent = 'Copy'; btn.style.background = '#2563eb'; }, 2000);
+  }).catch(()=>{
+    inp.select(); document.execCommand('copy');
+    btn.textContent = '✓ Copied!'; btn.style.background = '#16a34a';
+    setTimeout(()=>{ btn.textContent = 'Copy'; btn.style.background = '#2563eb'; }, 2000);
+  });
+}
+function shareWhatsApp(){
+  const url = document.getElementById('share-url').value.trim();
+  if(!url){ document.getElementById('share-url').focus(); return; }
+  const msg = encodeURIComponent('Check out VoterTrace — instantly read your Voter ID card and search Karnataka electoral rolls: ' + url);
+  window.open('https://wa.me/?text='+msg, '_blank');
+}
+function shareTelegram(){
+  const url = encodeURIComponent(document.getElementById('share-url').value.trim()||window.location.href);
+  const msg = encodeURIComponent('VoterTrace — read your Voter ID & search Karnataka electoral rolls');
+  window.open('https://t.me/share/url?url='+url+'&text='+msg, '_blank');
+}
+// Close modal on backdrop click
+document.getElementById('share-modal').addEventListener('click', function(e){
+  if(e.target === this) closeShare();
 });
 
 // ── QR CODES ──────────────────────────────────────────────────
