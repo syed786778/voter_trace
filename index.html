@@ -180,6 +180,31 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
 .disclaimer .shield{font-size:18px}
 .disclaimer h3{font-size:13px;}
 
+/* ── VOTER FORMS ── */
+.form-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;margin-bottom:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.form-header{display:flex;align-items:flex-start;gap:14px;padding:18px 20px 14px;border-bottom:1px solid #f1f5f9}
+.form-badge{font-size:12px;font-weight:800;padding:5px 12px;border-radius:8px;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.f6{background:#dbeafe;color:#1d4ed8}.f8{background:#dcfce7;color:#15803d}
+.f8a{background:#fef3c7;color:#92400e}.f7{background:#fee2e2;color:#b91c1c}
+.f6b{background:#f3e8ff;color:#7c3aed}
+.form-title{font-size:14px;font-weight:700;color:#0f172a;line-height:1.4}
+.form-subtitle{font-size:12px;color:#64748b;margin-top:3px;line-height:1.4}
+.form-body{padding:16px 20px}
+.form-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#94a3b8;margin-bottom:8px}
+.form-docs{display:flex;flex-wrap:wrap;gap:6px}
+.doc-tag{font-size:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;color:#475569}
+.form-steps{padding-left:18px;margin:0}
+.form-steps li{font-size:13px;color:#334155;line-height:1.6;margin-bottom:4px}
+.form-steps li strong{color:#0f172a}
+.form-steps li em{color:#2563eb;font-style:normal;font-weight:600}
+.form-link-btn{display:inline-flex;margin-top:14px;padding:9px 18px;background:#2563eb;color:#fff;border-radius:9px;font-size:13px;font-weight:700;text-decoration:none;transition:background .15s}
+.form-link-btn:hover{background:#1d4ed8}
+@media(max-width:600px){
+  .form-header{flex-direction:column;gap:8px}
+  .form-body{padding:14px 16px}
+  .form-header{padding:14px 16px 12px}
+}
+
 /* ── LINKS SECTION ── */
 .links-grid{display:grid;grid-template-columns:1fr;gap:12px}
 .link-card{display:flex;align-items:flex-start;gap:14px;padding:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;text-decoration:none;transition:all .18s;cursor:pointer}
@@ -200,6 +225,7 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
   <button class="tab-btn on" id="t1" onclick="go('voter-id','t1')">Voter ID Reader</button>
   <button class="tab-btn"    id="t2" onclick="go('roll-search','t2')">Electoral Roll Search</button>
   <button class="tab-btn"    id="t3" onclick="go('links-page','t3')" style="position:relative">🔗 Important Links<span id="links-dot" style="position:absolute;top:6px;right:6px;width:7px;height:7px;background:#f59e0b;border-radius:50%;animation:pulse-dot 2s infinite"></span></button>
+  <button class="tab-btn"    id="t4" onclick="go('forms-page','t4')">📋 Voter Forms</button>
   <div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0">
     <button onclick="shareApp()" class="share-btn-wrap" style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#e2e8f0;font-size:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.16)'" onmouseout="this.style.background='rgba(255,255,255,.08)'">
       <span style="font-size:14px">🔗</span> Share
@@ -239,7 +265,7 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
   <div style="background:#fffbeb;border:1.5px solid #fcd34d;border-radius:12px;padding:11px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px">
     <span style="font-size:20px;flex-shrink:0;margin-top:1px">📸</span>
     <div style="flex:1;min-width:0">
-      <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:5px">Image tips for best results</div>
+      <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:5px">Photo tips for best results</div>
       <div style="font-size:12px;color:#78350f;line-height:1.6">
         <span style="color:#16a34a;font-weight:700">✓</span> Flat, well-lit &amp; straight &nbsp;
         <span style="color:#16a34a;font-weight:700">✓</span> Card fully in frame &nbsp;
@@ -298,7 +324,7 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
   <div class="disclaimer">
     <h3><span class="shield">🔒</span> Your details are safe &amp; private</h3>
     <p>Everything happens on your device — your photos and personal information are <strong>never uploaded, saved, or shared</strong> with anyone. This tool simply reads the text visible on your card, the same way you would read it yourself.</p>
-    <p>VoterTrace is an independent tool built to help citizens easily extract their voter details and search for their name in electoral rolls. It is <strong>not affiliated with the Election Commission of India</strong> and cannot submit or alter any official records.</p>
+    <p>VoterTrace is an independent tool built to help citizens easily extract their voter details and search for their name in Kannada electoral rolls. It is <strong>not affiliated with the Election Commission of India</strong> and cannot submit or alter any official records.</p>
   </div>
 
   <div style="text-align:center;padding:8px 0 4px;opacity:.85">
@@ -444,6 +470,160 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
   <div class="disclaimer" style="margin-top:4px">
     <h3>ℹ️ About VoterTrace</h3>
     <p>VoterTrace is a free, independent civic tool — not affiliated with the Election Commission of India. For any official voter services, please use the links above.</p>
+  </div>
+</div>
+
+<!-- PAGE 4: VOTER FORMS -->
+<div class="page" id="forms-page">
+  <p class="page-title">Voter ID — Forms Guide</p>
+  <p class="page-sub">Know which form to fill, what documents to carry, and how to do it online — all in one place.</p>
+
+  <!-- Form 6 -->
+  <div class="form-card">
+    <div class="form-header">
+      <div class="form-badge f6">Form 6</div>
+      <div>
+        <div class="form-title">New Voter Registration / Shifting from Another Constituency</div>
+        <div class="form-subtitle">Use this if you are enrolling for the first time OR moved to a new constituency</div>
+      </div>
+    </div>
+    <div class="form-body">
+      <div class="form-section-label">📄 Documents Required</div>
+      <div class="form-docs">
+        <span class="doc-tag">Aadhaar Card</span>
+        <span class="doc-tag">Passport-size photo</span>
+        <span class="doc-tag">Proof of age (Birth certificate / 10th marksheet)</span>
+        <span class="doc-tag">Proof of residence (Aadhaar / Utility bill / Bank passbook)</span>
+      </div>
+      <div class="form-section-label" style="margin-top:14px">🖥️ How to apply online</div>
+      <ol class="form-steps">
+        <li>Go to <strong>voters.eci.gov.in</strong> and click <em>"New Registration"</em></li>
+        <li>Select <strong>Form 6</strong> and fill in your personal details, date of birth and current address</li>
+        <li>Upload a passport-size photo and your age &amp; address proof documents</li>
+        <li>Submit — you'll receive an application reference number by SMS/email</li>
+        <li>A BLO (Booth Level Officer) may visit to verify your address</li>
+      </ol>
+      <a class="form-link-btn" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">Apply via voters.eci.gov.in →</a>
+    </div>
+  </div>
+
+  <!-- Form 8 - Name/DOB/Photo correction -->
+  <div class="form-card">
+    <div class="form-header">
+      <div class="form-badge f8">Form 8</div>
+      <div>
+        <div class="form-title">Correction of Name, Date of Birth, Photo or Address</div>
+        <div class="form-subtitle">Use this to fix any wrong or outdated information on your voter card</div>
+      </div>
+    </div>
+    <div class="form-body">
+      <div class="form-section-label">📄 Documents Required</div>
+      <div class="form-docs">
+        <span class="doc-tag">Current Voter ID (EPIC)</span>
+        <span class="doc-tag">Aadhaar Card</span>
+        <span class="doc-tag">For name correction: Aadhaar / PAN / Passport showing correct name</span>
+        <span class="doc-tag">For DOB correction: Birth certificate / School leaving certificate</span>
+        <span class="doc-tag">For photo update: New passport-size photograph</span>
+        <span class="doc-tag">For address update: Utility bill / Bank statement / Aadhaar</span>
+      </div>
+      <div class="form-section-label" style="margin-top:14px">🖥️ How to apply online</div>
+      <ol class="form-steps">
+        <li>Go to <strong>voters.eci.gov.in</strong> → Login or register</li>
+        <li>Click <em>"Correction of entries in Electoral Roll"</em> → <strong>Form 8</strong></li>
+        <li>Search for your existing voter record using your EPIC number</li>
+        <li>Select what you want to correct (name / DOB / address / photo)</li>
+        <li>Upload supporting document and submit — note down the reference number</li>
+      </ol>
+      <a class="form-link-btn" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">Apply via voters.eci.gov.in →</a>
+    </div>
+  </div>
+
+  <!-- Form 8A - Address shift within same constituency -->
+  <div class="form-card">
+    <div class="form-header">
+      <div class="form-badge f8a">Form 8A</div>
+      <div>
+        <div class="form-title">Shifting of Residence — Same Constituency</div>
+        <div class="form-subtitle">Moved to a new house but still in the same Assembly segment? Use this form</div>
+      </div>
+    </div>
+    <div class="form-body">
+      <div class="form-section-label">📄 Documents Required</div>
+      <div class="form-docs">
+        <span class="doc-tag">Current Voter ID (EPIC)</span>
+        <span class="doc-tag">New address proof (Aadhaar / Utility bill / Rent agreement)</span>
+        <span class="doc-tag">Passport-size photo (optional but recommended)</span>
+      </div>
+      <div class="form-section-label" style="margin-top:14px">🖥️ How to apply online</div>
+      <ol class="form-steps">
+        <li>Go to <strong>voters.eci.gov.in</strong> and log in</li>
+        <li>Choose <em>"Shifting of residence"</em> → <strong>Form 8A</strong></li>
+        <li>Enter your EPIC number to pull your existing record</li>
+        <li>Enter the new address and upload address proof</li>
+        <li>Submit — your polling booth will be updated to the nearest one at your new address</li>
+      </ol>
+      <a class="form-link-btn" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">Apply via voters.eci.gov.in →</a>
+    </div>
+  </div>
+
+  <!-- Form 7 - Deletion -->
+  <div class="form-card">
+    <div class="form-header">
+      <div class="form-badge f7">Form 7</div>
+      <div>
+        <div class="form-title">Deletion / Objection to an Entry</div>
+        <div class="form-subtitle">To remove a deceased person's name or report a duplicate/wrong entry</div>
+      </div>
+    </div>
+    <div class="form-body">
+      <div class="form-section-label">📄 Documents Required</div>
+      <div class="form-docs">
+        <span class="doc-tag">EPIC number of the person to be removed</span>
+        <span class="doc-tag">Death certificate (for deceased persons)</span>
+        <span class="doc-tag">Relationship proof if filed by a family member</span>
+      </div>
+      <div class="form-section-label" style="margin-top:14px">🖥️ How to apply online</div>
+      <ol class="form-steps">
+        <li>Go to <strong>voters.eci.gov.in</strong> → Login</li>
+        <li>Select <em>"Deletion of name"</em> → <strong>Form 7</strong></li>
+        <li>Enter the EPIC number of the entry to be removed</li>
+        <li>State the reason (deceased / shifted / duplicate) and upload proof</li>
+        <li>Submit — the Electoral Registration Officer reviews and processes the request</li>
+      </ol>
+      <a class="form-link-btn" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">Apply via voters.eci.gov.in →</a>
+    </div>
+  </div>
+
+  <!-- Form 6B - Aadhaar linking -->
+  <div class="form-card">
+    <div class="form-header">
+      <div class="form-badge f6b">Form 6B</div>
+      <div>
+        <div class="form-title">Link Aadhaar to Voter ID</div>
+        <div class="form-subtitle">Voluntary linking of Aadhaar number with your EPIC to clean up duplicate entries</div>
+      </div>
+    </div>
+    <div class="form-body">
+      <div class="form-section-label">📄 Documents Required</div>
+      <div class="form-docs">
+        <span class="doc-tag">Aadhaar Card (or Aadhaar Enrolment Number)</span>
+        <span class="doc-tag">Your EPIC (Voter ID) number</span>
+      </div>
+      <div class="form-section-label" style="margin-top:14px">🖥️ How to apply online</div>
+      <ol class="form-steps">
+        <li>Go to <strong>voters.eci.gov.in</strong> → <em>"Link Aadhaar"</em></li>
+        <li>Enter your EPIC number — your voter record will appear</li>
+        <li>Enter your 12-digit Aadhaar number and submit</li>
+        <li>An OTP will be sent to the mobile number linked to your Aadhaar to confirm</li>
+        <li>Once verified, your Aadhaar is linked — this is <strong>voluntary, not mandatory</strong></li>
+      </ol>
+      <a class="form-link-btn" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">Apply via voters.eci.gov.in →</a>
+    </div>
+  </div>
+
+  <div class="disclaimer" style="margin-top:8px">
+    <h3>ℹ️ Note</h3>
+    <p>All forms are processed by the Electoral Registration Officer of your constituency. Processing typically takes 2–4 weeks. You can track your application status using the reference number on <strong>voters.eci.gov.in</strong>.</p>
   </div>
 </div>
 
