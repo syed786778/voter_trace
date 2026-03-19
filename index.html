@@ -4,218 +4,330 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VoterTrace</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
+:root{
+  --navy:#0d1b2a;
+  --navy2:#1a2e45;
+  --blue:#2563eb;
+  --blue-lt:#dbeafe;
+  --blue-dk:#1d4ed8;
+  --amber:#f59e0b;
+  --amber-lt:#fef3c7;
+  --green:#16a34a;
+  --green-lt:#dcfce7;
+  --red:#dc2626;
+  --bg:#f0f5fb;
+  --surface:#fff;
+  --border:#e2e8f0;
+  --border2:#cbd5e1;
+  --text:#0f172a;
+  --text2:#475569;
+  --text3:#94a3b8;
+  --radius:14px;
+  --shadow:0 1px 6px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:'Inter',system-ui,sans-serif;background:#f0f4f8;color:#0f172a;min-height:100vh;font-size:15px;line-height:1.55}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6}
 
 /* ── NAV ── */
-.topbar{position:sticky;top:0;z-index:50;background:#1e293b;display:flex;align-items:center;padding:0 16px;min-height:56px;gap:6px;box-shadow:0 1px 8px rgba(0,0,0,.25);flex-wrap:wrap}
-.topbar-logo{font-weight:800;font-size:17px;color:#fff;margin-right:8px;letter-spacing:-.3px;white-space:nowrap}
-.tab-btn{padding:6px 12px;border-radius:8px;border:none;background:none;font-size:12px;font-weight:600;color:#94a3b8;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;white-space:nowrap}
-.tab-btn:hover{background:rgba(255,255,255,.1);color:#fff}
-.tab-btn.on{background:#2563eb;color:#fff}
-/* Mobile: stack tabs below logo row */
-@media(max-width:600px){
-  .topbar{padding:8px 12px;gap:4px}
-  .topbar-logo{font-size:15px}
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:var(--navy);
+  display:flex;align-items:center;
+  padding:0 20px;height:58px;gap:4px;
+  box-shadow:0 2px 12px rgba(0,0,0,.2);
+}
+.topbar-logo{
+  font-family:'DM Serif Display',serif;
+  font-size:20px;color:#fff;margin-right:12px;
+  letter-spacing:-.2px;white-space:nowrap;flex-shrink:0;
+}
+.tab-btn{
+  padding:6px 14px;border-radius:20px;border:none;
+  background:none;font-size:12.5px;font-weight:600;
+  color:#94a3b8;cursor:pointer;transition:all .2s;
+  font-family:'DM Sans',sans-serif;white-space:nowrap;
+}
+.tab-btn:hover{background:rgba(255,255,255,.1);color:#e2e8f0}
+.tab-btn.on{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.4)}
+@media(max-width:680px){
+  .topbar{padding:0 12px;height:52px;gap:2px}
+  .topbar-logo{font-size:17px;margin-right:8px}
   .tab-btn{padding:5px 10px;font-size:11px}
-  .topbar-right{font-size:10px!important}
-  .share-btn-wrap{padding:5px 10px!important;font-size:11px!important}
+}
+@media(max-width:480px){
+  .tab-btn{padding:4px 8px;font-size:10.5px}
 }
 
 /* ── LAYOUT ── */
-.page{display:none;max-width:800px;margin:0 auto;padding:32px 20px 100px}
+.page{display:none;max-width:820px;margin:0 auto;padding:36px 20px 100px}
 .page.on{display:block}
-@media(max-width:600px){.page{padding:20px 12px 80px}}
-.page-title{font-size:24px;font-weight:800;margin-bottom:6px;letter-spacing:-.3px}
-.page-sub{font-size:14px;color:#64748b;margin-bottom:28px}
+@media(max-width:600px){.page{padding:22px 14px 80px}}
+
+/* ── HERO BAND (voter-id page) ── */
+.hero-band{
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);
+  border-radius:20px;padding:28px 28px 24px;margin-bottom:22px;
+  position:relative;overflow:hidden;
+}
+.hero-band::before{
+  content:'';position:absolute;top:-40px;right:-40px;
+  width:180px;height:180px;
+  background:radial-gradient(circle,rgba(37,99,235,.35) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-band::after{
+  content:'🗳';font-size:80px;position:absolute;
+  bottom:-10px;right:20px;opacity:.08;line-height:1;
+  pointer-events:none;
+}
+.hero-title{font-family:'DM Serif Display',serif;font-size:28px;color:#fff;line-height:1.25;margin-bottom:6px}
+.hero-sub{font-size:13.5px;color:#94a3b8;line-height:1.5;max-width:420px}
+@media(max-width:600px){
+  .hero-band{padding:22px 20px 20px;border-radius:16px}
+  .hero-title{font-size:22px}
+  .hero-band::after{font-size:60px;right:10px}
+}
+
+/* ── PHOTO TIPS ── */
+.tips-bar{
+  background:linear-gradient(90deg,#fffbeb,#fef9c3);
+  border:1.5px solid #fcd34d;border-radius:12px;
+  padding:12px 18px;margin-bottom:18px;
+  display:flex;align-items:flex-start;gap:12px;
+}
+.tips-bar .tip-icon{font-size:22px;flex-shrink:0;margin-top:1px}
+.tips-title{font-size:12px;font-weight:700;color:#92400e;margin-bottom:5px}
+.tips-row{font-size:12px;color:#78350f;line-height:1.7}
+.tips-note{font-size:11px;color:#92400e;margin-top:5px;display:flex;align-items:flex-start;gap:4px}
 
 /* ── CARD ── */
-.box{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
-.box-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8;margin-bottom:18px}
+.box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:24px;margin-bottom:16px;
+  box-shadow:var(--shadow);
+}
+.box-head{
+  font-size:10.5px;font-weight:700;text-transform:uppercase;
+  letter-spacing:1px;color:var(--text3);margin-bottom:18px;
+}
 
 /* ── UPLOAD AREAS ── */
 .upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:4px}
 @media(max-width:520px){.upload-grid{grid-template-columns:1fr}}
-.slot-label{font-size:12px;font-weight:700;letter-spacing:.4px;margin-bottom:8px;display:block}
-.slot-label.f{color:#2563eb}.slot-label.b{color:#7c3aed}
-
+.slot-label{font-size:11.5px;font-weight:700;letter-spacing:.4px;margin-bottom:8px;display:block}
+.slot-label.f{color:var(--blue)}.slot-label.b{color:#7c3aed}
 .upload-btn{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:8px;width:100%;min-height:140px;padding:24px 16px;
-  border:2px dashed #cbd5e1;border-radius:12px;
+  gap:10px;width:100%;min-height:148px;padding:24px 16px;
+  border:2px dashed var(--border2);border-radius:12px;
   background:#f8fafc;cursor:pointer;
-  font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#64748b;
-  transition:all .18s;text-align:center;
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text3);
+  transition:all .2s;text-align:center;
 }
-.upload-btn:hover{border-color:#2563eb;background:#eff6ff;color:#2563eb}
-.upload-btn.selected{border-color:#16a34a;border-style:solid;background:#f0fdf4;color:#15803d}
-.upload-btn .ico{font-size:32px;line-height:1}
-.upload-btn .sub{font-size:11px;color:#94a3b8;margin-top:2px}
+.upload-btn:hover{border-color:var(--blue);background:#eff6ff;color:var(--blue)}
+.upload-btn.selected{border-color:var(--green);border-style:solid;background:#f0fdf4;color:#15803d}
+.upload-btn .ico{font-size:34px;line-height:1}
+.upload-btn .sub{font-size:11px;color:var(--text3);margin-top:2px}
 .upload-btn.selected .sub{color:#86efac}
-
 .upload-single{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:10px;width:100%;min-height:120px;padding:28px 20px;
-  border:2px dashed #cbd5e1;border-radius:12px;
+  gap:10px;width:100%;min-height:110px;padding:24px 20px;
+  border:2px dashed var(--border2);border-radius:12px;
   background:#f8fafc;cursor:pointer;
-  font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#64748b;
-  transition:all .18s;text-align:center;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--text3);
+  transition:all .2s;text-align:center;
 }
-.upload-single:hover{border-color:#2563eb;background:#eff6ff;color:#2563eb}
-.upload-single.selected{border-color:#16a34a;border-style:solid;background:#f0fdf4;color:#15803d}
+.upload-single:hover{border-color:var(--blue);background:#eff6ff;color:var(--blue)}
+.upload-single.selected{border-color:var(--green);border-style:solid;background:#f0fdf4;color:#15803d}
 .upload-single .ico{font-size:36px;line-height:1}
-
-.thumb{width:100%;max-height:120px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0;margin-top:10px;display:none}
+.thumb{width:100%;max-height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border);margin-top:10px;display:none}
 
 /* ── BUTTONS ── */
-.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px 20px;border-radius:10px;border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:14px;letter-spacing:.1px}
-.btn-blue{background:#2563eb;color:#fff}.btn-blue:hover{background:#1d4ed8}.btn-blue:disabled{background:#bfdbfe;color:#93c5fd;cursor:not-allowed}
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:14px 20px;border-radius:11px;border:none;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;transition:all .18s;margin-top:14px;letter-spacing:.2px;
+}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-blue:hover{background:var(--blue-dk);transform:translateY(-1px);box-shadow:0 4px 14px rgba(37,99,235,.35)}
+.btn-blue:disabled{background:#bfdbfe;color:#93c5fd;cursor:not-allowed;transform:none;box-shadow:none}
 
 /* ── PROGRESS ── */
-.prog-wrap{margin-top:12px;display:none}.prog-wrap.on{display:block}
-.prog-track{height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;margin-bottom:6px}
-.prog-bar{height:100%;background:linear-gradient(90deg,#2563eb,#3b82f6);border-radius:3px;width:0;transition:width .3s}
-.prog-txt{font-size:12px;color:#64748b;font-weight:500}
+.prog-wrap{margin-top:14px;display:none}.prog-wrap.on{display:block}
+.prog-track{height:7px;background:#e2e8f0;border-radius:4px;overflow:hidden;margin-bottom:6px}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--blue),#60a5fa);border-radius:4px;width:0;transition:width .35s}
+.prog-txt{font-size:12px;color:var(--text3);font-weight:500}
 .spin{width:15px;height:15px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:rot .55s linear infinite;flex-shrink:0}
 @keyframes rot{to{transform:rotate(360deg)}}
 
 /* ── VOTER ID FIELDS ── */
 .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:600px){.field-grid{grid-template-columns:1fr}}
-.field-item{background:#f8fafc;border-radius:10px;padding:13px 15px;position:relative}
+.field-item{
+  background:#f8fafc;border:1px solid #f1f5f9;
+  border-radius:11px;padding:14px 15px;position:relative;
+  transition:border-color .15s;
+}
+.field-item:hover{border-color:var(--border2)}
 .field-item.w2{grid-column:1/-1}
-.field-k{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
-.field-v{font-size:15px;font-weight:600;color:#0f172a;line-height:1.4;padding-right:56px}
+.field-k{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
+.field-v{font-size:15px;font-weight:600;color:var(--text);line-height:1.4;padding-right:56px}
 .field-v.nil{font-size:13px;color:#cbd5e1;font-style:italic;font-weight:400}
-/* Copy button: always visible on mobile (no hover), hidden then shown on desktop hover */
 .copy-btn{
   position:absolute;top:10px;right:10px;
-  background:none;border:1px solid #e2e8f0;border-radius:5px;
-  padding:3px 9px;font-size:10px;font-weight:700;color:#94a3b8;
-  cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;
-  opacity:0;
+  background:none;border:1px solid var(--border);border-radius:6px;
+  padding:3px 9px;font-size:10px;font-weight:700;color:var(--text3);
+  cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;opacity:0;
 }
 @media(hover:hover){.field-item:hover .copy-btn{opacity:1}}
-@media(hover:none){.copy-btn{opacity:1}}  /* always show on touch devices */
-.copy-btn:hover,.copy-btn:active{background:#eff6ff;border-color:#bfdbfe;color:#2563eb}
-.copy-btn.copied{color:#16a34a;border-color:#bbf7d0;background:#f0fdf4}
-/* Mobile field text sizing */
-@media(max-width:600px){
-  .field-v{font-size:14px;padding-right:52px}
-  .field-item{padding:11px 12px}
-  .box{padding:18px 16px}
-  .result-name{font-size:16px}
-  .result-item{padding:14px 16px}
-  .result-tags{gap:5px}
-  .tag{font-size:11px;padding:3px 9px}
-  .page-title{font-size:20px}
-  .page-sub{font-size:13px;margin-bottom:20px}
-}
+@media(hover:none){.copy-btn{opacity:1}}
+.copy-btn:hover,.copy-btn:active{background:#eff6ff;border-color:#bfdbfe;color:var(--blue)}
+.copy-btn.copied{color:var(--green);border-color:#bbf7d0;background:#f0fdf4}
 
 /* ── SEARCH ── */
 .input-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 @media(max-width:520px){.input-row{grid-template-columns:1fr}}
-.input-group label{display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:5px}
+.input-group label{display:block;font-size:11.5px;font-weight:700;color:var(--text2);margin-bottom:5px;letter-spacing:.2px}
 .input-group input{
-  width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:9px;
-  font-family:'Inter',sans-serif;font-size:14px;color:#0f172a;background:#fff;
-  outline:none;transition:border-color .15s;
+  width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:#fff;
+  outline:none;transition:all .15s;
 }
-.input-group input:focus{border-color:#2563eb;box-shadow:0 0 0 3px #dbeafe}
+.input-group input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #dbeafe}
 .input-group input:disabled{background:#f8fafc;color:#cbd5e1;cursor:not-allowed}
 
 /* ── RESULTS ── */
 .result-item{
-  background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;
+  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
   padding:18px 20px;margin-bottom:12px;position:relative;
-  transition:border-color .15s,box-shadow .15s;
-  box-shadow:0 1px 3px rgba(0,0,0,.04);
+  transition:all .2s;box-shadow:var(--shadow);
 }
-.result-item:hover{border-color:#bfdbfe;box-shadow:0 2px 8px rgba(37,99,235,.08)}
-.result-item.top{border-color:#2563eb;box-shadow:0 2px 12px rgba(37,99,235,.12)}
+.result-item:hover{border-color:#bfdbfe;box-shadow:0 4px 16px rgba(37,99,235,.1);transform:translateY(-1px)}
+.result-item.top{border-color:var(--blue);box-shadow:0 4px 20px rgba(37,99,235,.15)}
 .result-top-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.result-name{font-size:19px;font-weight:800;color:#0f172a;line-height:1.3}
-.result-rel{font-size:13px;color:#475569;margin-top:5px;line-height:1.5}
-.result-rel b{color:#0f172a}
-.badge{display:inline-flex;align-items:center;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px}
+.result-name{font-size:20px;font-weight:700;color:var(--text);line-height:1.3}
+.result-rel{font-size:13px;color:var(--text2);margin-top:5px;line-height:1.5}
+.result-rel b{color:var(--text)}
+.badge{display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px}
 .badge.hi{background:#dcfce7;color:#15803d}.badge.mid{background:#fef9c3;color:#a16207}.badge.lo{background:#fee2e2;color:#b91c1c}
-.result-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
-.tag{font-size:12px;padding:4px 11px;border-radius:6px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;font-weight:500}
-.tag b{color:#0f172a;font-weight:700}
-.tag.hl{background:#eff6ff;border-color:#bfdbfe;color:#2563eb}
-.tag.hl b{color:#1d4ed8}
+.result-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}
+.tag{font-size:12px;padding:4px 11px;border-radius:7px;background:#f1f5f9;border:1px solid var(--border);color:var(--text2);font-weight:500}
+.tag b{color:var(--text);font-weight:700}
+.tag.hl{background:#eff6ff;border-color:#bfdbfe;color:var(--blue)}
+.tag.hl b{color:var(--blue-dk)}
 .best-pin{
   position:absolute;top:-1px;right:16px;
-  background:#2563eb;color:#fff;
+  background:var(--blue);color:#fff;
   font-size:10px;font-weight:800;padding:3px 10px;
-  border-radius:0 0 8px 8px;letter-spacing:.4px;
+  border-radius:0 0 8px 8px;letter-spacing:.5px;
 }
 
 /* ── MISC ── */
 .banner-ok{padding:12px 16px;border-radius:10px;font-size:13px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;font-weight:600}
-.notice{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;color:#94a3b8;margin-bottom:14px}
-.empty{text-align:center;padding:48px 20px;color:#94a3b8}
+.notice{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f8fafc;border:1px solid var(--border);border-radius:10px;font-size:13px;color:var(--text3);margin-bottom:14px}
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
 .empty .e-ico{font-size:36px;margin-bottom:12px}
 .empty p{font-size:14px;line-height:1.7}
 details{margin-top:14px}
-details summary{font-size:12px;color:#94a3b8;cursor:pointer;user-select:none}
-details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;font-size:10px;color:#64748b;white-space:pre-wrap;word-break:break-word;max-height:180px;overflow-y:auto;font-family:monospace}
+details summary{font-size:12px;color:var(--text3);cursor:pointer;user-select:none}
+details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:10px;color:#64748b;white-space:pre-wrap;word-break:break-word;max-height:180px;overflow-y:auto;font-family:monospace}
 ::-webkit-scrollbar{width:5px}
-@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.4)}}
-::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:3px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
 
 /* ── DISCLAIMER ── */
 .disclaimer{
   background:linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%);
-  border:1px solid #bfdbfe;border-radius:14px;padding:20px 24px;
-  margin-bottom:20px;
+  border:1px solid #bfdbfe;border-radius:var(--radius);padding:20px 24px;margin-bottom:20px;
 }
-.disclaimer h3{font-size:14px;font-weight:700;color:#1e40af;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.disclaimer h3{font-size:13px;font-weight:700;color:#1e40af;margin-bottom:10px;display:flex;align-items:center;gap:7px}
 .disclaimer p{font-size:13px;color:#334155;line-height:1.65;margin-bottom:8px}
 .disclaimer p:last-child{margin-bottom:0}
-.disclaimer .shield{font-size:18px}
-.disclaimer h3{font-size:13px;}
 
 /* ── VOTER FORMS ── */
-.form-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;margin-bottom:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden;box-shadow:var(--shadow)}
 .form-header{display:flex;align-items:flex-start;gap:14px;padding:18px 20px 14px;border-bottom:1px solid #f1f5f9}
-.form-badge{font-size:12px;font-weight:800;padding:5px 12px;border-radius:8px;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.form-badge{font-size:12px;font-weight:800;padding:5px 13px;border-radius:8px;white-space:nowrap;flex-shrink:0;margin-top:2px}
 .f6{background:#dbeafe;color:#1d4ed8}.f8{background:#dcfce7;color:#15803d}
-.f8a{background:#fef3c7;color:#92400e}.f7{background:#fee2e2;color:#b91c1c}
+.f8a{background:var(--amber-lt);color:#92400e}.f7{background:#fee2e2;color:#b91c1c}
 .f6b{background:#f3e8ff;color:#7c3aed}
-.form-title{font-size:14px;font-weight:700;color:#0f172a;line-height:1.4}
-.form-subtitle{font-size:12px;color:#64748b;margin-top:3px;line-height:1.4}
+.form-title{font-size:14px;font-weight:700;color:var(--text);line-height:1.4}
+.form-subtitle{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.4}
 .form-body{padding:16px 20px}
-.form-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#94a3b8;margin-bottom:8px}
+.form-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px}
 .form-docs{display:flex;flex-wrap:wrap;gap:6px}
-.doc-tag{font-size:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;color:#475569}
+.doc-tag{font-size:12px;background:#f8fafc;border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text2)}
 .form-steps{padding-left:18px;margin:0}
-.form-steps li{font-size:13px;color:#334155;line-height:1.6;margin-bottom:4px}
-.form-steps li strong{color:#0f172a}
-.form-steps li em{color:#2563eb;font-style:normal;font-weight:600}
-.form-link-btn{display:inline-flex;margin-top:14px;padding:9px 18px;background:#2563eb;color:#fff;border-radius:9px;font-size:13px;font-weight:700;text-decoration:none;transition:background .15s}
-.form-link-btn:hover{background:#1d4ed8}
+.form-steps li{font-size:13px;color:#334155;line-height:1.65;margin-bottom:4px}
+.form-steps li strong{color:var(--text)}.form-steps li em{color:var(--blue);font-style:normal;font-weight:600}
+.form-link-btn{display:inline-flex;margin-top:14px;padding:9px 20px;background:var(--blue);color:#fff;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;transition:all .2s}
+.form-link-btn:hover{background:var(--blue-dk);transform:translateY(-1px)}
 @media(max-width:600px){
-  .form-header{flex-direction:column;gap:8px}
+  .form-header{flex-direction:column;gap:8px;padding:14px 16px 12px}
   .form-body{padding:14px 16px}
-  .form-header{padding:14px 16px 12px}
 }
+
+/* ── SIR PAGE ── */
+.sir-hero{
+  background:linear-gradient(135deg,#0d1b2a 0%,#1a2e45 100%);
+  border-radius:20px;padding:28px;margin-bottom:22px;position:relative;overflow:hidden;
+}
+.sir-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;
+  background:radial-gradient(circle,rgba(245,158,11,.2) 0%,transparent 70%);}
+.sir-hero-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px}
+.sir-hero-title{font-family:'DM Serif Display',serif;font-size:26px;color:#fff;line-height:1.25;margin-bottom:8px}
+.sir-hero-sub{font-size:13px;color:#94a3b8;line-height:1.6;max-width:480px}
+.sir-section{margin-bottom:20px}
+.sir-section-title{font-size:14px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sir-timeline{position:relative;padding-left:24px}
+.sir-timeline::before{content:'';position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:linear-gradient(180deg,var(--blue),var(--blue-lt))}
+.sir-event{position:relative;margin-bottom:18px}
+.sir-event::before{content:'';position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--blue);border:2px solid #fff;box-shadow:0 0 0 2px var(--blue)}
+.sir-event-year{font-size:11px;font-weight:800;color:var(--blue);letter-spacing:.5px;margin-bottom:2px}
+.sir-event-text{font-size:13px;color:var(--text2);line-height:1.55}
+.faq-item{border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.faq-q{width:100%;text-align:left;padding:14px 18px;background:none;border:none;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:700;color:var(--text);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.faq-q:hover{background:#f8fafc}
+.faq-arrow{font-size:12px;color:var(--text3);transition:transform .2s;flex-shrink:0}
+.faq-a{display:none;padding:0 18px 14px;font-size:13px;color:var(--text2);line-height:1.7;border-top:1px solid #f1f5f9}
+.faq-a.open{display:block}
+.faq-arrow.open{transform:rotate(180deg)}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+@media(max-width:520px){.info-grid{grid-template-columns:1fr}}
+.info-tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.info-tile-icon{font-size:24px;margin-bottom:8px}
+.info-tile-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px}
+.info-tile-body{font-size:12px;color:var(--text2);line-height:1.55}
 
 /* ── LINKS SECTION ── */
 .links-grid{display:grid;grid-template-columns:1fr;gap:12px}
-.link-card{display:flex;align-items:flex-start;gap:14px;padding:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;text-decoration:none;transition:all .18s;cursor:pointer}
-.link-card:hover{border-color:#bfdbfe;background:#eff6ff;box-shadow:0 2px 8px rgba(37,99,235,.08)}
+.link-card{display:flex;align-items:flex-start;gap:14px;padding:16px;background:#f8fafc;border:1px solid var(--border);border-radius:12px;text-decoration:none;transition:all .2s;cursor:pointer}
+.link-card:hover{border-color:#bfdbfe;background:#eff6ff;box-shadow:0 4px 12px rgba(37,99,235,.1);transform:translateY(-1px)}
 .link-icon{font-size:22px;flex-shrink:0;margin-top:1px}
 .link-body{flex:1;min-width:0}
-.link-title{font-size:14px;font-weight:700;color:#0f172a;margin-bottom:3px}
+.link-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
 .link-url{font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.link-desc{font-size:12px;color:#475569;margin-top:3px;line-height:1.4}
-.qr-wrap{flex-shrink:0;width:64px;height:64px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.link-desc{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.4}
+.qr-wrap{flex-shrink:0;width:64px;height:64px;background:#fff;border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .qr-wrap canvas,.qr-wrap img{width:60px!important;height:60px!important}
+
+/* ── MOBILE GLOBAL ── */
+@media(max-width:600px){
+  .box{padding:18px 16px}
+  .field-v{font-size:14px;padding-right:52px}
+  .field-item{padding:11px 12px}
+  .result-name{font-size:16px}
+  .result-item{padding:14px 16px}
+  .result-tags{gap:5px}
+  .tag{font-size:11px;padding:3px 9px}
+  .sir-hero{padding:20px 18px;border-radius:16px}
+  .sir-hero-title{font-size:21px}
+}
 </style>
 </head>
 <body>
@@ -226,9 +338,10 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
   <button class="tab-btn"    id="t2" onclick="go('roll-search','t2')">Electoral Roll Search</button>
   <button class="tab-btn"    id="t3" onclick="go('links-page','t3')" style="position:relative">🔗 Important Links<span id="links-dot" style="position:absolute;top:6px;right:6px;width:7px;height:7px;background:#f59e0b;border-radius:50%;animation:pulse-dot 2s infinite"></span></button>
   <button class="tab-btn"    id="t4" onclick="go('forms-page','t4')">📋 Voter Forms</button>
+  <button class="tab-btn"    id="t5" onclick="go('sir-page','t5')">📖 What is SIR?</button>
   <div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0">
-    <button onclick="shareApp()" class="share-btn-wrap" style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#e2e8f0;font-size:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.16)'" onmouseout="this.style.background='rgba(255,255,255,.08)'">
-      <span style="font-size:14px">🔗</span> Share
+    <button onclick="shareApp()" class="share-btn-wrap" style="display:flex;align-items:center;gap:6px;padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#e2e8f0;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='rgba(255,255,255,.18)'" onmouseout="this.style.background='rgba(255,255,255,.08)'">
+      <span style="font-size:13px">🔗</span> Share
     </button>
 
   </div>
@@ -258,20 +371,21 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
 
 <!-- PAGE 1: VOTER ID -->
 <div class="page on" id="voter-id">
-  <p class="page-title">Voter ID Reader</p>
-  <p class="page-sub">Upload your Voter ID card to instantly read and extract all your details.</p>
+  <div class="hero-band">
+    <div class="hero-title">Voter ID Reader</div>
+    <div class="hero-sub">Upload your Voter ID card to instantly read and extract all your details — securely on your device.</div>
+  </div>
 
-  <!-- Photo tips -->
-  <div style="background:#fffbeb;border:1.5px solid #fcd34d;border-radius:12px;padding:11px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px">
-    <span style="font-size:20px;flex-shrink:0;margin-top:1px">📸</span>
+  <div class="tips-bar">
+    <span class="tip-icon">📸</span>
     <div style="flex:1;min-width:0">
-      <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:5px">Photo tips for best results</div>
-      <div style="font-size:12px;color:#78350f;line-height:1.6">
+      <div class="tips-title">Photo tips for best results</div>
+      <div class="tips-row">
         <span style="color:#16a34a;font-weight:700">✓</span> Flat, well-lit &amp; straight &nbsp;
         <span style="color:#16a34a;font-weight:700">✓</span> Card fully in frame &nbsp;
         <span style="color:#dc2626;font-weight:700">✗</span> Blurry / angled / glare
       </div>
-      <div style="font-size:11px;color:#92400e;margin-top:5px;display:flex;align-items:flex-start;gap:4px">
+      <div class="tips-note">
         <span style="flex-shrink:0">⚠️</span>
         <span><strong>Cards issued before ~2000</strong> may have missing EPIC No. or inaccurate fields due to faded print.</span>
       </div>
@@ -324,7 +438,7 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
   <div class="disclaimer">
     <h3><span class="shield">🔒</span> Your details are safe &amp; private</h3>
     <p>Everything happens on your device — your photos and personal information are <strong>never uploaded, saved, or shared</strong> with anyone. This tool simply reads the text visible on your card, the same way you would read it yourself.</p>
-    <p>VoterTrace is an independent tool built to help citizens easily extract their voter details and search for their name in Kannada electoral rolls. It is <strong>not affiliated with the Election Commission of India</strong> and cannot submit or alter any official records.</p>
+    <p>VoterTrace is an independent tool built to help citizens easily extract their voter details and search for their name in electoral rolls. It is <strong>not affiliated with the Election Commission of India</strong> and cannot submit or alter any official records.</p>
   </div>
 
   <div style="text-align:center;padding:8px 0 4px;opacity:.85">
@@ -336,8 +450,10 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
 
 <!-- PAGE 2: ELECTORAL ROLL SEARCH -->
 <div class="page" id="roll-search">
-  <p class="page-title">Electoral Roll Search</p>
-  <p class="page-sub">Upload the electoral roll PDF, then search by name in Kannada to find voter records.</p>
+  <div class="hero-band">
+    <div class="hero-title">Electoral Roll Search</div>
+    <div class="hero-sub">Upload the electoral roll PDF, then search by name in Kannada to find voter records.</div>
+  </div>
 
   <div class="box">
     <div class="box-head">Step 1 — Upload Electoral Roll PDF</div>
@@ -624,6 +740,148 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-ra
   <div class="disclaimer" style="margin-top:8px">
     <h3>ℹ️ Note</h3>
     <p>All forms are processed by the Electoral Registration Officer of your constituency. Processing typically takes 2–4 weeks. You can track your application status using the reference number on <strong>voters.eci.gov.in</strong>.</p>
+  </div>
+</div>
+
+<!-- PAGE 5: WHAT IS SIR? -->
+<div class="page" id="sir-page">
+
+  <div class="sir-hero">
+    <div class="sir-hero-label">Civic Education</div>
+    <div class="sir-hero-title">What is SIR?<br>Special Intensive Revision</div>
+    <div class="sir-hero-sub">A plain-language guide to India's electoral roll revision process — what it is, its history, and how it affects every citizen's right to vote.</div>
+  </div>
+
+  <!-- Key facts grid -->
+  <div class="info-grid">
+    <div class="info-tile">
+      <div class="info-tile-icon">📋</div>
+      <div class="info-tile-title">What is it?</div>
+      <div class="info-tile-body">A special drive to update, correct and clean up the voter list — adding eligible new voters, removing deceased or shifted entries, and fixing errors.</div>
+    </div>
+    <div class="info-tile">
+      <div class="info-tile-icon">📅</div>
+      <div class="info-tile-title">When does it happen?</div>
+      <div class="info-tile-body">The ECI announces SIR periodically — usually before major elections. A draft list is published, then claims and objections are invited from the public.</div>
+    </div>
+    <div class="info-tile">
+      <div class="info-tile-icon">👤</div>
+      <div class="info-tile-title">Who conducts it?</div>
+      <div class="info-tile-body">The Election Commission of India (ECI) conducts SIR through local Electoral Registration Officers (EROs) and Booth Level Officers (BLOs) at the ground level.</div>
+    </div>
+    <div class="info-tile">
+      <div class="info-tile-icon">🗳️</div>
+      <div class="info-tile-title">Why does it matter?</div>
+      <div class="info-tile-body">If your name is missing, wrong, or at the wrong polling booth — you cannot vote. SIR is your opportunity to fix that before the rolls are finalised.</div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="box">
+    <div class="box-head">Brief History of Electoral Roll Revision in India</div>
+    <div class="sir-timeline">
+      <div class="sir-event">
+        <div class="sir-event-year">1950</div>
+        <div class="sir-event-text">The Representation of the People Act, 1950 established the legal foundation for preparing and maintaining electoral rolls in India.</div>
+      </div>
+      <div class="sir-event">
+        <div class="sir-event-year">1950s – 1970s</div>
+        <div class="sir-event-text">Electoral rolls were prepared manually, house-to-house, by local government staff. Errors and omissions were common due to the scale and manual nature of the work.</div>
+      </div>
+      <div class="sir-event">
+        <div class="sir-event-year">1980s – 1990s</div>
+        <div class="sir-event-text">The ECI introduced more structured revision cycles — Summary Revision (annual, using existing data) and Intensive Revision (door-to-door enumeration). Photo voter ID cards were introduced in 1993.</div>
+      </div>
+      <div class="sir-event">
+        <div class="sir-event-year">2000s</div>
+        <div class="sir-event-text">Computerisation of electoral rolls began. The EPIC (Elector's Photo Identity Card) became the standard. Online registration portals were gradually introduced, reducing the need for physical visits.</div>
+      </div>
+      <div class="sir-event">
+        <div class="sir-event-year">2015 onwards</div>
+        <div class="sir-event-text">National Electoral Roll Purification and Authentication Programme (NERPAP) launched — linking EPIC with Aadhaar to eliminate duplicate entries. Online portals (voters.eci.gov.in) enabled fully digital registration and corrections.</div>
+      </div>
+      <div class="sir-event">
+        <div class="sir-event-year">2022 – Present</div>
+        <div class="sir-event-text">The ECI introduced quarterly roll updates (January, April, July, October) instead of a single annual revision — giving citizens more windows to enrol or correct their details throughout the year.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ Accordion -->
+  <div class="box">
+    <div class="box-head">Frequently Asked Questions</div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        How do I know if my name is on the electoral roll?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">Search your name on <strong>electoralsearch.eci.gov.in</strong> or use the Electoral Roll Search tab in this tool to look through the PDF you have. You can also ask your local BLO (Booth Level Officer) who visits your area during SIR drives.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        My name was removed — what do I do?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">File <strong>Form 6</strong> on voters.eci.gov.in to re-enrol. If you believe it was removed in error, you can also file an objection during the claims period of a SIR drive. Contact your local ERO office with your documents (Aadhaar, proof of residence) for assistance.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        What is the difference between Summary Revision and Special Intensive Revision?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a"><strong>Summary Revision</strong> is a desk-based update using existing records — BLOs do not visit every home. It is faster and used for routine quarterly updates.<br><br><strong>Special Intensive Revision (SIR)</strong> involves door-to-door visits by BLOs to physically verify voters at every household. It is more thorough and is ordered by the ECI when significant clean-up is needed — typically before a major election cycle.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        I moved to a new area. Will my old name be deleted automatically?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">Not automatically. You need to:<ol style="padding-left:16px;margin-top:6px;font-size:13px;line-height:1.7"><li>File <strong>Form 8A</strong> (if staying in the same constituency) to update your address</li><li>Or file <strong>Form 6</strong> at your new constituency and <strong>Form 7</strong> to delete your entry from the old roll</li></ol>If you don't, your name may appear in two places — which can cause issues during verification drives.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        When is the best time to check and update my voter details?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">The ECI now has four qualification dates each year — <strong>1 January, 1 April, 1 July and 1 October</strong>. You can apply anytime, but applications submitted before each of these dates are processed for that quarter's roll update. Aim to apply <strong>at least 3 months before any election</strong> to ensure your update is reflected.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Does a BLO visit help or is everything online now?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">Both channels work. For most people, <strong>online through voters.eci.gov.in</strong> is the fastest way to register or correct details. However, during a SIR drive your BLO will visit your home — this is a good opportunity to verify details, hand in forms, and ensure your entire household is enrolled. You can find your BLO's contact through your local ERO office or the ECI website.</div>
+    </div>
+  </div>
+
+  <!-- How SIR affects you -->
+  <div class="box">
+    <div class="box-head">How SIR Directly Affects You</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#f8fafc;border-radius:10px;border:1px solid #f1f5f9">
+        <span style="font-size:22px;flex-shrink:0">✅</span>
+        <div><div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:3px">Your vote is protected</div><div style="font-size:13px;color:#475569;line-height:1.55">A clean, accurate roll means your vote can only be cast by you. SIR removes ghost entries and duplicates that could otherwise dilute the integrity of elections.</div></div>
+      </div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#f8fafc;border-radius:10px;border:1px solid #f1f5f9">
+        <span style="font-size:22px;flex-shrink:0">📍</span>
+        <div><div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:3px">Your polling booth may change</div><div style="font-size:13px;color:#475569;line-height:1.55">During SIR, booth boundaries are sometimes reorganised. Always verify your assigned polling booth before election day — it may have changed since your last vote.</div></div>
+      </div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#fffbeb;border-radius:10px;border:1px solid #fde68a">
+        <span style="font-size:22px;flex-shrink:0">⚠️</span>
+        <div><div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:3px">Missing names happen — act early</div><div style="font-size:13px;color:#78350f;line-height:1.55">Names can be mistakenly deleted if BLOs cannot verify a resident (locked house, no response). If you moved temporarily during a SIR visit, check your name online and re-enrol if needed — do not wait until election time.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <h3>ℹ️ About this guide</h3>
+    <p>This information is based on publicly available guidelines from the Election Commission of India. For official procedures and the latest updates, always refer to <strong>voters.eci.gov.in</strong> or your local Electoral Registration Officer.</p>
   </div>
 </div>
 
@@ -1652,6 +1910,20 @@ setTimeout(()=>{
   makeQR('qr-ios','https://apps.apple.com/in/app/ecinet/id6745955212');
 },900);
 
+// ── FAQ ACCORDION ────────────────────────────────────────────
+function toggleFaq(btn){
+  const arrow = btn.querySelector('.faq-arrow');
+  const answer = btn.nextElementSibling;
+  const isOpen = answer.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.faq-a').forEach(a=>a.classList.remove('open'));
+  document.querySelectorAll('.faq-arrow').forEach(a=>a.classList.remove('open'));
+  // Open clicked (if it was closed)
+  if(!isOpen){
+    answer.classList.add('open');
+    arrow.classList.add('open');
+  }
+}
 </script>
 </body>
 </html>
