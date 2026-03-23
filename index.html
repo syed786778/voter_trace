@@ -438,7 +438,7 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
   <div class="disclaimer">
     <h3><span class="shield">🔒</span> Your details are safe &amp; private</h3>
     <p>Everything happens on your device — your photos and personal information are <strong>never uploaded, saved, or shared</strong> with anyone. This tool simply reads the text visible on your card, the same way you would read it yourself.</p>
-    <p>VoterTrace is an independent tool built to help citizens easily extract their voter details and search for their name in electoral rolls. It is <strong>not affiliated with the Election Commission of India</strong> and cannot submit or alter any official records.</p>
+    <p>VoterTrace is an independent tool built to help citizens easily extract their voter details and search for their name in Kannada electoral rolls. It is <strong>not affiliated with the Election Commission of India</strong> and cannot submit or alter any official records.</p>
   </div>
 
   <div style="text-align:center;padding:8px 0 4px;opacity:.85">
@@ -599,8 +599,8 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
     <div class="form-header">
       <div class="form-badge f6">Form 6</div>
       <div>
-        <div class="form-title">New Voter Registration</div>
-        <div class="form-subtitle">Use this if you are enrolling for the first time</div>
+        <div class="form-title">New Voter Registration / Shifting from Another Constituency</div>
+        <div class="form-subtitle">Use this if you are enrolling for the first time OR moved to a new constituency</div>
       </div>
     </div>
     <div class="form-body">
@@ -1268,12 +1268,29 @@ async function scanPdf(){
 
     // Detect native text vs scanned image
     let nativeCount=0;
+    let kanQualityScore=0;
     for(let pn=1;pn<=Math.min(3,total);pn++){
       const pg=await pdf.getPage(pn);
       const tc=await pg.getTextContent();
-      nativeCount+=tc.items.filter(i=>i.str&&i.str.trim().length>1).length;
+      const items=tc.items.filter(i=>i.str&&i.str.trim().length>1);
+      nativeCount+=items.length;
+      // Quality check: count tokens that look like real Kannada words
+      // (≥3 Kannada codepoints AND not just stray diacritics/vowel signs alone)
+      // Broken-font PDFs produce high nativeCount but zero quality
+      for(const item of items){
+        const s=item.str||'';
+        // Count full Kannada consonants (U+0C95–U+0CB9) — these only appear in real words
+        const consonants=(s.match(/[ಕ-ಹ]/g)||[]).length;
+        // Count standalone vowel signs / diacritics only (sign of broken encoding)
+        const diacriticsOnly=(s.match(/[ಾ-್]/g)||[]).length;
+        if(consonants>=2) kanQualityScore++;
+        if(consonants===0&&diacriticsOnly>0) kanQualityScore--; // penalise garbage tokens
+      }
     }
-    const hasNative=nativeCount>30;
+    // hasNative: enough items AND the text quality is genuinely readable
+    // A broken-font PDF will have nativeCount>30 but kanQualityScore≈0 or negative
+    const hasNative = nativeCount>30 && kanQualityScore>10;
+    console.log('[PDF detect] nativeCount='+nativeCount+' kanQuality='+kanQualityScore+' hasNative='+hasNative);
 
     if(hasNative){
       // Fast native path
