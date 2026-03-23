@@ -1268,29 +1268,26 @@ async function scanPdf(){
 
     // Detect native text vs scanned image
     let nativeCount=0;
-    let kanQualityScore=0;
-    for(let pn=1;pn<=Math.min(3,total);pn++){
+    let kanTotal=0, matraCount=0;
+    for(let pn=1;pn<=Math.min(5,total);pn++){
       const pg=await pdf.getPage(pn);
       const tc=await pg.getTextContent();
       const items=tc.items.filter(i=>i.str&&i.str.trim().length>1);
       nativeCount+=items.length;
-      // Quality check: count tokens that look like real Kannada words
-      // (≥3 Kannada codepoints AND not just stray diacritics/vowel signs alone)
-      // Broken-font PDFs produce high nativeCount but zero quality
       for(const item of items){
-        const s=item.str||'';
-        // Count full Kannada consonants (U+0C95–U+0CB9) — these only appear in real words
-        const consonants=(s.match(/[ಕ-ಹ]/g)||[]).length;
-        // Count standalone vowel signs / diacritics only (sign of broken encoding)
-        const diacriticsOnly=(s.match(/[ಾ-್]/g)||[]).length;
-        if(consonants>=2) kanQualityScore++;
-        if(consonants===0&&diacriticsOnly>0) kanQualityScore--; // penalise garbage tokens
+        for(const ch of (item.str||'')){
+          const cp=ch.codePointAt(0);
+          if(cp>=0x0C80&&cp<=0x0CFF) kanTotal++;
+          // Dependent vowel signs (matras) U+0CBE–U+0CCD
+          // Real Kannada: ~25-40% of chars are matras
+          // Broken-font PDFs: 0-2% (matras mapped to wrong codepoints)
+          if(cp>=0x0CBE&&cp<=0x0CCD) matraCount++;
+        }
       }
     }
-    // hasNative: enough items AND the text quality is genuinely readable
-    // A broken-font PDF will have nativeCount>30 but kanQualityScore≈0 or negative
-    const hasNative = nativeCount>30 && kanQualityScore>10;
-    console.log('[PDF detect] nativeCount='+nativeCount+' kanQuality='+kanQualityScore+' hasNative='+hasNative);
+    const matraRatio = kanTotal>20 ? matraCount/kanTotal : 0;
+    const hasNative = nativeCount>30 && matraRatio>0.05;
+    console.log('[VT] nativeCount='+nativeCount+' kanChars='+kanTotal+' matras='+matraCount+' ratio='+(matraRatio*100).toFixed(1)+'% -> hasNative='+hasNative);
 
     if(hasNative){
       // Fast native path
