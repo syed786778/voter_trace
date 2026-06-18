@@ -304,6 +304,51 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
 .info-tile-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px}
 .info-tile-body{font-size:12px;color:var(--text2);line-height:1.55}
 
+/* ── SIR TIMELINE ── */
+.sir-process-wrap{margin-bottom:20px}
+.sir-process-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:16px}
+.sir-step{display:flex;gap:0;align-items:stretch;margin-bottom:0}
+.sir-step-connector{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:40px}
+.sir-step-dot{
+  width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:800;color:#fff;flex-shrink:0;z-index:1;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+.sir-step-line{width:2px;flex:1;min-height:12px;background:linear-gradient(180deg,var(--border2),var(--border))}
+.sir-step:last-child .sir-step-line{display:none}
+.sir-step-body{
+  flex:1;background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:14px 16px;margin-left:14px;margin-bottom:12px;
+  box-shadow:0 1px 4px rgba(0,0,0,.04);transition:border-color .15s,box-shadow .15s;
+}
+.sir-step-body:hover{border-color:#bfdbfe;box-shadow:0 3px 12px rgba(37,99,235,.08)}
+.sir-step-phase{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.sir-step-label{font-size:14px;font-weight:700;color:var(--text);line-height:1.35;margin-bottom:6px}
+.sir-step-date{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:6px;padding:3px 10px;font-size:12px;font-weight:600;color:var(--text2);
+}
+.sir-step-link{
+  display:inline-flex;align-items:center;gap:4px;margin-top:8px;
+  font-size:11.5px;font-weight:600;color:var(--blue);text-decoration:none;
+}
+.sir-step-link:hover{text-decoration:underline}
+.sir-cta{
+  background:linear-gradient(135deg,var(--amber-lt),#fef9c3);
+  border:1.5px solid var(--amber);border-radius:12px;
+  padding:14px 18px;display:flex;align-items:flex-start;gap:12px;margin-top:4px;
+}
+.sir-cta-icon{font-size:22px;flex-shrink:0}
+.sir-cta-text{font-size:13px;font-weight:700;color:#92400e;line-height:1.5}
+.sir-cta-sub{font-size:12px;font-weight:400;color:#78350f;margin-top:2px}
+@media(max-width:520px){
+  .sir-step-connector{width:32px}
+  .sir-step-dot{width:30px;height:30px;font-size:12px}
+  .sir-step-body{padding:12px 13px;margin-left:10px}
+  .sir-step-label{font-size:13px}
+}
+
 /* ── LINKS SECTION ── */
 .links-grid{display:grid;grid-template-columns:1fr;gap:12px}
 .link-card{display:flex;align-items:flex-start;gap:14px;padding:16px;background:#f8fafc;border:1px solid var(--border);border-radius:12px;text-decoration:none;transition:all .2s;cursor:pointer}
@@ -599,8 +644,8 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
     <div class="form-header">
       <div class="form-badge f6">Form 6</div>
       <div>
-        <div class="form-title">New Voter Registration</div>
-        <div class="form-subtitle">Use this if you are enrolling for the first time</div>
+        <div class="form-title">New Voter Registration / Shifting from Another Constituency</div>
+        <div class="form-subtitle">Use this if you are enrolling for the first time OR moved to a new constituency</div>
       </div>
     </div>
     <div class="form-body">
@@ -803,6 +848,121 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
       <div class="sir-event">
         <div class="sir-event-year">2022 – Present</div>
         <div class="sir-event-text">The ECI introduced quarterly roll updates (January, April, July, October) instead of a single annual revision — giving citizens more windows to enrol or correct their details throughout the year.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- KARNATAKA SIR 2026 PROCESS TIMELINE -->
+  <div class="box sir-process-wrap">
+    <div class="sir-process-title">Karnataka SIR 2026 — Official Schedule</div>
+
+    <!-- Step 1 -->
+    <div class="sir-step">
+      <div class="sir-step-connector">
+        <div class="sir-step-dot" style="background:#4f46e5">1</div>
+        <div class="sir-step-line"></div>
+      </div>
+      <div class="sir-step-body">
+        <div class="sir-step-phase" style="color:#4f46e5">Phase 1</div>
+        <div class="sir-step-label">📋 Preparation, Training &amp; Printing</div>
+        <div class="sir-step-date">📅 20 June 2026 → 29 June 2026</div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="sir-step">
+      <div class="sir-step-connector">
+        <div class="sir-step-dot" style="background:#0891b2">2</div>
+        <div class="sir-step-line"></div>
+      </div>
+      <div class="sir-step-body">
+        <div class="sir-step-phase" style="color:#0891b2">Phase 2</div>
+        <div class="sir-step-label">🏠 House to House Visits by BLOs</div>
+        <div class="sir-step-date">📅 30 June 2026 → 29 July 2026</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">Your Booth Level Officer will visit your home to verify residents. Make sure someone is present to respond.</div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="sir-step">
+      <div class="sir-step-connector">
+        <div class="sir-step-dot" style="background:#0d9488">3</div>
+        <div class="sir-step-line"></div>
+      </div>
+      <div class="sir-step-body">
+        <div class="sir-step-phase" style="color:#0d9488">Phase 3</div>
+        <div class="sir-step-label">📍 Rationalization of Polling Stations</div>
+        <div class="sir-step-date">📅 By 29 July 2026</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">Booth boundaries may be reorganised. Your polling station could change — verify before election day.</div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="sir-step">
+      <div class="sir-step-connector">
+        <div class="sir-step-dot" style="background:#d97706">4</div>
+        <div class="sir-step-line"></div>
+      </div>
+      <div class="sir-step-body">
+        <div class="sir-step-phase" style="color:#d97706">Phase 4</div>
+        <div class="sir-step-label">📄 Publication of Draft Electoral Roll</div>
+        <div class="sir-step-date">📅 By 05 August 2026</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">The preliminary voter list is made public. Check if your name is correct and present.</div>
+        <a class="sir-step-link" href="https://voters.eci.gov.in/searchInSIR/S2UA4DPDF-JK4QWODSE" target="_blank" rel="noopener">🔍 Search your name in the draft roll →</a>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="sir-step">
+      <div class="sir-step-connector">
+        <div class="sir-step-dot" style="background:#16a34a">5</div>
+        <div class="sir-step-line"></div>
+      </div>
+      <div class="sir-step-body">
+        <div class="sir-step-phase" style="color:#16a34a">Phase 5</div>
+        <div class="sir-step-label">✏️ Period for Filing Claims &amp; Objections</div>
+        <div class="sir-step-date">📅 05 August 2026 → 04 September 2026</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">Name missing or wrong? File a claim. Spot a duplicate or deceased person? File an objection. This is your key window.</div>
+        <a class="sir-step-link" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">📝 File a claim / objection at voters.eci.gov.in →</a>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="sir-step">
+      <div class="sir-step-connector">
+        <div class="sir-step-dot" style="background:#7c3aed">6</div>
+        <div class="sir-step-line"></div>
+      </div>
+      <div class="sir-step-body">
+        <div class="sir-step-phase" style="color:#7c3aed">Phase 6</div>
+        <div class="sir-step-label">⚖️ Notice Phase — Disposal of Claims &amp; Objections</div>
+        <div class="sir-step-date">📅 05 August 2026 → 03 October 2026</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">EROs review and process all filed claims. You may be contacted for verification documents during this period.</div>
+      </div>
+    </div>
+
+    <!-- Step 7 -->
+    <div class="sir-step">
+      <div class="sir-step-connector">
+        <div class="sir-step-dot" style="background:#dc2626">7</div>
+        <div class="sir-step-line"></div>
+      </div>
+      <div class="sir-step-body">
+        <div class="sir-step-phase" style="color:#dc2626">Final</div>
+        <div class="sir-step-label">🗳️ Publication of Final Electoral Roll</div>
+        <div class="sir-step-date">📅 07 October 2026</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">The official, finalised voter list is published. This is the roll used for all upcoming elections.</div>
+        <a class="sir-step-link" href="https://electoralsearch.eci.gov.in/uesfmempmlkypo" target="_blank" rel="noopener">🔍 Check your name on the final roll →</a>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="sir-cta">
+      <span class="sir-cta-icon">📢</span>
+      <div>
+        <div class="sir-cta-text">Ensure your name is in the voter list</div>
+        <div class="sir-cta-sub">Check, Verify and Cooperate — act before 04 September 2026 to secure your vote.</div>
       </div>
     </div>
   </div>
