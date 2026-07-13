@@ -4,209 +4,88 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VoterTrace</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{
-  --navy:#0d1b2a;
-  --navy2:#1a2e45;
-  --blue:#2563eb;
-  --blue-lt:#dbeafe;
-  --blue-dk:#1d4ed8;
-  --amber:#f59e0b;
-  --amber-lt:#fef3c7;
-  --green:#16a34a;
-  --green-lt:#dcfce7;
-  --red:#dc2626;
-  --bg:#f0f5fb;
-  --surface:#fff;
-  --border:#e2e8f0;
-  --border2:#cbd5e1;
-  --text:#0f172a;
-  --text2:#475569;
-  --text3:#94a3b8;
-  --radius:14px;
+  --navy:#0d1b2a;--navy2:#1a2e45;--blue:#2563eb;--blue-lt:#dbeafe;--blue-dk:#1d4ed8;
+  --amber:#f59e0b;--amber-lt:#fef3c7;--green:#16a34a;--green-lt:#dcfce7;--red:#dc2626;
+  --bg:#f0f5fb;--surface:#fff;--border:#e2e8f0;--border2:#cbd5e1;
+  --text:#0f172a;--text2:#475569;--text3:#94a3b8;--radius:14px;
   --shadow:0 1px 6px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --shadow-md:0 4px 20px rgba(0,0,0,.08),0 1px 6px rgba(0,0,0,.04);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6}
-
-/* ── NAV ── */
-.topbar{
-  position:sticky;top:0;z-index:50;
-  background:var(--navy);
-  display:flex;align-items:center;
-  padding:0 20px;height:58px;gap:4px;
-  box-shadow:0 2px 12px rgba(0,0,0,.2);
-}
-.topbar-logo{
-  font-family:'DM Serif Display',serif;
-  font-size:20px;color:#fff;margin-right:12px;
-  letter-spacing:-.2px;white-space:nowrap;flex-shrink:0;
-}
-.tab-btn{
-  padding:6px 14px;border-radius:20px;border:none;
-  background:none;font-size:12.5px;font-weight:600;
-  color:#94a3b8;cursor:pointer;transition:all .2s;
-  font-family:'DM Sans',sans-serif;white-space:nowrap;
-}
+.topbar{position:sticky;top:0;z-index:50;background:var(--navy);display:flex;align-items:center;padding:0 20px;height:58px;gap:4px;box-shadow:0 2px 12px rgba(0,0,0,.2);}
+.topbar-logo{font-family:'DM Serif Display',serif;font-size:20px;color:#fff;margin-right:12px;letter-spacing:-.2px;white-space:nowrap;flex-shrink:0;}
+.tab-btn{padding:6px 14px;border-radius:20px;border:none;background:none;font-size:12.5px;font-weight:600;color:#94a3b8;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;white-space:nowrap;}
 .tab-btn:hover{background:rgba(255,255,255,.1);color:#e2e8f0}
 .tab-btn.on{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.4)}
-@media(max-width:680px){
-  .topbar{padding:0 12px;height:52px;gap:2px}
-  .topbar-logo{font-size:17px;margin-right:8px}
-  .tab-btn{padding:5px 10px;font-size:11px}
-}
-@media(max-width:480px){
-  .tab-btn{padding:4px 8px;font-size:10.5px}
-}
-
-/* ── LAYOUT ── */
+@media(max-width:680px){.topbar{padding:0 12px;height:52px;gap:2px}.topbar-logo{font-size:17px;margin-right:8px}.tab-btn{padding:5px 10px;font-size:11px}}
+@media(max-width:480px){.tab-btn{padding:4px 8px;font-size:10.5px}}
 .page{display:none;max-width:820px;margin:0 auto;padding:36px 20px 100px}
 .page.on{display:block}
 @media(max-width:600px){.page{padding:22px 14px 80px}}
-
-/* ── HERO BAND (voter-id page) ── */
-.hero-band{
-  background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);
-  border-radius:20px;padding:28px 28px 24px;margin-bottom:22px;
-  position:relative;overflow:hidden;
-}
-.hero-band::before{
-  content:'';position:absolute;top:-40px;right:-40px;
-  width:180px;height:180px;
-  background:radial-gradient(circle,rgba(37,99,235,.35) 0%,transparent 70%);
-  pointer-events:none;
-}
-.hero-band::after{
-  content:'🗳';font-size:80px;position:absolute;
-  bottom:-10px;right:20px;opacity:.08;line-height:1;
-  pointer-events:none;
-}
+.hero-band{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);border-radius:20px;padding:28px 28px 24px;margin-bottom:22px;position:relative;overflow:hidden;}
+.hero-band::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(37,99,235,.35) 0%,transparent 70%);pointer-events:none;}
+.hero-band::after{content:'🗳';font-size:80px;position:absolute;bottom:-10px;right:20px;opacity:.08;line-height:1;pointer-events:none;}
 .hero-title{font-family:'DM Serif Display',serif;font-size:28px;color:#fff;line-height:1.25;margin-bottom:6px}
 .hero-sub{font-size:13.5px;color:#94a3b8;line-height:1.5;max-width:420px}
-@media(max-width:600px){
-  .hero-band{padding:22px 20px 20px;border-radius:16px}
-  .hero-title{font-size:22px}
-  .hero-band::after{font-size:60px;right:10px}
-}
-
-/* ── PHOTO TIPS ── */
-.tips-bar{
-  background:linear-gradient(90deg,#fffbeb,#fef9c3);
-  border:1.5px solid #fcd34d;border-radius:12px;
-  padding:12px 18px;margin-bottom:18px;
-  display:flex;align-items:flex-start;gap:12px;
-}
+@media(max-width:600px){.hero-band{padding:22px 20px 20px;border-radius:16px}.hero-title{font-size:22px}.hero-band::after{font-size:60px;right:10px}}
+.tips-bar{background:linear-gradient(90deg,#fffbeb,#fef9c3);border:1.5px solid #fcd34d;border-radius:12px;padding:12px 18px;margin-bottom:18px;display:flex;align-items:flex-start;gap:12px;}
 .tips-bar .tip-icon{font-size:22px;flex-shrink:0;margin-top:1px}
 .tips-title{font-size:12px;font-weight:700;color:#92400e;margin-bottom:5px}
 .tips-row{font-size:12px;color:#78350f;line-height:1.7}
 .tips-note{font-size:11px;color:#92400e;margin-top:5px;display:flex;align-items:flex-start;gap:4px}
-
-/* ── CARD ── */
-.box{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:24px;margin-bottom:16px;
-  box-shadow:var(--shadow);
-}
-.box-head{
-  font-size:10.5px;font-weight:700;text-transform:uppercase;
-  letter-spacing:1px;color:var(--text3);margin-bottom:18px;
-}
-
-/* ── UPLOAD AREAS ── */
+.box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;box-shadow:var(--shadow);}
+.box-head{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:18px;}
 .upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:4px}
 @media(max-width:520px){.upload-grid{grid-template-columns:1fr}}
 .slot-label{font-size:11.5px;font-weight:700;letter-spacing:.4px;margin-bottom:8px;display:block}
 .slot-label.f{color:var(--blue)}.slot-label.b{color:#7c3aed}
-.upload-btn{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:10px;width:100%;min-height:148px;padding:24px 16px;
-  border:2px dashed var(--border2);border-radius:12px;
-  background:#f8fafc;cursor:pointer;
-  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text3);
-  transition:all .2s;text-align:center;
-}
+.upload-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;min-height:148px;padding:24px 16px;border:2px dashed var(--border2);border-radius:12px;background:#f8fafc;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text3);transition:all .2s;text-align:center;}
 .upload-btn:hover{border-color:var(--blue);background:#eff6ff;color:var(--blue)}
 .upload-btn.selected{border-color:var(--green);border-style:solid;background:#f0fdf4;color:#15803d}
 .upload-btn .ico{font-size:34px;line-height:1}
 .upload-btn .sub{font-size:11px;color:var(--text3);margin-top:2px}
 .upload-btn.selected .sub{color:#86efac}
-.upload-single{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:10px;width:100%;min-height:110px;padding:24px 20px;
-  border:2px dashed var(--border2);border-radius:12px;
-  background:#f8fafc;cursor:pointer;
-  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--text3);
-  transition:all .2s;text-align:center;
-}
+.upload-single{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;min-height:110px;padding:24px 20px;border:2px dashed var(--border2);border-radius:12px;background:#f8fafc;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--text3);transition:all .2s;text-align:center;}
 .upload-single:hover{border-color:var(--blue);background:#eff6ff;color:var(--blue)}
 .upload-single.selected{border-color:var(--green);border-style:solid;background:#f0fdf4;color:#15803d}
 .upload-single .ico{font-size:36px;line-height:1}
 .thumb{width:100%;max-height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border);margin-top:10px;display:none}
-
-/* ── BUTTONS ── */
-.btn{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  width:100%;padding:14px 20px;border-radius:11px;border:none;
-  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;
-  cursor:pointer;transition:all .18s;margin-top:14px;letter-spacing:.2px;
-}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px 20px;border-radius:11px;border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;margin-top:14px;letter-spacing:.2px;}
 .btn-blue{background:var(--blue);color:#fff}
 .btn-blue:hover{background:var(--blue-dk);transform:translateY(-1px);box-shadow:0 4px 14px rgba(37,99,235,.35)}
 .btn-blue:disabled{background:#bfdbfe;color:#93c5fd;cursor:not-allowed;transform:none;box-shadow:none}
-
-/* ── PROGRESS ── */
 .prog-wrap{margin-top:14px;display:none}.prog-wrap.on{display:block}
 .prog-track{height:7px;background:#e2e8f0;border-radius:4px;overflow:hidden;margin-bottom:6px}
 .prog-bar{height:100%;background:linear-gradient(90deg,var(--blue),#60a5fa);border-radius:4px;width:0;transition:width .35s}
 .prog-txt{font-size:12px;color:var(--text3);font-weight:500}
 .spin{width:15px;height:15px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:rot .55s linear infinite;flex-shrink:0}
 @keyframes rot{to{transform:rotate(360deg)}}
-
-/* ── VOTER ID FIELDS ── */
 .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:600px){.field-grid{grid-template-columns:1fr}}
-.field-item{
-  background:#f8fafc;border:1px solid #f1f5f9;
-  border-radius:11px;padding:14px 15px;position:relative;
-  transition:border-color .15s;
-}
+.field-item{background:#f8fafc;border:1px solid #f1f5f9;border-radius:11px;padding:14px 15px;position:relative;transition:border-color .15s;}
 .field-item:hover{border-color:var(--border2)}
 .field-item.w2{grid-column:1/-1}
 .field-k{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
 .field-v{font-size:15px;font-weight:600;color:var(--text);line-height:1.4;padding-right:56px}
 .field-v.nil{font-size:13px;color:#cbd5e1;font-style:italic;font-weight:400}
-.copy-btn{
-  position:absolute;top:10px;right:10px;
-  background:none;border:1px solid var(--border);border-radius:6px;
-  padding:3px 9px;font-size:10px;font-weight:700;color:var(--text3);
-  cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;opacity:0;
-}
+.copy-btn{position:absolute;top:10px;right:10px;background:none;border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;color:var(--text3);cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;opacity:0;}
 @media(hover:hover){.field-item:hover .copy-btn{opacity:1}}
 @media(hover:none){.copy-btn{opacity:1}}
 .copy-btn:hover,.copy-btn:active{background:#eff6ff;border-color:#bfdbfe;color:var(--blue)}
 .copy-btn.copied{color:var(--green);border-color:#bbf7d0;background:#f0fdf4}
-
-/* ── SEARCH ── */
 .input-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 @media(max-width:520px){.input-row{grid-template-columns:1fr}}
 .input-group label{display:block;font-size:11.5px;font-weight:700;color:var(--text2);margin-bottom:5px;letter-spacing:.2px}
-.input-group input{
-  width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;
-  font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:#fff;
-  outline:none;transition:all .15s;
-}
+.input-group input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:#fff;outline:none;transition:all .15s;}
 .input-group input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #dbeafe}
 .input-group input:disabled{background:#f8fafc;color:#cbd5e1;cursor:not-allowed}
-
-/* ── RESULTS ── */
-.result-item{
-  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
-  padding:18px 20px;margin-bottom:12px;position:relative;
-  transition:all .2s;box-shadow:var(--shadow);
-}
+.result-item{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:12px;position:relative;transition:all .2s;box-shadow:var(--shadow);}
 .result-item:hover{border-color:#bfdbfe;box-shadow:0 4px 16px rgba(37,99,235,.1);transform:translateY(-1px)}
 .result-item.top{border-color:var(--blue);box-shadow:0 4px 20px rgba(37,99,235,.15)}
 .result-top-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
@@ -220,14 +99,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .tag b{color:var(--text);font-weight:700}
 .tag.hl{background:#eff6ff;border-color:#bfdbfe;color:var(--blue)}
 .tag.hl b{color:var(--blue-dk)}
-.best-pin{
-  position:absolute;top:-1px;right:16px;
-  background:var(--blue);color:#fff;
-  font-size:10px;font-weight:800;padding:3px 10px;
-  border-radius:0 0 8px 8px;letter-spacing:.5px;
-}
-
-/* ── MISC ── */
+.best-pin{position:absolute;top:-1px;right:16px;background:var(--blue);color:#fff;font-size:10px;font-weight:800;padding:3px 10px;border-radius:0 0 8px 8px;letter-spacing:.5px;}
 .banner-ok{padding:12px 16px;border-radius:10px;font-size:13px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;font-weight:600}
 .notice{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f8fafc;border:1px solid var(--border);border-radius:10px;font-size:13px;color:var(--text3);margin-bottom:14px}
 .empty{text-align:center;padding:48px 20px;color:var(--text3)}
@@ -236,26 +108,16 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 details{margin-top:14px}
 details summary{font-size:12px;color:var(--text3);cursor:pointer;user-select:none}
 details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:10px;color:#64748b;white-space:pre-wrap;word-break:break-word;max-height:180px;overflow-y:auto;font-family:monospace}
-::-webkit-scrollbar{width:5px}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
-
-/* ── DISCLAIMER ── */
-.disclaimer{
-  background:linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%);
-  border:1px solid #bfdbfe;border-radius:var(--radius);padding:20px 24px;margin-bottom:20px;
-}
+.disclaimer{background:linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%);border:1px solid #bfdbfe;border-radius:var(--radius);padding:20px 24px;margin-bottom:20px;}
 .disclaimer h3{font-size:13px;font-weight:700;color:#1e40af;margin-bottom:10px;display:flex;align-items:center;gap:7px}
 .disclaimer p{font-size:13px;color:#334155;line-height:1.65;margin-bottom:8px}
 .disclaimer p:last-child{margin-bottom:0}
-
-/* ── VOTER FORMS ── */
 .form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden;box-shadow:var(--shadow)}
 .form-header{display:flex;align-items:flex-start;gap:14px;padding:18px 20px 14px;border-bottom:1px solid #f1f5f9}
 .form-badge{font-size:12px;font-weight:800;padding:5px 13px;border-radius:8px;white-space:nowrap;flex-shrink:0;margin-top:2px}
-.f6{background:#dbeafe;color:#1d4ed8}.f8{background:#dcfce7;color:#15803d}
-.f8a{background:var(--amber-lt);color:#92400e}.f7{background:#fee2e2;color:#b91c1c}
-.f6b{background:#f3e8ff;color:#7c3aed}
+.f6{background:#dbeafe;color:#1d4ed8}.f8{background:#dcfce7;color:#15803d}.f8a{background:var(--amber-lt);color:#92400e}.f7{background:#fee2e2;color:#b91c1c}.f6b{background:#f3e8ff;color:#7c3aed}
 .form-title{font-size:14px;font-weight:700;color:var(--text);line-height:1.4}
 .form-subtitle{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.4}
 .form-body{padding:16px 20px}
@@ -267,23 +129,18 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
 .form-steps li strong{color:var(--text)}.form-steps li em{color:var(--blue);font-style:normal;font-weight:600}
 .form-link-btn{display:inline-flex;margin-top:14px;padding:9px 20px;background:var(--blue);color:#fff;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;transition:all .2s}
 .form-link-btn:hover{background:var(--blue-dk);transform:translateY(-1px)}
-@media(max-width:600px){
-  .form-header{flex-direction:column;gap:8px;padding:14px 16px 12px}
-  .form-body{padding:14px 16px}
-}
-
-/* ── SIR PAGE ── */
-.sir-hero{
-  background:linear-gradient(135deg,#0d1b2a 0%,#1a2e45 100%);
-  border-radius:20px;padding:28px;margin-bottom:22px;position:relative;overflow:hidden;
-}
-.sir-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;
-  background:radial-gradient(circle,rgba(245,158,11,.2) 0%,transparent 70%);}
+@media(max-width:600px){.form-header{flex-direction:column;gap:8px;padding:14px 16px 12px}.form-body{padding:14px 16px}}
+.sir-hero{background:linear-gradient(135deg,#0d1b2a 0%,#1a2e45 100%);border-radius:20px;padding:28px;margin-bottom:22px;position:relative;overflow:hidden;}
+.sir-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(245,158,11,.2) 0%,transparent 70%);}
 .sir-hero-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px}
 .sir-hero-title{font-family:'DM Serif Display',serif;font-size:26px;color:#fff;line-height:1.25;margin-bottom:8px}
 .sir-hero-sub{font-size:13px;color:#94a3b8;line-height:1.6;max-width:480px}
-.sir-section{margin-bottom:20px}
-.sir-section-title{font-size:14px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+@media(max-width:520px){.info-grid{grid-template-columns:1fr}}
+.info-tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.info-tile-icon{font-size:24px;margin-bottom:8px}
+.info-tile-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px}
+.info-tile-body{font-size:12px;color:var(--text2);line-height:1.55}
 .sir-timeline{position:relative;padding-left:24px}
 .sir-timeline::before{content:'';position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:linear-gradient(180deg,var(--blue),var(--blue-lt))}
 .sir-event{position:relative;margin-bottom:18px}
@@ -297,59 +154,25 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
 .faq-a{display:none;padding:0 18px 14px;font-size:13px;color:var(--text2);line-height:1.7;border-top:1px solid #f1f5f9}
 .faq-a.open{display:block}
 .faq-arrow.open{transform:rotate(180deg)}
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
-@media(max-width:520px){.info-grid{grid-template-columns:1fr}}
-.info-tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.info-tile-icon{font-size:24px;margin-bottom:8px}
-.info-tile-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px}
-.info-tile-body{font-size:12px;color:var(--text2);line-height:1.55}
-
-/* ── SIR TIMELINE ── */
 .sir-process-wrap{margin-bottom:20px}
 .sir-process-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:16px}
 .sir-step{display:flex;gap:0;align-items:stretch;margin-bottom:0}
 .sir-step-connector{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:40px}
-.sir-step-dot{
-  width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-size:14px;font-weight:800;color:#fff;flex-shrink:0;z-index:1;
-  box-shadow:0 2px 8px rgba(0,0,0,.15);
-}
+.sir-step-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;z-index:1;box-shadow:0 2px 8px rgba(0,0,0,.15);}
 .sir-step-line{width:2px;flex:1;min-height:12px;background:linear-gradient(180deg,var(--border2),var(--border))}
 .sir-step:last-child .sir-step-line{display:none}
-.sir-step-body{
-  flex:1;background:var(--surface);border:1px solid var(--border);
-  border-radius:12px;padding:14px 16px;margin-left:14px;margin-bottom:12px;
-  box-shadow:0 1px 4px rgba(0,0,0,.04);transition:border-color .15s,box-shadow .15s;
-}
+.sir-step-body{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-left:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04);transition:border-color .15s,box-shadow .15s;}
 .sir-step-body:hover{border-color:#bfdbfe;box-shadow:0 3px 12px rgba(37,99,235,.08)}
 .sir-step-phase{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
 .sir-step-label{font-size:14px;font-weight:700;color:var(--text);line-height:1.35;margin-bottom:6px}
-.sir-step-date{
-  display:inline-flex;align-items:center;gap:5px;
-  background:var(--bg);border:1px solid var(--border);
-  border-radius:6px;padding:3px 10px;font-size:12px;font-weight:600;color:var(--text2);
-}
-.sir-step-link{
-  display:inline-flex;align-items:center;gap:4px;margin-top:8px;
-  font-size:11.5px;font-weight:600;color:var(--blue);text-decoration:none;
-}
+.sir-step-date{display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;font-weight:600;color:var(--text2);}
+.sir-step-link{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:11.5px;font-weight:600;color:var(--blue);text-decoration:none;}
 .sir-step-link:hover{text-decoration:underline}
-.sir-cta{
-  background:linear-gradient(135deg,var(--amber-lt),#fef9c3);
-  border:1.5px solid var(--amber);border-radius:12px;
-  padding:14px 18px;display:flex;align-items:flex-start;gap:12px;margin-top:4px;
-}
+.sir-cta{background:linear-gradient(135deg,var(--amber-lt),#fef9c3);border:1.5px solid var(--amber);border-radius:12px;padding:14px 18px;display:flex;align-items:flex-start;gap:12px;margin-top:4px;}
 .sir-cta-icon{font-size:22px;flex-shrink:0}
 .sir-cta-text{font-size:13px;font-weight:700;color:#92400e;line-height:1.5}
 .sir-cta-sub{font-size:12px;font-weight:400;color:#78350f;margin-top:2px}
-@media(max-width:520px){
-  .sir-step-connector{width:32px}
-  .sir-step-dot{width:30px;height:30px;font-size:12px}
-  .sir-step-body{padding:12px 13px;margin-left:10px}
-  .sir-step-label{font-size:13px}
-}
-
-/* ── LINKS SECTION ── */
+@media(max-width:520px){.sir-step-connector{width:32px}.sir-step-dot{width:30px;height:30px;font-size:12px}.sir-step-body{padding:12px 13px;margin-left:10px}.sir-step-label{font-size:13px}}
 .links-grid{display:grid;grid-template-columns:1fr;gap:12px}
 .link-card{display:flex;align-items:flex-start;gap:14px;padding:16px;background:#f8fafc;border:1px solid var(--border);border-radius:12px;text-decoration:none;transition:all .2s;cursor:pointer}
 .link-card:hover{border-color:#bfdbfe;background:#eff6ff;box-shadow:0 4px 12px rgba(37,99,235,.1);transform:translateY(-1px)}
@@ -360,18 +183,112 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
 .link-desc{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.4}
 .qr-wrap{flex-shrink:0;width:64px;height:64px;background:#fff;border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .qr-wrap canvas,.qr-wrap img{width:60px!important;height:60px!important}
+@media(max-width:600px){.box{padding:18px 16px}.field-v{font-size:14px;padding-right:52px}.field-item{padding:11px 12px}.result-name{font-size:16px}.result-item{padding:14px 16px}.result-tags{gap:5px}.tag{font-size:11px;padding:3px 9px}.sir-hero{padding:20px 18px;border-radius:16px}.sir-hero-title{font-size:21px}}
 
-/* ── MOBILE GLOBAL ── */
+/* ══ NEW: ACCEPTED DOCUMENTS ══ */
+.docs-intro{font-size:13.5px;color:var(--text2);line-height:1.65;margin-bottom:20px;padding:14px 18px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;display:flex;gap:10px;align-items:flex-start;}
+.docs-intro-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.doc-cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+@media(max-width:580px){.doc-cards-grid{grid-template-columns:1fr}}
+.doc-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:16px;transition:all .2s;box-shadow:0 1px 4px rgba(0,0,0,.04);display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden;}
+.doc-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:4px;border-radius:14px 0 0 14px;}
+.doc-card.identity::before{background:linear-gradient(180deg,#3b82f6,#6366f1)}
+.doc-card.age-addr::before{background:linear-gradient(180deg,#10b981,#059669)}
+.doc-card.address::before{background:linear-gradient(180deg,#f59e0b,#d97706)}
+.doc-card.both::before{background:linear-gradient(180deg,#8b5cf6,#7c3aed)}
+.doc-card:hover{border-color:#bfdbfe;box-shadow:0 4px 16px rgba(37,99,235,.1);transform:translateY(-1px)}
+.doc-card-top{display:flex;align-items:flex-start;gap:12px}
+.doc-num{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.doc-name{font-size:13.5px;font-weight:700;color:var(--text);line-height:1.35;flex:1}
+.doc-purpose-pills{display:flex;flex-wrap:wrap;gap:5px;padding-left:40px}
+.doc-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.3px;}
+.doc-pill.id{background:#dbeafe;color:#1d4ed8}
+.doc-pill.age{background:#dcfce7;color:#15803d}
+.doc-pill.addr{background:#fef3c7;color:#92400e}
+.doc-pill.photo{background:#f3e8ff;color:#7c3aed}
+.doc-desc{font-size:12px;color:var(--text2);line-height:1.5;padding-left:40px}
+.doc-howto{margin-top:2px;padding-left:40px;font-size:11.5px;color:var(--text3);line-height:1.5;display:flex;align-items:flex-start;gap:5px;}
+.doc-howto-link{font-size:11.5px;font-weight:600;color:var(--blue);text-decoration:none;display:inline-flex;align-items:center;gap:3px;margin-top:6px;padding-left:40px;}
+.doc-howto-link:hover{text-decoration:underline}
+.doc-note-bar{padding:12px 16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;font-size:12.5px;color:#15803d;line-height:1.55;display:flex;gap:8px;align-items:flex-start;}
+
+/* ══ NEW: SIR FORM SPECIMENS ══ */
+.forms-intro{font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:20px;}
+.sir-form-specimen{background:var(--surface);border:2px solid var(--border);border-radius:16px;margin-bottom:20px;overflow:hidden;box-shadow:var(--shadow-md);}
+.sir-form-header{padding:14px 20px;display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--border);}
+.sir-form-badge{font-size:11px;font-weight:800;padding:6px 14px;border-radius:8px;letter-spacing:.4px;flex-shrink:0;}
+.form-badge-blue{background:#dbeafe;color:#1e40af}
+.form-badge-green{background:#dcfce7;color:#166534}
+.form-badge-purple{background:#f3e8ff;color:#6b21a8}
+.sir-form-header-title{font-size:14px;font-weight:700;color:var(--text);line-height:1.3}
+.sir-form-header-sub{font-size:11.5px;color:var(--text2);margin-top:2px}
+.sir-form-body{padding:20px}
+.gov-form{border:1.5px solid #94a3b8;border-radius:8px;overflow:hidden;font-family:'DM Sans',sans-serif;font-size:12px;}
+.gov-form-title-band{background:#0d1b2a;color:#fff;padding:10px 16px;text-align:center;}
+.gov-form-title-main{font-family:'DM Serif Display',serif;font-size:15px;letter-spacing:.3px}
+.gov-form-title-sub{font-size:10px;color:#94a3b8;margin-top:3px;letter-spacing:.5px;text-transform:uppercase}
+.gov-form-kannada{font-size:13px;color:#e2e8f0;margin-top:2px}
+.gov-form-ref{background:#f8fafc;border-bottom:1px solid #e2e8f0;padding:8px 16px;display:flex;justify-content:space-between;font-size:10.5px;color:var(--text3);font-weight:600;flex-wrap:wrap;gap:4px;}
+.gov-field-row{display:grid;gap:0;border-bottom:1px solid #e2e8f0;}
+.gov-field-row:last-child{border-bottom:none}
+.gov-field{padding:9px 14px;border-right:1px solid #e2e8f0;display:flex;flex-direction:column;gap:3px;}
+.gov-field:last-child{border-right:none}
+.gov-field-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);}
+.gov-field-value{font-size:13px;font-weight:600;color:var(--text);line-height:1.3;}
+.gov-field-value.kan{font-size:13px;color:var(--text)}
+.gov-field-value.placeholder{color:#cbd5e1;font-style:italic;font-size:11px;font-weight:400}
+.gov-field-group-label{background:#f1f5f9;padding:7px 14px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:6px;}
+.gov-section-divider{background:linear-gradient(90deg,var(--blue-lt),#e0e7ff);border-bottom:1.5px solid #bfdbfe;padding:6px 14px;font-size:9.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--blue-dk);}
+.gov-form-footer{background:#f8fafc;border-top:1.5px solid #e2e8f0;padding:10px 16px;font-size:10px;color:var(--text3);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+.gov-stamp-box{border:2px dashed #cbd5e1;border-radius:6px;width:80px;height:52px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--text3);text-align:center;line-height:1.4;flex-shrink:0;}
+.gov-sig-box{border-bottom:1.5px solid var(--text3);min-width:120px;height:32px;display:flex;align-items:flex-end;font-size:9px;color:var(--text3);padding-bottom:3px;}
+.form-use-note{margin-top:14px;padding:10px 14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:12px;color:#1e40af;line-height:1.5;display:flex;gap:8px;align-items:flex-start;}
+@media(max-width:600px){.sir-form-header{flex-direction:column;gap:8px}.gov-field-row{grid-template-columns:1fr!important}.gov-field{border-right:none!important;border-bottom:1px solid #f1f5f9}.gov-form-ref{flex-direction:column;gap:2px}}
+
+/* ══ BLO FORM REPLICAS ══ */
+.blo-form-wrap{margin-bottom:24px}
+.blo-form-label{display:inline-block;color:#fff;font-size:12px;font-weight:800;padding:5px 16px;border-radius:20px 20px 0 0;letter-spacing:.4px;margin-bottom:0}
+.blo-form-context{font-size:12.5px;color:var(--text2);margin:4px 0 8px;line-height:1.5}
+.blo-form{border:1.5px solid #94a3b8;border-radius:0 10px 10px 10px;overflow:hidden;font-family:'DM Sans',sans-serif;font-size:11.5px;background:#fff}
+.blo-form-title{text-align:center;font-weight:900;font-size:13px;padding:8px 12px 2px;letter-spacing:.3px}
+.blo-form-subtitle{text-align:center;font-size:10px;color:#475569;padding:0 12px 8px;line-height:1.5;border-bottom:1px solid #e2e8f0}
+.blo-top-row{padding:6px 10px;background:#f8fafc;border-bottom:1px solid #e2e8f0}
+.blo-top-boxes{display:flex;gap:6px;flex-wrap:wrap}
+.blo-top-box{flex:1;min-width:80px;border:1px solid #cbd5e1;border-radius:5px;padding:4px 8px;background:#fff}
+.blo-top-box-label{font-size:8.5px;color:#64748b;line-height:1.3;margin-bottom:2px}
+.blo-top-box-val{font-size:11px;font-weight:700;color:#0f172a}
+.blo-section-title{background:#1e40af;color:#fff;font-size:9.5px;font-weight:700;padding:5px 10px;text-align:center;letter-spacing:.3px;line-height:1.4}
+.blo-two-col-header{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #e2e8f0}
+.blo-col-head{font-size:9px;font-weight:700;padding:6px 10px;text-align:center;line-height:1.4;border-right:1.5px solid #e2e8f0;background:#f8fafc}
+.blo-col-head:last-child{border-right:none}
+.blo-two-col-row{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #f1f5f9}
+.blo-two-col-row:last-child{border-bottom:none}
+.blo-col-cell{padding:6px 10px;border-right:1.5px solid #e2e8f0}
+.blo-col-cell:last-child{border-right:none}
+.blo-row-parts-inline{display:flex;gap:8px;padding:6px 10px}
+.blo-row-parts-inline>div{flex:1}
+.blo-row2{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #f1f5f9}
+.blo-row2:last-of-type{border-bottom:none}
+.blo-cell{padding:6px 10px;border-right:1px solid #f1f5f9}
+.blo-cell:last-child{border-right:none}
+.blo-cell-wide{flex:1}
+.blo-cell-full{grid-column:1/-1;padding:6px 10px}
+.blo-cell-sm{flex:1;padding:5px 8px;border-right:1px solid #f1f5f9}
+.blo-cell-sm:last-child{border-right:none}
+.blo-row-parts{display:flex;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}
+.blo-cell-label{font-size:8.5px;color:#64748b;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;line-height:1.3}
+.blo-cell-val{font-size:12px;font-weight:600;color:#0f172a;line-height:1.3}
+.blo-red{color:#dc2626!important}
+.blo-boxes-dob{display:flex;gap:2px;flex-wrap:wrap}
+.blo-boxes-dob span{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border:1px solid #94a3b8;border-radius:2px;font-size:9px;font-weight:700;color:#0f172a}
+.blo-sign-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:#fffbeb;border-top:1px solid #fde68a;border-bottom:1px solid #fde68a}
+.blo-sign-box{flex:1;border-bottom:1.5px solid #0f172a;font-size:9.5px;color:#64748b;padding-bottom:14px}
+.blo-refer{font-size:11px;padding:7px 10px;background:#f0fdf4;color:#15803d;border-top:1px solid #bbf7d0;font-weight:600;line-height:1.5}
 @media(max-width:600px){
-  .box{padding:18px 16px}
-  .field-v{font-size:14px;padding-right:52px}
-  .field-item{padding:11px 12px}
-  .result-name{font-size:16px}
-  .result-item{padding:14px 16px}
-  .result-tags{gap:5px}
-  .tag{font-size:11px;padding:3px 9px}
-  .sir-hero{padding:20px 18px;border-radius:16px}
-  .sir-hero-title{font-size:21px}
+  .blo-two-col-header,.blo-two-col-row,.blo-row2{grid-template-columns:1fr}
+  .blo-col-cell,.blo-col-head{border-right:none;border-bottom:1px solid #f1f5f9}
+  .blo-top-boxes{flex-wrap:wrap}
+  .blo-top-box{min-width:calc(50% - 6px)}
 }
 </style>
 </head>
@@ -380,15 +297,14 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
 <div class="topbar">
   <span class="topbar-logo">VoterTrace</span>
   <button class="tab-btn on" id="t1" onclick="go('voter-id','t1')">Voter ID Reader</button>
-  <button class="tab-btn"    id="t2" onclick="go('roll-search','t2')">Electoral Roll Search</button>
-  <button class="tab-btn"    id="t3" onclick="go('links-page','t3')" style="position:relative">🔗 Important Links<span id="links-dot" style="position:absolute;top:6px;right:6px;width:7px;height:7px;background:#f59e0b;border-radius:50%;animation:pulse-dot 2s infinite"></span></button>
-  <button class="tab-btn"    id="t4" onclick="go('forms-page','t4')">📋 Voter Forms</button>
-  <button class="tab-btn"    id="t5" onclick="go('sir-page','t5')">📖 What is SIR?</button>
+  <button class="tab-btn" id="t2" onclick="go('roll-search','t2')">Electoral Roll Search</button>
+  <button class="tab-btn" id="t3" onclick="go('links-page','t3')" style="position:relative">🔗 Links<span id="links-dot" style="position:absolute;top:6px;right:6px;width:7px;height:7px;background:#f59e0b;border-radius:50%;animation:pulse-dot 2s infinite"></span></button>
+  <button class="tab-btn" id="t4" onclick="go('forms-page','t4')">📋 Voter Forms</button>
+  <button class="tab-btn" id="t5" onclick="go('sir-page','t5')">📖 SIR Guide</button>
   <div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0">
-    <button onclick="shareApp()" class="share-btn-wrap" style="display:flex;align-items:center;gap:6px;padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#e2e8f0;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='rgba(255,255,255,.18)'" onmouseout="this.style.background='rgba(255,255,255,.08)'">
+    <button onclick="shareApp()" style="display:flex;align-items:center;gap:6px;padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#e2e8f0;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='rgba(255,255,255,.18)'" onmouseout="this.style.background='rgba(255,255,255,.08)'">
       <span style="font-size:13px">🔗</span> Share
     </button>
-
   </div>
 </div>
 
@@ -401,15 +317,15 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
     </div>
     <p style="font-size:13px;color:#64748b;margin-bottom:16px">Share this tool with friends, family, and your community.</p>
     <div style="display:flex;gap:8px;align-items:center">
-      <input id="share-url" type="text" readonly style="flex:1;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;color:#0f172a;background:#f8fafc;font-family:Inter,sans-serif;outline:none">
-      <button id="copy-url-btn" onclick="copyShareUrl()" style="padding:10px 16px;background:#2563eb;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap;transition:all .15s">Copy</button>
+      <input id="share-url" type="text" readonly style="flex:1;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;color:#0f172a;background:#f8fafc;font-family:'DM Sans',sans-serif;outline:none">
+      <button id="copy-url-btn" onclick="copyShareUrl()" style="padding:10px 16px;background:#2563eb;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s">Copy</button>
     </div>
     <div id="share-url-hint" style="display:none;margin-top:8px;padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:12px;color:#1e40af;line-height:1.5">
-      💡 <strong>To share:</strong> host this HTML file online (e.g. GitHub Pages, Netlify, Google Drive), then paste your link above. WhatsApp &amp; Telegram will use whatever URL you enter.
+      💡 <strong>To share:</strong> host this HTML file online (e.g. GitHub Pages, Netlify), then paste your link above.
     </div>
     <div style="display:flex;gap:8px;margin-top:12px">
-      <button onclick="shareWhatsApp()" style="flex:1;padding:10px;background:#25D366;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">📱 WhatsApp</button>
-      <button onclick="shareTelegram()" style="flex:1;padding:10px;background:#229ED9;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">✈️ Telegram</button>
+      <button onclick="shareWhatsApp()" style="flex:1;padding:10px;background:#25D366;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer">📱 WhatsApp</button>
+      <button onclick="shareTelegram()" style="flex:1;padding:10px;background:#229ED9;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer">✈️ Telegram</button>
     </div>
   </div>
 </div>
@@ -418,34 +334,23 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
 <div class="page on" id="voter-id">
   <div class="hero-band">
     <div class="hero-title">Voter ID Reader</div>
-    <div class="hero-sub">Upload your Voter ID card to instantly read and extract all your details — securely on your device.</div>
+    <div class="hero-sub">Upload your Voter ID card to instantly extract all your details — securely on your device.</div>
   </div>
-
   <div class="tips-bar">
     <span class="tip-icon">📸</span>
     <div style="flex:1;min-width:0">
       <div class="tips-title">Photo tips for best results</div>
-      <div class="tips-row">
-        <span style="color:#16a34a;font-weight:700">✓</span> Flat, well-lit &amp; straight &nbsp;
-        <span style="color:#16a34a;font-weight:700">✓</span> Card fully in frame &nbsp;
-        <span style="color:#dc2626;font-weight:700">✗</span> Blurry / angled / glare
-      </div>
-      <div class="tips-note">
-        <span style="flex-shrink:0">⚠️</span>
-        <span><strong>Cards issued before ~2000</strong> may have missing EPIC No. or inaccurate fields due to faded print.</span>
-      </div>
+      <div class="tips-row"><span style="color:#16a34a;font-weight:700">✓</span> Flat, well-lit &amp; straight &nbsp;<span style="color:#16a34a;font-weight:700">✓</span> Card fully in frame &nbsp;<span style="color:#dc2626;font-weight:700">✗</span> Blurry / angled / glare</div>
+      <div class="tips-note"><span style="flex-shrink:0">⚠️</span><span><strong>Cards issued before ~2000</strong> may have missing EPIC No. or inaccurate fields due to faded print.</span></div>
     </div>
   </div>
-
   <div class="box">
     <div class="box-head">Upload Card Images</div>
     <div class="upload-grid">
       <div>
         <span class="slot-label f">▲ Front side (required)</span>
         <button class="upload-btn" id="front-btn" onclick="document.getElementById('fi-front').click()">
-          <span class="ico">🪪</span>
-          <span id="front-lbl">Tap to upload front</span>
-          <span class="sub">JPG, PNG, HEIC</span>
+          <span class="ico">🪪</span><span id="front-lbl">Tap to upload front</span><span class="sub">JPG, PNG, HEIC</span>
         </button>
         <input type="file" id="fi-front" accept="image/*" style="display:none">
         <img id="front-thumb" class="thumb" alt="">
@@ -453,43 +358,30 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
       <div>
         <span class="slot-label b">▼ Back side (optional)</span>
         <button class="upload-btn" id="back-btn" onclick="document.getElementById('fi-back').click()">
-          <span class="ico" style="transform:scaleX(-1);display:inline-block">🪪</span>
-          <span id="back-lbl">Tap to upload back</span>
-          <span class="sub">For address details</span>
+          <span class="ico" style="transform:scaleX(-1);display:inline-block">🪪</span><span id="back-lbl">Tap to upload back</span><span class="sub">For address details</span>
         </button>
         <input type="file" id="fi-back" accept="image/*" style="display:none">
         <img id="back-thumb" class="thumb" alt="">
       </div>
     </div>
-    <div class="prog-wrap" id="id-prog">
-      <div class="prog-track"><div class="prog-bar" id="id-bar"></div></div>
-      <div class="prog-txt" id="id-txt">Scanning…</div>
-    </div>
+    <div class="prog-wrap" id="id-prog"><div class="prog-track"><div class="prog-bar" id="id-bar"></div></div><div class="prog-txt" id="id-txt">Scanning…</div></div>
     <button class="btn btn-blue" id="id-btn" disabled onclick="scanId()">Scan Voter ID</button>
   </div>
-
   <div id="id-out" style="display:none">
     <div class="box">
       <div class="box-head">Extracted Details</div>
       <div class="field-grid" id="id-fields"></div>
-      <details>
-        <summary>View raw scanned text</summary>
-        <pre id="id-raw"></pre>
-      </details>
+      <details><summary>View raw scanned text</summary><pre id="id-raw"></pre></details>
     </div>
   </div>
-
-  <!-- SLIM DISCLAIMER -->
   <div class="disclaimer">
-    <h3><span class="shield">🔒</span> Your details are safe &amp; private</h3>
-    <p>Everything happens on your device — your photos and personal information are <strong>never uploaded, saved, or shared</strong> with anyone. This tool simply reads the text visible on your card, the same way you would read it yourself.</p>
-    <p>VoterTrace is an independent tool built to help citizens easily extract their voter details and search for their name in Kannada electoral rolls. It is <strong>not affiliated with the Election Commission of India</strong> and cannot submit or alter any official records.</p>
+    <h3>🔒 Your details are safe &amp; private</h3>
+    <p>Everything happens on your device — your photos and personal information are <strong>never uploaded, saved, or shared</strong> with anyone.</p>
+    <p>VoterTrace is an independent tool — <strong>not affiliated with the Election Commission of India</strong> and cannot submit or alter any official records.</p>
   </div>
-
   <div style="text-align:center;padding:8px 0 4px;opacity:.85">
     <span style="font-size:13px;color:#64748b">Built by </span><span style="font-size:13px;font-weight:700;color:#0f172a">Syed Rashad</span>
-    <span style="font-size:13px;color:#94a3b8"> · </span>
-    <span style="font-size:13px;font-weight:700;color:#d97706;font-style:italic">Fee Sabilillah</span>
+    <span style="font-size:13px;color:#94a3b8"> · </span><span style="font-size:13px;font-weight:700;color:#d97706;font-style:italic">Fee Sabilillah</span>
   </div>
 </div>
 
@@ -499,57 +391,31 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
     <div class="hero-title">Electoral Roll Search</div>
     <div class="hero-sub">Upload the electoral roll PDF, then search by name in Kannada to find voter records.</div>
   </div>
-
   <div class="box">
     <div class="box-head">Step 1 — Upload Electoral Roll PDF</div>
     <button class="upload-single" id="pdf-btn" onclick="document.getElementById('fi-pdf').click()">
-      <span class="ico">📄</span>
-      <span id="pdf-lbl">Tap to upload electoral roll PDF</span>
+      <span class="ico">📄</span><span id="pdf-lbl">Tap to upload electoral roll PDF</span>
     </button>
     <input type="file" id="fi-pdf" accept="application/pdf" style="display:none">
-    <div class="prog-wrap" id="pdf-prog">
-      <div class="prog-track"><div class="prog-bar" id="pdf-bar"></div></div>
-      <div class="prog-txt" id="pdf-txt">Processing…</div>
-    </div>
+    <div class="prog-wrap" id="pdf-prog"><div class="prog-track"><div class="prog-bar" id="pdf-bar"></div></div><div class="prog-txt" id="pdf-txt">Processing…</div></div>
     <button class="btn btn-blue" id="pdf-btn-go" disabled onclick="scanPdf()">Process PDF</button>
   </div>
-
   <div class="box" id="search-box">
     <div class="box-head">Step 2 — Search for a Voter</div>
-    <div class="notice" id="pdf-not-ready">
-      <span style="font-size:18px">⬆️</span>
-      <span>Upload and process the PDF above first, then search here.</span>
-    </div>
+    <div class="notice" id="pdf-not-ready"><span style="font-size:18px">⬆️</span><span>Upload and process the PDF above first, then search here.</span></div>
     <div class="banner-ok" id="pdf-ready-banner" style="display:none;margin-bottom:16px"></div>
     <div class="input-row">
-      <div class="input-group">
-        <label for="s-name">ಮತದಾರರ ಹೆಸರು (Voter Name)</label>
-        <input id="s-name" type="text" placeholder="ಕನ್ನಡದಲ್ಲಿ ಹೆಸರು ಬರೆಯಿರಿ…" disabled>
-      </div>
-      <div class="input-group">
-        <label for="s-rel">ತಂದೆ / ಗಂಡ ಹೆಸರು (Father / Husband)</label>
-        <input id="s-rel" type="text" placeholder="ಸಂಬಂಧಿಯ ಹೆಸರು (ಐಚ್ಛಿಕ)" disabled>
-      </div>
+      <div class="input-group"><label for="s-name">ಮತದಾರರ ಹೆಸರು (Voter Name)</label><input id="s-name" type="text" placeholder="ಕನ್ನಡದಲ್ಲಿ ಹೆಸರು ಬರೆಯಿರಿ…" disabled></div>
+      <div class="input-group"><label for="s-rel">ತಂದೆ / ಗಂಡ ಹೆಸರು (Father / Husband)</label><input id="s-rel" type="text" placeholder="ಸಂಬಂಧಿಯ ಹೆಸರು (ಐಚ್ಛಿಕ)" disabled></div>
     </div>
     <button class="btn btn-blue" style="margin-top:0" id="search-btn" disabled onclick="doSearch()">Search</button>
   </div>
-
-  <div id="roll-out" style="display:none">
-    <div id="roll-cards"></div>
-  </div>
-
-  <!-- Browse panel: lets user find entries even when OCR mangled the name -->
+  <div id="roll-out" style="display:none"><div id="roll-cards"></div></div>
   <div class="box" id="browse-box" style="display:none">
     <div class="box-head">Browse Entries by Part / Page</div>
     <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
-      <div class="input-group" style="flex:1;min-width:140px">
-        <label for="br-part">Part No. (ಭಾಗ)</label>
-        <input id="br-part" type="number" min="1" placeholder="e.g. 214">
-      </div>
-      <div class="input-group" style="flex:1;min-width:140px">
-        <label for="br-serial">Serial No. (ಕ್ರಮ ಸಂ.)</label>
-        <input id="br-serial" type="number" min="1" placeholder="e.g. 685">
-      </div>
+      <div class="input-group" style="flex:1;min-width:140px"><label for="br-part">Part No. (ಭಾಗ)</label><input id="br-part" type="number" min="1" placeholder="e.g. 214"></div>
+      <div class="input-group" style="flex:1;min-width:140px"><label for="br-serial">Serial No. (ಕ್ರಮ ಸಂ.)</label><input id="br-serial" type="number" min="1" placeholder="e.g. 685"></div>
       <button class="btn btn-blue" style="margin-top:0;width:auto;padding:11px 20px;flex-shrink:0" onclick="doBrowse()">Browse</button>
     </div>
     <div id="browse-cards" style="margin-top:14px"></div>
@@ -561,1543 +427,365 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
   </div>
 </div>
 
-<!-- PAGE 3: IMPORTANT LINKS -->
+<!-- PAGE 3: LINKS -->
 <div class="page" id="links-page">
-  <p class="page-title">Important Links</p>
-  <p class="page-sub">Official Election Commission of India services — all in one place.</p>
-
+  <div class="hero-band" style="margin-bottom:22px"><div class="hero-title">Important Links</div><div class="hero-sub">Official Election Commission of India services — all in one place.</div></div>
   <div class="box">
     <div class="box-head">Online Services</div>
     <div class="links-grid">
-
-      <a class="link-card" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">
-        <span class="link-icon">🗳️</span>
-        <div class="link-body">
-          <div class="link-title">Voters' Service Portal</div>
-          <div class="link-desc">Enroll as a new voter, update your address, or download your e-EPIC voter card</div>
-          <div class="link-url">voters.eci.gov.in</div>
-        </div>
-      </a>
-
-      <a class="link-card" href="https://voters.eci.gov.in/searchInSIR/S2UA4DPDF-JK4QWODSE" target="_blank" rel="noopener">
-        <span class="link-icon">📋</span>
-        <div class="link-body">
-          <div class="link-title">Search Your Name — SIR 2002</div>
-          <div class="link-desc">Find your name in the last Summary Intensive Revision draft list</div>
-          <div class="link-url">voters.eci.gov.in / searchInSIR</div>
-        </div>
-      </a>
-
-      <a class="link-card" href="https://electoralsearch.eci.gov.in/uesfmempmlkypo" target="_blank" rel="noopener">
-        <span class="link-icon">🔍</span>
-        <div class="link-body">
-          <div class="link-title">Search Your Name — Voter List</div>
-          <div class="link-desc">Check if your name appears on the current official electoral roll</div>
-          <div class="link-url">electoralsearch.eci.gov.in</div>
-        </div>
-      </a>
-
+      <a class="link-card" href="https://voters.eci.gov.in/" target="_blank" rel="noopener"><span class="link-icon">🗳️</span><div class="link-body"><div class="link-title">Voters' Service Portal</div><div class="link-desc">Enroll as a new voter, update your address, or download your e-EPIC voter card</div><div class="link-url">voters.eci.gov.in</div></div></a>
+      <a class="link-card" href="https://voters.eci.gov.in/searchInSIR/S2UA4DPDF-JK4QWODSE" target="_blank" rel="noopener"><span class="link-icon">📋</span><div class="link-body"><div class="link-title">Search Your Name — SIR 2026</div><div class="link-desc">Find your name in the current SIR draft list for Karnataka</div><div class="link-url">voters.eci.gov.in / searchInSIR</div></div></a>
+      <a class="link-card" href="https://electoralsearch.eci.gov.in/uesfmempmlkypo" target="_blank" rel="noopener"><span class="link-icon">🔍</span><div class="link-body"><div class="link-title">Search Your Name — Voter List</div><div class="link-desc">Check if your name appears on the current official electoral roll</div><div class="link-url">electoralsearch.eci.gov.in</div></div></a>
     </div>
   </div>
-
   <div class="box">
     <div class="box-head">Official ECI Mobile App — ECINet</div>
     <div class="links-grid">
-
-      <div class="link-card" onclick="window.open('https://play.google.com/store/apps/details?id=in.gov.eci.app','_blank')">
-        <span class="link-icon">🤖</span>
-        <div class="link-body">
-          <div class="link-title">ECINet — Android</div>
-          <div class="link-desc">Check your voter status, find your polling booth, and more — from Google Play</div>
-          <div class="link-url">Google Play Store</div>
-        </div>
-        <div class="qr-wrap" id="qr-android"></div>
-      </div>
-
-      <div class="link-card" onclick="window.open('https://apps.apple.com/in/app/ecinet/id6745955212','_blank')">
-        <span class="link-icon">🍎</span>
-        <div class="link-body">
-          <div class="link-title">ECINet — iPhone / iPad</div>
-          <div class="link-desc">Same features built for iPhone and iPad — from the Apple App Store</div>
-          <div class="link-url">Apple App Store</div>
-        </div>
-        <div class="qr-wrap" id="qr-ios"></div>
-      </div>
-
+      <div class="link-card" onclick="window.open('https://play.google.com/store/apps/details?id=in.gov.eci.app','_blank')"><span class="link-icon">🤖</span><div class="link-body"><div class="link-title">ECINet — Android</div><div class="link-desc">Check voter status, find your polling booth — from Google Play</div><div class="link-url">Google Play Store</div></div><div class="qr-wrap" id="qr-android"></div></div>
+      <div class="link-card" onclick="window.open('https://apps.apple.com/in/app/ecinet/id6745955212','_blank')"><span class="link-icon">🍎</span><div class="link-body"><div class="link-title">ECINet — iPhone / iPad</div><div class="link-desc">Same features built for iPhone and iPad — Apple App Store</div><div class="link-url">Apple App Store</div></div><div class="qr-wrap" id="qr-ios"></div></div>
     </div>
     <p style="font-size:12px;color:#94a3b8;margin-top:14px;text-align:center">📷 Point your phone camera at the QR code to download directly</p>
   </div>
-
-  <div class="disclaimer" style="margin-top:4px">
-    <h3>ℹ️ About VoterTrace</h3>
-    <p>VoterTrace is a free, independent civic tool — not affiliated with the Election Commission of India. For any official voter services, please use the links above.</p>
-  </div>
+  <div class="disclaimer"><h3>ℹ️ About VoterTrace</h3><p>VoterTrace is a free, independent civic tool — not affiliated with the Election Commission of India.</p></div>
 </div>
 
 <!-- PAGE 4: VOTER FORMS -->
 <div class="page" id="forms-page">
-  <p class="page-title">Voter ID — Forms Guide</p>
-  <p class="page-sub">Know which form to fill, what documents to carry, and how to do it online — all in one place.</p>
-
-  <!-- Form 6 -->
-  <div class="form-card">
-    <div class="form-header">
-      <div class="form-badge f6">Form 6</div>
-      <div>
-        <div class="form-title">New Voter Registration</div>
-        <div class="form-subtitle">Use this if you are enrolling for the first time</div>
-      </div>
-    </div>
-    <div class="form-body">
-      <div class="form-section-label">📄 Documents Required</div>
-      <div class="form-docs">
-        <span class="doc-tag">Aadhaar Card</span>
-        <span class="doc-tag">Passport-size photo</span>
-        <span class="doc-tag">Proof of age (Birth certificate / 10th marksheet)</span>
-        <span class="doc-tag">Proof of residence (Aadhaar / Utility bill / Bank passbook)</span>
-      </div>
-      <div class="form-section-label" style="margin-top:14px">🖥️ How to apply online</div>
-      <ol class="form-steps">
-        <li>Go to <strong>voters.eci.gov.in</strong> and click <em>"New Registration"</em></li>
-        <li>Select <strong>Form 6</strong> and fill in your personal details, date of birth and current address</li>
-        <li>Upload a passport-size photo and your age &amp; address proof documents</li>
-        <li>Submit — you'll receive an application reference number by SMS/email</li>
-        <li>A BLO (Booth Level Officer) may visit to verify your address</li>
-      </ol>
-      <a class="form-link-btn" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">Apply via voters.eci.gov.in →</a>
-    </div>
-  </div>
-
-  <!-- Form 8 - Name/DOB/Photo correction -->
-  <div class="form-card">
-    <div class="form-header">
-      <div class="form-badge f8">Form 8</div>
-      <div>
-        <div class="form-title">Correction of Name, Date of Birth, Photo or Address</div>
-        <div class="form-subtitle">Use this to fix any wrong or outdated information on your voter card</div>
-      </div>
-    </div>
-    <div class="form-body">
-      <div class="form-section-label">📄 Documents Required</div>
-      <div class="form-docs">
-        <span class="doc-tag">Current Voter ID (EPIC)</span>
-        <span class="doc-tag">Aadhaar Card</span>
-        <span class="doc-tag">For name correction: Aadhaar / PAN / Passport showing correct name</span>
-        <span class="doc-tag">For DOB correction: Birth certificate / School leaving certificate</span>
-        <span class="doc-tag">For photo update: New passport-size photograph</span>
-        <span class="doc-tag">For address update: Utility bill / Bank statement / Aadhaar</span>
-      </div>
-      <div class="form-section-label" style="margin-top:14px">🖥️ How to apply online</div>
-      <ol class="form-steps">
-        <li>Go to <strong>voters.eci.gov.in</strong> → Login or register</li>
-        <li>Click <em>"Correction of entries in Electoral Roll"</em> → <strong>Form 8</strong></li>
-        <li>Search for your existing voter record using your EPIC number</li>
-        <li>Select what you want to correct (name / DOB / address / photo)</li>
-        <li>Upload supporting document and submit — note down the reference number</li>
-      </ol>
-      <a class="form-link-btn" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">Apply via voters.eci.gov.in →</a>
-    </div>
-  </div>
-
-  <!-- Form 8A - Address shift within same constituency -->
-  <div class="form-card">
-    <div class="form-header">
-      <div class="form-badge f8a">Form 8A</div>
-      <div>
-        <div class="form-title">Shifting of Residence — Same Constituency</div>
-        <div class="form-subtitle">Moved to a new house but still in the same Assembly segment? Use this form</div>
-      </div>
-    </div>
-    <div class="form-body">
-      <div class="form-section-label">📄 Documents Required</div>
-      <div class="form-docs">
-        <span class="doc-tag">Current Voter ID (EPIC)</span>
-        <span class="doc-tag">New address proof (Aadhaar / Utility bill / Rent agreement)</span>
-        <span class="doc-tag">Passport-size photo (optional but recommended)</span>
-      </div>
-      <div class="form-section-label" style="margin-top:14px">🖥️ How to apply online</div>
-      <ol class="form-steps">
-        <li>Go to <strong>voters.eci.gov.in</strong> and log in</li>
-        <li>Choose <em>"Shifting of residence"</em> → <strong>Form 8A</strong></li>
-        <li>Enter your EPIC number to pull your existing record</li>
-        <li>Enter the new address and upload address proof</li>
-        <li>Submit — your polling booth will be updated to the nearest one at your new address</li>
-      </ol>
-      <a class="form-link-btn" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">Apply via voters.eci.gov.in →</a>
-    </div>
-  </div>
-
-  <!-- Form 7 - Deletion -->
-  <div class="form-card">
-    <div class="form-header">
-      <div class="form-badge f7">Form 7</div>
-      <div>
-        <div class="form-title">Deletion / Objection to an Entry</div>
-        <div class="form-subtitle">To remove a deceased person's name or report a duplicate/wrong entry</div>
-      </div>
-    </div>
-    <div class="form-body">
-      <div class="form-section-label">📄 Documents Required</div>
-      <div class="form-docs">
-        <span class="doc-tag">EPIC number of the person to be removed</span>
-        <span class="doc-tag">Death certificate (for deceased persons)</span>
-        <span class="doc-tag">Relationship proof if filed by a family member</span>
-      </div>
-      <div class="form-section-label" style="margin-top:14px">🖥️ How to apply online</div>
-      <ol class="form-steps">
-        <li>Go to <strong>voters.eci.gov.in</strong> → Login</li>
-        <li>Select <em>"Deletion of name"</em> → <strong>Form 7</strong></li>
-        <li>Enter the EPIC number of the entry to be removed</li>
-        <li>State the reason (deceased / shifted / duplicate) and upload proof</li>
-        <li>Submit — the Electoral Registration Officer reviews and processes the request</li>
-      </ol>
-      <a class="form-link-btn" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">Apply via voters.eci.gov.in →</a>
-    </div>
-  </div>
-
-  <!-- Form 6B - Aadhaar linking -->
-  <div class="form-card">
-    <div class="form-header">
-      <div class="form-badge f6b">Form 6B</div>
-      <div>
-        <div class="form-title">Link Aadhaar to Voter ID</div>
-        <div class="form-subtitle">Voluntary linking of Aadhaar number with your EPIC to clean up duplicate entries</div>
-      </div>
-    </div>
-    <div class="form-body">
-      <div class="form-section-label">📄 Documents Required</div>
-      <div class="form-docs">
-        <span class="doc-tag">Aadhaar Card (or Aadhaar Enrolment Number)</span>
-        <span class="doc-tag">Your EPIC (Voter ID) number</span>
-      </div>
-      <div class="form-section-label" style="margin-top:14px">🖥️ How to apply online</div>
-      <ol class="form-steps">
-        <li>Go to <strong>voters.eci.gov.in</strong> → <em>"Link Aadhaar"</em></li>
-        <li>Enter your EPIC number — your voter record will appear</li>
-        <li>Enter your 12-digit Aadhaar number and submit</li>
-        <li>An OTP will be sent to the mobile number linked to your Aadhaar to confirm</li>
-        <li>Once verified, your Aadhaar is linked — this is <strong>voluntary, not mandatory</strong></li>
-      </ol>
-      <a class="form-link-btn" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">Apply via voters.eci.gov.in →</a>
-    </div>
-  </div>
-
-  <div class="disclaimer" style="margin-top:8px">
-    <h3>ℹ️ Note</h3>
-    <p>All forms are processed by the Electoral Registration Officer of your constituency. Processing typically takes 2–4 weeks. You can track your application status using the reference number on <strong>voters.eci.gov.in</strong>.</p>
-  </div>
+  <div class="hero-band" style="margin-bottom:22px"><div class="hero-title">Voter ID — Forms Guide</div><div class="hero-sub">Know which form to fill, what documents to carry, and how to apply online.</div></div>
+  <div class="form-card"><div class="form-header"><div class="form-badge f6">Form 6</div><div><div class="form-title">New Voter Registration</div><div class="form-subtitle">Use this if you are enrolling for the first time</div></div></div><div class="form-body"><div class="form-section-label">📄 Documents Required</div><div class="form-docs"><span class="doc-tag">Aadhaar Card</span><span class="doc-tag">Passport-size photo</span><span class="doc-tag">Proof of age (Birth cert / 10th marksheet)</span><span class="doc-tag">Proof of residence</span></div><div class="form-section-label" style="margin-top:14px">🖥️ How to apply online</div><ol class="form-steps"><li>Go to <strong>voters.eci.gov.in</strong> and click <em>"New Registration"</em></li><li>Select <strong>Form 6</strong> and fill in your personal details, date of birth and current address</li><li>Upload a passport-size photo and your age &amp; address proof documents</li><li>Submit — you'll receive an application reference number by SMS/email</li><li>A BLO (Booth Level Officer) may visit to verify your address</li></ol><a class="form-link-btn" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">Apply via voters.eci.gov.in →</a></div></div>
+  <div class="form-card"><div class="form-header"><div class="form-badge f8">Form 8</div><div><div class="form-title">Correction of Name, Date of Birth, Photo or Address</div><div class="form-subtitle">Fix any wrong or outdated information on your voter card</div></div></div><div class="form-body"><div class="form-section-label">📄 Documents Required</div><div class="form-docs"><span class="doc-tag">Current Voter ID (EPIC)</span><span class="doc-tag">Aadhaar Card</span><span class="doc-tag">For name: Aadhaar / PAN / Passport showing correct name</span><span class="doc-tag">For DOB: Birth certificate / School leaving certificate</span></div><div class="form-section-label" style="margin-top:14px">🖥️ How to apply online</div><ol class="form-steps"><li>Go to <strong>voters.eci.gov.in</strong> → Login or register</li><li>Click <em>"Correction of entries in Electoral Roll"</em> → <strong>Form 8</strong></li><li>Search for your existing voter record using your EPIC number</li><li>Select what you want to correct and upload supporting document</li><li>Submit — note down the reference number</li></ol><a class="form-link-btn" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">Apply via voters.eci.gov.in →</a></div></div>
+  <div class="form-card"><div class="form-header"><div class="form-badge f8a">Form 8A</div><div><div class="form-title">Shifting of Residence — Same Constituency</div><div class="form-subtitle">Moved to a new house but still in the same Assembly segment?</div></div></div><div class="form-body"><div class="form-section-label">📄 Documents Required</div><div class="form-docs"><span class="doc-tag">Current Voter ID (EPIC)</span><span class="doc-tag">New address proof (Aadhaar / Utility bill / Rent agreement)</span></div><div class="form-section-label" style="margin-top:14px">🖥️ How to apply online</div><ol class="form-steps"><li>Go to <strong>voters.eci.gov.in</strong> and log in</li><li>Choose <em>"Shifting of residence"</em> → <strong>Form 8A</strong></li><li>Enter your EPIC number to pull your existing record</li><li>Enter the new address and upload address proof</li><li>Submit — your polling booth will be updated to the nearest one</li></ol><a class="form-link-btn" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">Apply via voters.eci.gov.in →</a></div></div>
+  <div class="form-card"><div class="form-header"><div class="form-badge f7">Form 7</div><div><div class="form-title">Deletion / Objection to an Entry</div><div class="form-subtitle">To remove a deceased person's name or report a duplicate/wrong entry</div></div></div><div class="form-body"><div class="form-section-label">📄 Documents Required</div><div class="form-docs"><span class="doc-tag">EPIC number of the person to be removed</span><span class="doc-tag">Death certificate (for deceased persons)</span><span class="doc-tag">Relationship proof if filed by a family member</span></div><div class="form-section-label" style="margin-top:14px">🖥️ How to apply online</div><ol class="form-steps"><li>Go to <strong>voters.eci.gov.in</strong> → Login</li><li>Select <em>"Deletion of name"</em> → <strong>Form 7</strong></li><li>Enter the EPIC number of the entry to be removed</li><li>State the reason and upload proof</li><li>Submit — the ERO reviews and processes the request</li></ol><a class="form-link-btn" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">Apply via voters.eci.gov.in →</a></div></div>
+  <div class="form-card"><div class="form-header"><div class="form-badge f6b">Form 6B</div><div><div class="form-title">Link Aadhaar to Voter ID</div><div class="form-subtitle">Voluntary linking of Aadhaar with your EPIC to eliminate duplicate entries</div></div></div><div class="form-body"><div class="form-section-label">📄 Documents Required</div><div class="form-docs"><span class="doc-tag">Aadhaar Card (or Aadhaar Enrolment Number)</span><span class="doc-tag">Your EPIC (Voter ID) number</span></div><div class="form-section-label" style="margin-top:14px">🖥️ How to apply online</div><ol class="form-steps"><li>Go to <strong>voters.eci.gov.in</strong> → <em>"Link Aadhaar"</em></li><li>Enter your EPIC number — your voter record will appear</li><li>Enter your 12-digit Aadhaar number and submit</li><li>An OTP will be sent to your Aadhaar-linked mobile to confirm</li><li>Once verified, your Aadhaar is linked — <strong>this is voluntary, not mandatory</strong></li></ol><a class="form-link-btn" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">Apply via voters.eci.gov.in →</a></div></div>
+  <div class="disclaimer" style="margin-top:8px"><h3>ℹ️ Note</h3><p>All forms are processed by the Electoral Registration Officer of your constituency. Processing typically takes 2–4 weeks. Track your application status using the reference number on <strong>voters.eci.gov.in</strong>.</p></div>
 </div>
 
-<!-- PAGE 5: WHAT IS SIR? -->
+<!-- PAGE 5: SIR GUIDE -->
 <div class="page" id="sir-page">
-
   <div class="sir-hero">
     <div class="sir-hero-label">Civic Education</div>
     <div class="sir-hero-title">What is SIR?<br>Special Intensive Revision</div>
     <div class="sir-hero-sub">A plain-language guide to India's electoral roll revision process — what it is, its history, and how it affects every citizen's right to vote.</div>
   </div>
 
-  <!-- Key facts grid -->
   <div class="info-grid">
-    <div class="info-tile">
-      <div class="info-tile-icon">📋</div>
-      <div class="info-tile-title">What is it?</div>
-      <div class="info-tile-body">A special drive to update, correct and clean up the voter list — adding eligible new voters, removing deceased or shifted entries, and fixing errors.</div>
-    </div>
-    <div class="info-tile">
-      <div class="info-tile-icon">📅</div>
-      <div class="info-tile-title">When does it happen?</div>
-      <div class="info-tile-body">The ECI announces SIR periodically — usually before major elections. A draft list is published, then claims and objections are invited from the public.</div>
-    </div>
-    <div class="info-tile">
-      <div class="info-tile-icon">👤</div>
-      <div class="info-tile-title">Who conducts it?</div>
-      <div class="info-tile-body">The Election Commission of India (ECI) conducts SIR through local Electoral Registration Officers (EROs) and Booth Level Officers (BLOs) at the ground level.</div>
-    </div>
-    <div class="info-tile">
-      <div class="info-tile-icon">🗳️</div>
-      <div class="info-tile-title">Why does it matter?</div>
-      <div class="info-tile-body">If your name is missing, wrong, or at the wrong polling booth — you cannot vote. SIR is your opportunity to fix that before the rolls are finalised.</div>
-    </div>
+    <div class="info-tile"><div class="info-tile-icon">📋</div><div class="info-tile-title">What is it?</div><div class="info-tile-body">A special drive to update, correct and clean up the voter list — adding eligible new voters, removing deceased or shifted entries, and fixing errors.</div></div>
+    <div class="info-tile"><div class="info-tile-icon">📅</div><div class="info-tile-title">When does it happen?</div><div class="info-tile-body">The ECI announces SIR periodically — usually before major elections. A draft list is published, then claims and objections are invited from the public.</div></div>
+    <div class="info-tile"><div class="info-tile-icon">👤</div><div class="info-tile-title">Who conducts it?</div><div class="info-tile-body">The Election Commission of India (ECI) conducts SIR through local Electoral Registration Officers (EROs) and Booth Level Officers (BLOs) at the ground level.</div></div>
+    <div class="info-tile"><div class="info-tile-icon">🗳️</div><div class="info-tile-title">Why does it matter?</div><div class="info-tile-body">If your name is missing, wrong, or at the wrong polling booth — you cannot vote. SIR is your opportunity to fix that before the rolls are finalised.</div></div>
   </div>
 
-  <!-- Timeline -->
   <div class="box">
     <div class="box-head">Brief History of Electoral Roll Revision in India</div>
     <div class="sir-timeline">
-      <div class="sir-event">
-        <div class="sir-event-year">1950</div>
-        <div class="sir-event-text">The Representation of the People Act, 1950 established the legal foundation for preparing and maintaining electoral rolls in India.</div>
-      </div>
-      <div class="sir-event">
-        <div class="sir-event-year">1950s – 1970s</div>
-        <div class="sir-event-text">Electoral rolls were prepared manually, house-to-house, by local government staff. Errors and omissions were common due to the scale and manual nature of the work.</div>
-      </div>
-      <div class="sir-event">
-        <div class="sir-event-year">1980s – 1990s</div>
-        <div class="sir-event-text">The ECI introduced more structured revision cycles — Summary Revision (annual, using existing data) and Intensive Revision (door-to-door enumeration). Photo voter ID cards were introduced in 1993.</div>
-      </div>
-      <div class="sir-event">
-        <div class="sir-event-year">2000s</div>
-        <div class="sir-event-text">Computerisation of electoral rolls began. The EPIC (Elector's Photo Identity Card) became the standard. Online registration portals were gradually introduced, reducing the need for physical visits.</div>
-      </div>
-      <div class="sir-event">
-        <div class="sir-event-year">2015 onwards</div>
-        <div class="sir-event-text">National Electoral Roll Purification and Authentication Programme (NERPAP) launched — linking EPIC with Aadhaar to eliminate duplicate entries. Online portals (voters.eci.gov.in) enabled fully digital registration and corrections.</div>
-      </div>
-      <div class="sir-event">
-        <div class="sir-event-year">2022 – Present</div>
-        <div class="sir-event-text">The ECI introduced quarterly roll updates (January, April, July, October) instead of a single annual revision — giving citizens more windows to enrol or correct their details throughout the year.</div>
-      </div>
+      <div class="sir-event"><div class="sir-event-year">1950</div><div class="sir-event-text">The Representation of the People Act, 1950 established the legal foundation for preparing and maintaining electoral rolls in India.</div></div>
+      <div class="sir-event"><div class="sir-event-year">1950s – 1970s</div><div class="sir-event-text">Electoral rolls were prepared manually, house-to-house. Errors and omissions were common due to the scale and manual nature of the work.</div></div>
+      <div class="sir-event"><div class="sir-event-year">1980s – 1990s</div><div class="sir-event-text">The ECI introduced structured revision cycles. Photo voter ID cards were introduced in 1993, replacing name-only entries.</div></div>
+      <div class="sir-event"><div class="sir-event-year">2000s</div><div class="sir-event-text">Computerisation of electoral rolls began. The EPIC card became the standard. Online registration portals gradually replaced physical visits.</div></div>
+      <div class="sir-event"><div class="sir-event-year">2015 onwards</div><div class="sir-event-text">NERPAP launched — linking EPIC with Aadhaar to eliminate duplicate entries. voters.eci.gov.in enabled fully digital registration and corrections.</div></div>
+      <div class="sir-event"><div class="sir-event-year">2022 – Present</div><div class="sir-event-text">The ECI introduced quarterly roll updates (January, April, July, October) — giving citizens more windows to enrol or correct details throughout the year.</div></div>
     </div>
   </div>
 
-
-  <!-- KARNATAKA SIR 2026 PROCESS TIMELINE -->
+  <!-- Karnataka SIR 2026 Schedule -->
   <div class="box sir-process-wrap">
     <div class="sir-process-title">Karnataka SIR 2026 — Official Schedule</div>
+    <div class="sir-step"><div class="sir-step-connector"><div class="sir-step-dot" style="background:#4f46e5">1</div><div class="sir-step-line"></div></div><div class="sir-step-body"><div class="sir-step-phase" style="color:#4f46e5">Phase 1</div><div class="sir-step-label">📋 Preparation, Training &amp; Printing</div><div class="sir-step-date">📅 20 June 2026 → 29 June 2026</div></div></div>
+    <div class="sir-step"><div class="sir-step-connector"><div class="sir-step-dot" style="background:#0891b2">2</div><div class="sir-step-line"></div></div><div class="sir-step-body"><div class="sir-step-phase" style="color:#0891b2">Phase 2</div><div class="sir-step-label">🏠 House to House Visits by BLOs</div><div class="sir-step-date">📅 30 June 2026 → 29 July 2026</div><div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">Your Booth Level Officer will visit your home to verify residents. Make sure someone is present to respond.</div></div></div>
+    <div class="sir-step"><div class="sir-step-connector"><div class="sir-step-dot" style="background:#0d9488">3</div><div class="sir-step-line"></div></div><div class="sir-step-body"><div class="sir-step-phase" style="color:#0d9488">Phase 3</div><div class="sir-step-label">📍 Rationalization of Polling Stations</div><div class="sir-step-date">📅 By 29 July 2026</div><div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">Booth boundaries may be reorganised. Your polling station could change — verify before election day.</div></div></div>
+    <div class="sir-step"><div class="sir-step-connector"><div class="sir-step-dot" style="background:#d97706">4</div><div class="sir-step-line"></div></div><div class="sir-step-body"><div class="sir-step-phase" style="color:#d97706">Phase 4</div><div class="sir-step-label">📄 Publication of Draft Electoral Roll</div><div class="sir-step-date">📅 By 05 August 2026</div><div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">The preliminary voter list is made public. Check if your name is correct and present.</div><a class="sir-step-link" href="https://voters.eci.gov.in/searchInSIR/S2UA4DPDF-JK4QWODSE" target="_blank" rel="noopener">🔍 Search your name in the draft roll →</a></div></div>
+    <div class="sir-step"><div class="sir-step-connector"><div class="sir-step-dot" style="background:#16a34a">5</div><div class="sir-step-line"></div></div><div class="sir-step-body"><div class="sir-step-phase" style="color:#16a34a">Phase 5</div><div class="sir-step-label">✏️ Period for Filing Claims &amp; Objections</div><div class="sir-step-date">📅 05 August 2026 → 04 September 2026</div><div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">Name missing or wrong? File a claim. Spot a duplicate or deceased person? File an objection.</div><a class="sir-step-link" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">📝 File a claim / objection at voters.eci.gov.in →</a></div></div>
+    <div class="sir-step"><div class="sir-step-connector"><div class="sir-step-dot" style="background:#7c3aed">6</div><div class="sir-step-line"></div></div><div class="sir-step-body"><div class="sir-step-phase" style="color:#7c3aed">Phase 6</div><div class="sir-step-label">⚖️ Disposal of Claims &amp; Objections</div><div class="sir-step-date">📅 05 August 2026 → 03 October 2026</div><div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">EROs review and process all filed claims. You may be contacted for verification documents.</div></div></div>
+    <div class="sir-step"><div class="sir-step-connector"><div class="sir-step-dot" style="background:#dc2626">7</div><div class="sir-step-line"></div></div><div class="sir-step-body"><div class="sir-step-phase" style="color:#dc2626">Final</div><div class="sir-step-label">🗳️ Publication of Final Electoral Roll</div><div class="sir-step-date">📅 07 October 2026</div><div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">The official, finalised voter list is published. This is the roll used for all upcoming elections.</div><a class="sir-step-link" href="https://electoralsearch.eci.gov.in/uesfmempmlkypo" target="_blank" rel="noopener">🔍 Check your name on the final roll →</a></div></div>
+    <div class="sir-cta"><span class="sir-cta-icon">📢</span><div><div class="sir-cta-text">Ensure your name is in the voter list</div><div class="sir-cta-sub">Check, Verify and Cooperate — act before 04 September 2026 to secure your vote.</div></div></div>
+  </div>
 
-    <!-- Step 1 -->
-    <div class="sir-step">
-      <div class="sir-step-connector">
-        <div class="sir-step-dot" style="background:#4f46e5">1</div>
-        <div class="sir-step-line"></div>
-      </div>
-      <div class="sir-step-body">
-        <div class="sir-step-phase" style="color:#4f46e5">Phase 1</div>
-        <div class="sir-step-label">📋 Preparation, Training &amp; Printing</div>
-        <div class="sir-step-date">📅 20 June 2026 → 29 June 2026</div>
-      </div>
+  <!-- ═══════════════════════════════════
+       NEW SECTION A: 11 ACCEPTED DOCUMENTS
+  ═══════════════════════════════════ -->
+  <div class="box">
+    <div class="box-head">11 Documents Accepted During SIR — Karnataka 2026</div>
+    <div class="docs-intro">
+      <span class="docs-intro-icon">📌</span>
+      <div>When the BLO visits your home or when you file a claim, you must show <strong>at least one document</strong> from the ECI-approved list below. Each document serves as identity, age, address proof — or a combination. <strong>Only one is needed</strong> — bring whichever covers your purpose.</div>
     </div>
+    <div class="doc-cards-grid">
 
-    <!-- Step 2 -->
-    <div class="sir-step">
-      <div class="sir-step-connector">
-        <div class="sir-step-dot" style="background:#0891b2">2</div>
-        <div class="sir-step-line"></div>
+      <div class="doc-card identity">
+        <div class="doc-card-top"><div class="doc-num">1</div><div class="doc-name">Aadhaar Card / e-Aadhaar</div></div>
+        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill addr">Address</span><span class="doc-pill photo">Photo</span></div>
+        <div class="doc-desc">The most widely accepted document. Both the physical card and printed e-Aadhaar are valid. Covers identity, address and photo in a single document — the easiest to use.</div>
+        <div class="doc-howto">💡 Lost or need update? Visit your nearest Aadhaar Seva Kendra or use the online self-service portal.</div>
+        <a class="doc-howto-link" href="https://myaadhaar.uidai.gov.in" target="_blank" rel="noopener">🔗 myaadhaar.uidai.gov.in →</a>
       </div>
-      <div class="sir-step-body">
-        <div class="sir-step-phase" style="color:#0891b2">Phase 2</div>
-        <div class="sir-step-label">🏠 House to House Visits by BLOs</div>
-        <div class="sir-step-date">📅 30 June 2026 → 29 July 2026</div>
-        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">Your Booth Level Officer will visit your home to verify residents. Make sure someone is present to respond.</div>
+
+      <div class="doc-card identity">
+        <div class="doc-card-top"><div class="doc-num">2</div><div class="doc-name">EPIC — Existing Voter ID Card</div></div>
+        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill photo">Photo</span></div>
+        <div class="doc-desc">Your current Voter ID (Electoral Photo Identity Card) is accepted as identity and photo proof. Used when updating or correcting existing entries. Download your e-EPIC anytime from the ECI portal.</div>
+        <a class="doc-howto-link" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">🔗 voters.eci.gov.in →</a>
       </div>
+
+      <div class="doc-card both">
+        <div class="doc-card-top"><div class="doc-num">3</div><div class="doc-name">Indian Passport</div></div>
+        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill age">Age</span><span class="doc-pill addr">Address</span><span class="doc-pill photo">Photo</span></div>
+        <div class="doc-desc">A valid Indian passport is comprehensive proof — identity, age, address and photo all in one. The strongest standalone document available.</div>
+        <div class="doc-howto">💡 Apply for or renew your passport online via the Passport Seva Portal.</div>
+        <a class="doc-howto-link" href="https://passportindia.gov.in" target="_blank" rel="noopener">🔗 passportindia.gov.in →</a>
+      </div>
+
+      <div class="doc-card identity">
+        <div class="doc-card-top"><div class="doc-num">4</div><div class="doc-name">Driving Licence</div></div>
+        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill age">Age</span><span class="doc-pill photo">Photo</span></div>
+        <div class="doc-desc">A valid driving licence issued by the Karnataka RTO is accepted as identity and age proof with photograph. DigiLocker copies are accepted on par with the physical card.</div>
+        <a class="doc-howto-link" href="https://sarathi.parivahan.gov.in" target="_blank" rel="noopener">🔗 sarathi.parivahan.gov.in →</a>
+      </div>
+
+      <div class="doc-card identity">
+        <div class="doc-card-top"><div class="doc-num">5</div><div class="doc-name">PAN Card</div></div>
+        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill photo">Photo</span></div>
+        <div class="doc-desc">The Permanent Account Number card issued by the Income Tax Department is accepted as photo identity proof. Apply for a new PAN or correct details via NSDL or UTIITSL.</div>
+        <a class="doc-howto-link" href="https://onlineservices.tin.egov-nsdl.com" target="_blank" rel="noopener">🔗 NSDL PAN Services →</a>
+      </div>
+
+      <div class="doc-card address">
+        <div class="doc-card-top"><div class="doc-num">6</div><div class="doc-name">Bank / Post Office Passbook with Photo</div></div>
+        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill addr">Address</span><span class="doc-pill photo">Photo</span></div>
+        <div class="doc-desc">A bank or post office passbook that includes your photograph and current address. Useful when you don't have another photo ID that shows your present address.</div>
+        <div class="doc-howto">💡 Request an updated passbook at your bank branch — ensure your current address is recorded correctly.</div>
+      </div>
+
+      <div class="doc-card identity">
+        <div class="doc-card-top"><div class="doc-num">7</div><div class="doc-name">Central / State Government ID Card</div></div>
+        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill photo">Photo</span></div>
+        <div class="doc-desc">Photo identity cards issued by Central or State government departments, PSUs, or public sector undertakings — including employee IDs from any government service.</div>
+        <div class="doc-howto">💡 Obtain from your employer's HR or administrative department. Must carry a photograph to be valid.</div>
+      </div>
+
+      <div class="doc-card address">
+        <div class="doc-card-top"><div class="doc-num">8</div><div class="doc-name">MNREGA Job Card</div></div>
+        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill addr">Address</span><span class="doc-pill photo">Photo</span></div>
+        <div class="doc-desc">The Mahatma Gandhi NREGA job card includes the holder's photo and address — especially useful for rural voters who may not have other photo IDs.</div>
+        <div class="doc-howto">💡 Issued by your local Gram Panchayat. Contact your panchayat office to obtain or replace a lost card.</div>
+      </div>
+
+      <div class="doc-card identity">
+        <div class="doc-card-top"><div class="doc-num">9</div><div class="doc-name">Health Insurance Smart Card (Arogya Karnataka)</div></div>
+        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill photo">Photo</span></div>
+        <div class="doc-desc">Smart cards issued under the Arogya Karnataka / AB-ArK health scheme are accepted as photo identity proof. Contact your district health department for queries.</div>
+        <a class="doc-howto-link" href="https://arogya.karnataka.gov.in" target="_blank" rel="noopener">🔗 arogya.karnataka.gov.in →</a>
+      </div>
+
+      <div class="doc-card age-addr">
+        <div class="doc-card-top"><div class="doc-num">10</div><div class="doc-name">Caste / Scheduled Tribe Certificate</div></div>
+        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill addr">Address</span></div>
+        <div class="doc-desc">Certificates issued by the competent authority for Scheduled Castes and Scheduled Tribes carry identity and address details. Issued by the Tahsildar of your taluk through the Nadakacheri portal.</div>
+        <a class="doc-howto-link" href="https://nadakacheri.karnataka.gov.in" target="_blank" rel="noopener">🔗 nadakacheri.karnataka.gov.in →</a>
+      </div>
+
+      <div class="doc-card identity">
+        <div class="doc-card-top"><div class="doc-num">11</div><div class="doc-name">Photo Certificate from MP / MLA / Gazetted Officer</div></div>
+        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill photo">Photo</span></div>
+        <div class="doc-desc">A certificate bearing the applicant's photograph, signed and attested by an MP, MLA, or a Gazetted Government Officer. Use this as a last resort when no other photo ID is available.</div>
+        <div class="doc-howto">💡 Your local elected representative or any gazetted officer at a government office can issue this on official letterhead.</div>
+      </div>
+
     </div>
-
-    <!-- Step 3 -->
-    <div class="sir-step">
-      <div class="sir-step-connector">
-        <div class="sir-step-dot" style="background:#0d9488">3</div>
-        <div class="sir-step-line"></div>
-      </div>
-      <div class="sir-step-body">
-        <div class="sir-step-phase" style="color:#0d9488">Phase 3</div>
-        <div class="sir-step-label">📍 Rationalization of Polling Stations</div>
-        <div class="sir-step-date">📅 By 29 July 2026</div>
-        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">Booth boundaries may be reorganised. Your polling station could change — verify before election day.</div>
-      </div>
-    </div>
-
-    <!-- Step 4 -->
-    <div class="sir-step">
-      <div class="sir-step-connector">
-        <div class="sir-step-dot" style="background:#d97706">4</div>
-        <div class="sir-step-line"></div>
-      </div>
-      <div class="sir-step-body">
-        <div class="sir-step-phase" style="color:#d97706">Phase 4</div>
-        <div class="sir-step-label">📄 Publication of Draft Electoral Roll</div>
-        <div class="sir-step-date">📅 By 05 August 2026</div>
-        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">The preliminary voter list is made public. Check if your name is correct and present.</div>
-        <a class="sir-step-link" href="https://voters.eci.gov.in/searchInSIR/S2UA4DPDF-JK4QWODSE" target="_blank" rel="noopener">🔍 Search your name in the draft roll →</a>
-      </div>
-    </div>
-
-    <!-- Step 5 -->
-    <div class="sir-step">
-      <div class="sir-step-connector">
-        <div class="sir-step-dot" style="background:#16a34a">5</div>
-        <div class="sir-step-line"></div>
-      </div>
-      <div class="sir-step-body">
-        <div class="sir-step-phase" style="color:#16a34a">Phase 5</div>
-        <div class="sir-step-label">✏️ Period for Filing Claims &amp; Objections</div>
-        <div class="sir-step-date">📅 05 August 2026 → 04 September 2026</div>
-        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">Name missing or wrong? File a claim. Spot a duplicate or deceased person? File an objection. This is your key window.</div>
-        <a class="sir-step-link" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">📝 File a claim / objection at voters.eci.gov.in →</a>
-      </div>
-    </div>
-
-    <!-- Step 6 -->
-    <div class="sir-step">
-      <div class="sir-step-connector">
-        <div class="sir-step-dot" style="background:#7c3aed">6</div>
-        <div class="sir-step-line"></div>
-      </div>
-      <div class="sir-step-body">
-        <div class="sir-step-phase" style="color:#7c3aed">Phase 6</div>
-        <div class="sir-step-label">⚖️ Notice Phase — Disposal of Claims &amp; Objections</div>
-        <div class="sir-step-date">📅 05 August 2026 → 03 October 2026</div>
-        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">EROs review and process all filed claims. You may be contacted for verification documents during this period.</div>
-      </div>
-    </div>
-
-    <!-- Step 7 -->
-    <div class="sir-step">
-      <div class="sir-step-connector">
-        <div class="sir-step-dot" style="background:#dc2626">7</div>
-        <div class="sir-step-line"></div>
-      </div>
-      <div class="sir-step-body">
-        <div class="sir-step-phase" style="color:#dc2626">Final</div>
-        <div class="sir-step-label">🗳️ Publication of Final Electoral Roll</div>
-        <div class="sir-step-date">📅 07 October 2026</div>
-        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">The official, finalised voter list is published. This is the roll used for all upcoming elections.</div>
-        <a class="sir-step-link" href="https://electoralsearch.eci.gov.in/uesfmempmlkypo" target="_blank" rel="noopener">🔍 Check your name on the final roll →</a>
-      </div>
-    </div>
-
-    <!-- CTA -->
-    <div class="sir-cta">
-      <span class="sir-cta-icon">📢</span>
-      <div>
-        <div class="sir-cta-text">Ensure your name is in the voter list</div>
-        <div class="sir-cta-sub">Check, Verify and Cooperate — act before 04 September 2026 to secure your vote.</div>
-      </div>
+    <div class="doc-note-bar">
+      <span style="font-size:18px;flex-shrink:0">✅</span>
+      <div><strong>Only one document needed.</strong> Aadhaar alone is sufficient for most situations. For new registrations, also carry a recent passport-size photograph. Documents 1–5 are the most commonly accepted and easiest to produce.</div>
     </div>
   </div>
 
-  <!-- FAQ Accordion -->
+  <!-- ═══════════════════════════════════
+       SECTION B: SIR 2026 BLO FIELD FORMS (ACTUAL FORMAT)
+  ═══════════════════════════════════ -->
+
+
+    <!-- HOW TO FILL YOUR BLO FORM -->
+    <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start">
+      <span style="font-size:20px;flex-shrink:0">📋</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:4px">About the BLO Form</div>
+        <div style="font-size:13px;color:#78350f;line-height:1.65">The BLO brings <strong>2 identical printed forms</strong> to your home. Your existing voter details are <strong>already pre-printed</strong> on the form by the BLO. You only need to fill in the remaining blank fields — in <strong>Kannada or English</strong>, whichever you are comfortable with. Sign with date before handing it back.</div>
+      </div>
+    </div>
+
+    <!-- CASE 1 -->
+    <div style="background:var(--surface);border:1.5px solid #86efac;border-radius:14px;padding:20px 22px;margin-bottom:14px;box-shadow:var(--shadow)">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div style="background:#15803d;color:#fff;font-size:15px;font-weight:900;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:#15803d">Self Mapping</div>
+          <div style="font-size:12px;color:#166534;margin-top:1px">Your own details are present in the 2002 Electoral Roll</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:#334155;line-height:1.75;padding-left:48px">
+        The form has two columns at the top and a section below. In this case:<br>
+        <strong style="color:#15803d">① Fill the left column only</strong> — enter your own details from the 2002 roll (your name, EPIC number, etc.) in that left column.<br>
+        <strong style="color:#15803d">② Fill the section below</strong> — complete all the remaining fields at the bottom of the form (date of birth, mobile number, Aadhaar, etc.).<br>
+        Leave the right column blank. Sign with date at the bottom.
+      </div>
+    </div>
+
+    <!-- CASE 2 -->
+    <div style="background:var(--surface);border:1.5px solid #93c5fd;border-radius:14px;padding:20px 22px;margin-bottom:14px;box-shadow:var(--shadow)">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div style="background:#1d4ed8;color:#fff;font-size:15px;font-weight:900;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:#1d4ed8">Progeny Mapping</div>
+          <div style="font-size:12px;color:#1e40af;margin-top:1px">You did not vote in 2002 or your details are not found — but a parent or grandparent's details are available</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:#334155;line-height:1.75;padding-left:48px">
+        In this case:<br>
+        <strong style="color:#1d4ed8">① Fill the right column</strong> — enter the details of the family member whose name appears in the 2002 roll (father, mother, grandfather or grandmother — whichever is available).<br>
+        <strong style="color:#1d4ed8">② Fill the section below</strong> — complete all the remaining fields at the bottom of the form (your own date of birth, mobile, Aadhaar, etc.).<br>
+        Leave the left column blank. Sign with date at the bottom.<br><br>
+        <div style="background:#eff6ff;border-radius:8px;padding:10px 14px;font-size:12px;color:#1e40af">
+          <strong>Which family member to use?</strong> Use whichever appears in the 2002 roll — father first, then mother, then grandfather, then grandmother. Only one is needed.
+        </div>
+      </div>
+    </div>
+
+    <!-- CASE 3 -->
+    <div style="background:var(--surface);border:1.5px solid #fca5a5;border-radius:14px;padding:20px 22px;margin-bottom:20px;box-shadow:var(--shadow)">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div style="background:#dc2626;color:#fff;font-size:15px;font-weight:900;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:#dc2626">No 2002 Record Available</div>
+          <div style="font-size:12px;color:#b91c1c;margin-top:1px">Neither your details nor any family member's details are found in the 2002 Electoral Roll</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:#334155;line-height:1.75;padding-left:48px">
+        In this case:<br>
+        <strong style="color:#dc2626">① Leave both the left and right columns completely blank.</strong><br>
+        <strong style="color:#dc2626">② Fill only the section below</strong> — complete all the fields at the bottom of the form (your date of birth, mobile, Aadhaar, etc.).<br>
+        <strong style="color:#dc2626">③ Attach a birth proof document</strong> along with the form.<br><br>
+        <div style="background:#fff1f2;border:1.5px solid #fca5a5;border-radius:8px;padding:10px 14px">
+          <div style="font-size:12px;font-weight:700;color:#dc2626;margin-bottom:6px">📎 Accepted birth proof documents:</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <span style="font-size:12px;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;padding:3px 10px;color:#b91c1c;font-weight:600">Birth Certificate</span>
+            <span style="font-size:12px;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;padding:3px 10px;color:#b91c1c;font-weight:600">School Transfer Certificate (TC)</span>
+            <span style="font-size:12px;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;padding:3px 10px;color:#b91c1c;font-weight:600">Marks Card (SSLC / 10th)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK REFERENCE -->
+    <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:4px">
+      <div style="background:var(--navy);color:#fff;padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px">Quick Reference — Which column to fill?</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+          <thead>
+            <tr style="background:#f1f5f9">
+              <th style="padding:10px 14px;text-align:left;font-weight:700;color:var(--text);border-bottom:1.5px solid var(--border)">Situation</th>
+              <th style="padding:10px 14px;text-align:center;font-weight:700;color:#15803d;border-bottom:1.5px solid var(--border)">Left Column</th>
+              <th style="padding:10px 14px;text-align:center;font-weight:700;color:#1d4ed8;border-bottom:1.5px solid var(--border)">Right Column</th>
+              <th style="padding:10px 14px;text-align:center;font-weight:700;color:#92400e;border-bottom:1.5px solid var(--border)">Bottom Section</th>
+              <th style="padding:10px 14px;text-align:center;font-weight:700;color:#dc2626;border-bottom:1.5px solid var(--border)">Attach Proof</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:10px 14px;color:var(--text);font-weight:600">① Self Mapping<br><span style="font-weight:400;color:var(--text2);font-size:11px">Your details in 2002 roll</span></td>
+              <td style="padding:10px 14px;text-align:center;font-size:16px">✅</td>
+              <td style="padding:10px 14px;text-align:center;font-size:16px">⬜</td>
+              <td style="padding:10px 14px;text-align:center;font-size:16px">✅</td>
+              <td style="padding:10px 14px;text-align:center;font-size:16px">—</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);background:#f8fafc">
+              <td style="padding:10px 14px;color:var(--text);font-weight:600">② Progeny<br><span style="font-weight:400;color:var(--text2);font-size:11px">Parent/grandparent in 2002 roll</span></td>
+              <td style="padding:10px 14px;text-align:center;font-size:16px">⬜</td>
+              <td style="padding:10px 14px;text-align:center;font-size:16px">✅</td>
+              <td style="padding:10px 14px;text-align:center;font-size:16px">✅</td>
+              <td style="padding:10px 14px;text-align:center;font-size:16px">—</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 14px;color:var(--text);font-weight:600">③ No 2002 Record<br><span style="font-weight:400;color:var(--text2);font-size:11px">No family member found</span></td>
+              <td style="padding:10px 14px;text-align:center;font-size:16px">⬜</td>
+              <td style="padding:10px 14px;text-align:center;font-size:16px">⬜</td>
+              <td style="padding:10px 14px;text-align:center;font-size:16px">✅</td>
+              <td style="padding:10px 14px;text-align:center;font-size:16px;color:#dc2626;font-weight:700">📎 Yes</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="doc-note-bar" style="background:#eff6ff;border-color:#bfdbfe;margin-top:14px">
+      <span style="font-size:18px;flex-shrink:0">✍️</span>
+      <div>Always <strong>sign with date</strong> on the form before returning it to the BLO. Write in <strong>block letters</strong> and verify your EPIC number carefully before submission.</div>
+    </div>
+  </div>
   <div class="box">
     <div class="box-head">Frequently Asked Questions</div>
-
-    <div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(this)">
-        How do I know if my name is on the electoral roll?
-        <span class="faq-arrow">▼</span>
-      </button>
-      <div class="faq-a">Search your name on <strong>electoralsearch.eci.gov.in</strong> or use the Electoral Roll Search tab in this tool to look through the PDF you have. You can also ask your local BLO (Booth Level Officer) who visits your area during SIR drives.</div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(this)">
-        My name was removed — what do I do?
-        <span class="faq-arrow">▼</span>
-      </button>
-      <div class="faq-a">File <strong>Form 6</strong> on voters.eci.gov.in to re-enrol. If you believe it was removed in error, you can also file an objection during the claims period of a SIR drive. Contact your local ERO office with your documents (Aadhaar, proof of residence) for assistance.</div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(this)">
-        What is the difference between Summary Revision and Special Intensive Revision?
-        <span class="faq-arrow">▼</span>
-      </button>
-      <div class="faq-a"><strong>Summary Revision</strong> is a desk-based update using existing records — BLOs do not visit every home. It is faster and used for routine quarterly updates.<br><br><strong>Special Intensive Revision (SIR)</strong> involves door-to-door visits by BLOs to physically verify voters at every household. It is more thorough and is ordered by the ECI when significant clean-up is needed — typically before a major election cycle.</div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(this)">
-        I moved to a new area. Will my old name be deleted automatically?
-        <span class="faq-arrow">▼</span>
-      </button>
-      <div class="faq-a">Not automatically. You need to:<ol style="padding-left:16px;margin-top:6px;font-size:13px;line-height:1.7"><li>File <strong>Form 8A</strong> (if staying in the same constituency) to update your address</li><li>Or file <strong>Form 6</strong> at your new constituency and <strong>Form 7</strong> to delete your entry from the old roll</li></ol>If you don't, your name may appear in two places — which can cause issues during verification drives.</div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(this)">
-        When is the best time to check and update my voter details?
-        <span class="faq-arrow">▼</span>
-      </button>
-      <div class="faq-a">The ECI now has four qualification dates each year — <strong>1 January, 1 April, 1 July and 1 October</strong>. You can apply anytime, but applications submitted before each of these dates are processed for that quarter's roll update. Aim to apply <strong>at least 3 months before any election</strong> to ensure your update is reflected.</div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(this)">
-        Does a BLO visit help or is everything online now?
-        <span class="faq-arrow">▼</span>
-      </button>
-      <div class="faq-a">Both channels work. For most people, <strong>online through voters.eci.gov.in</strong> is the fastest way to register or correct details. However, during a SIR drive your BLO will visit your home — this is a good opportunity to verify details, hand in forms, and ensure your entire household is enrolled. You can find your BLO's contact through your local ERO office or the ECI website.</div>
-    </div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">How do I know if my name is on the electoral roll?<span class="faq-arrow">▼</span></button><div class="faq-a">Search your name on <strong>electoralsearch.eci.gov.in</strong> or use the Electoral Roll Search tab in this tool to look through the PDF you have. You can also ask your local BLO who visits your area during SIR drives.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">My name was removed — what do I do?<span class="faq-arrow">▼</span></button><div class="faq-a">File <strong>Form 6</strong> on voters.eci.gov.in to re-enrol. If you believe it was removed in error, you can also file an objection during the claims period of a SIR drive. Contact your local ERO office with your Aadhaar and proof of residence.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">What is the difference between Summary Revision and SIR?<span class="faq-arrow">▼</span></button><div class="faq-a"><strong>Summary Revision</strong> is a desk-based update using existing records — BLOs do not visit every home. It is faster and used for routine quarterly updates.<br><br><strong>Special Intensive Revision (SIR)</strong> involves door-to-door visits by BLOs to physically verify voters at every household. It is more thorough and ordered by the ECI before major election cycles.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">I moved to a new area. Will my old name be deleted automatically?<span class="faq-arrow">▼</span></button><div class="faq-a">Not automatically. You need to:<ol style="padding-left:16px;margin-top:6px;font-size:13px;line-height:1.7"><li>File <strong>Form 8A</strong> (if staying in the same constituency) to update your address</li><li>Or file <strong>Form 6</strong> at your new constituency and <strong>Form 7</strong> to delete your entry from the old roll</li></ol></div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">When is the best time to check and update my voter details?<span class="faq-arrow">▼</span></button><div class="faq-a">The ECI has four qualification dates each year — <strong>1 January, 1 April, 1 July and 1 October</strong>. You can apply anytime, but applications submitted before each date are processed for that quarter's roll update. Aim to apply <strong>at least 3 months before any election</strong>.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Does a BLO visit help or is everything online now?<span class="faq-arrow">▼</span></button><div class="faq-a">Both channels work. Online through <strong>voters.eci.gov.in</strong> is the fastest way. However, during a SIR drive your BLO will visit your home — a good opportunity to verify details, hand in forms, and ensure your entire household is enrolled.</div></div>
   </div>
 
-  <!-- How SIR affects you -->
   <div class="box">
     <div class="box-head">How SIR Directly Affects You</div>
     <div style="display:flex;flex-direction:column;gap:12px">
-      <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#f8fafc;border-radius:10px;border:1px solid #f1f5f9">
-        <span style="font-size:22px;flex-shrink:0">✅</span>
-        <div><div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:3px">Your vote is protected</div><div style="font-size:13px;color:#475569;line-height:1.55">A clean, accurate roll means your vote can only be cast by you. SIR removes ghost entries and duplicates that could otherwise dilute the integrity of elections.</div></div>
-      </div>
-      <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#f8fafc;border-radius:10px;border:1px solid #f1f5f9">
-        <span style="font-size:22px;flex-shrink:0">📍</span>
-        <div><div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:3px">Your polling booth may change</div><div style="font-size:13px;color:#475569;line-height:1.55">During SIR, booth boundaries are sometimes reorganised. Always verify your assigned polling booth before election day — it may have changed since your last vote.</div></div>
-      </div>
-      <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#fffbeb;border-radius:10px;border:1px solid #fde68a">
-        <span style="font-size:22px;flex-shrink:0">⚠️</span>
-        <div><div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:3px">Missing names happen — act early</div><div style="font-size:13px;color:#78350f;line-height:1.55">Names can be mistakenly deleted if BLOs cannot verify a resident (locked house, no response). If you moved temporarily during a SIR visit, check your name online and re-enrol if needed — do not wait until election time.</div></div>
-      </div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#f8fafc;border-radius:10px;border:1px solid #f1f5f9"><span style="font-size:22px;flex-shrink:0">✅</span><div><div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:3px">Your vote is protected</div><div style="font-size:13px;color:#475569;line-height:1.55">A clean, accurate roll means your vote can only be cast by you. SIR removes ghost entries and duplicates that could dilute the integrity of elections.</div></div></div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#f8fafc;border-radius:10px;border:1px solid #f1f5f9"><span style="font-size:22px;flex-shrink:0">📍</span><div><div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:3px">Your polling booth may change</div><div style="font-size:13px;color:#475569;line-height:1.55">During SIR, booth boundaries are sometimes reorganised. Always verify your assigned polling booth before election day.</div></div></div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#fffbeb;border-radius:10px;border:1px solid #fde68a"><span style="font-size:22px;flex-shrink:0">⚠️</span><div><div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:3px">Missing names happen — act early</div><div style="font-size:13px;color:#78350f;line-height:1.55">Names can be mistakenly deleted if BLOs cannot verify a resident (locked house, no response). If you moved temporarily during a SIR visit, check your name online and re-enrol if needed.</div></div></div>
     </div>
   </div>
 
-  <div class="disclaimer">
-    <h3>ℹ️ About this guide</h3>
-    <p>This information is based on publicly available guidelines from the Election Commission of India. For official procedures and the latest updates, always refer to <strong>voters.eci.gov.in</strong> or your local Electoral Registration Officer.</p>
-  </div>
+  <div class="disclaimer"><h3>ℹ️ About this guide</h3><p>This information is based on publicly available guidelines from the Election Commission of India. For official procedures and the latest updates, always refer to <strong>voters.eci.gov.in</strong> or your local Electoral Registration Officer.</p></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/7.0.0/fuse.min.js"></script>
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-const G = { frontFile:null, backFile:null, pdfFile:null, entries:[] };
-
-// ── NAV ──────────────────────────────────────────────────────
-function go(pageId, tabId) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
-  document.getElementById(pageId).classList.add('on');
-  document.getElementById(tabId).classList.add('on');
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-// ── FILE WIRING ───────────────────────────────────────────────
-function wireFile(inputId, btnId, lblId, thumbId, onFile) {
-  const inp=document.getElementById(inputId);
-  const btn=document.getElementById(btnId);
-  const lbl=document.getElementById(lblId);
-  const thumb=thumbId?document.getElementById(thumbId):null;
-  inp.addEventListener('change',function(){
-    const file=this.files&&this.files[0]; if(!file) return;
-    btn.classList.add('selected');
-    lbl.textContent=file.name.length>32?file.name.slice(0,30)+'…':file.name;
-    if(thumb&&file.type.startsWith('image/')){
-      const fr=new FileReader();
-      fr.onload=e=>{thumb.src=e.target.result;thumb.style.display='block';};
-      fr.readAsDataURL(file);
-    }
-    onFile(file);
-  });
-  btn.addEventListener('dragover',e=>{e.preventDefault();btn.style.borderColor='#2563eb';});
-  btn.addEventListener('dragleave',()=>{btn.style.borderColor='';});
-  btn.addEventListener('drop',e=>{
-    e.preventDefault();btn.style.borderColor='';
-    const file=e.dataTransfer.files&&e.dataTransfer.files[0]; if(!file) return;
-    try{const dt=new DataTransfer();dt.items.add(file);inp.files=dt.files;}catch(x){}
-    inp.dispatchEvent(new Event('change'));
-  });
-}
-
-// ── UTILS ────────────────────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const G={frontFile:null,backFile:null,pdfFile:null,entries:[]};
+function go(pageId,tabId){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));document.getElementById(pageId).classList.add('on');document.getElementById(tabId).classList.add('on');window.scrollTo({top:0,behavior:'smooth'});}
+function wireFile(inputId,btnId,lblId,thumbId,onFile){const inp=document.getElementById(inputId);const btn=document.getElementById(btnId);const lbl=document.getElementById(lblId);const thumb=thumbId?document.getElementById(thumbId):null;inp.addEventListener('change',function(){const file=this.files&&this.files[0];if(!file)return;btn.classList.add('selected');lbl.textContent=file.name.length>32?file.name.slice(0,30)+'…':file.name;if(thumb&&file.type.startsWith('image/')){const fr=new FileReader();fr.onload=e=>{thumb.src=e.target.result;thumb.style.display='block';};fr.readAsDataURL(file);}onFile(file);});btn.addEventListener('dragover',e=>{e.preventDefault();btn.style.borderColor='#2563eb';});btn.addEventListener('dragleave',()=>{btn.style.borderColor='';});btn.addEventListener('drop',e=>{e.preventDefault();btn.style.borderColor='';const file=e.dataTransfer.files&&e.dataTransfer.files[0];if(!file)return;try{const dt=new DataTransfer();dt.items.add(file);inp.files=dt.files;}catch(x){}inp.dispatchEvent(new Event('change'));});}
 let _T=null;
-function getTess(){
-  if(_T) return _T;
-  _T=new Promise((res,rej)=>{
-    if(window.Tesseract){res(window.Tesseract);return;}
-    const s=document.createElement('script');
-    s.src='https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js';
-    s.onload=()=>res(window.Tesseract);s.onerror=rej;
-    document.head.appendChild(s);
-  });
-  return _T;
-}
-function setPb(barId,txtId,pct,msg){
-  const b=document.getElementById(barId),t=document.getElementById(txtId);
-  if(b) b.style.width=Math.min(100,Math.max(0,pct))+'%';
-  if(t&&msg!==undefined) t.textContent=msg;
-}
+function getTess(){if(_T)return _T;_T=new Promise((res,rej)=>{if(window.Tesseract){res(window.Tesseract);return;}const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js';s.onload=()=>res(window.Tesseract);s.onerror=rej;document.head.appendChild(s);});return _T;}
+function setPb(barId,txtId,pct,msg){const b=document.getElementById(barId),t=document.getElementById(txtId);if(b)b.style.width=Math.min(100,Math.max(0,pct))+'%';if(t&&msg!==undefined)t.textContent=msg;}
 function clean(s){return(s||'').replace(/\s+/g,' ').trim();}
-
-// ── VOTER ID SCAN ────────────────────────────────────────────
-async function scanId(){
-  if(!G.frontFile){alert('Please choose the front image first.');return;}
-  const btn=document.getElementById('id-btn');
-  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Scanning…';
-  document.getElementById('id-prog').classList.add('on');
-  try{
-    const T=await getTess();
-    setPb('id-bar','id-txt',5,'Reading front (English)…');
-    const w1=await T.createWorker(['eng','hin'],1,{logger:m=>{if(m.status==='recognizing text')setPb('id-bar','id-txt',5+m.progress*22,'Reading front (English)…');}});
-    const frontEng=(await w1.recognize(G.frontFile)).data.text;
-    await w1.terminate();
-
-    setPb('id-bar','id-txt',29,'Reading front (Kannada)…');
-    const w2=await T.createWorker(['kan','eng'],1,{logger:m=>{if(m.status==='recognizing text')setPb('id-bar','id-txt',29+m.progress*22,'Reading front (Kannada)…');}});
-    const frontKan=(await w2.recognize(G.frontFile)).data.text;
-    await w2.terminate();
-
-    let backEng='',backKan='';
-    if(G.backFile){
-      setPb('id-bar','id-txt',53,'Reading back (English)…');
-      const w3=await T.createWorker(['eng','hin'],1,{logger:m=>{if(m.status==='recognizing text')setPb('id-bar','id-txt',53+m.progress*18,'Reading back (English)…');}});
-      backEng=(await w3.recognize(G.backFile)).data.text;
-      await w3.terminate();
-      setPb('id-bar','id-txt',73,'Reading back (Kannada)…');
-      const w4=await T.createWorker(['kan','eng'],1,{logger:m=>{if(m.status==='recognizing text')setPb('id-bar','id-txt',73+m.progress*18,'Reading back (Kannada)…');}});
-      backKan=(await w4.recognize(G.backFile)).data.text;
-      await w4.terminate();
-    }
-    setPb('id-bar','id-txt',95,'Extracting details…');
-    const f=extractId(frontEng,frontKan,backEng,backKan);
-    renderIdFields(f,frontEng+'\n\n---KANNADA---\n\n'+frontKan+(backEng?'\n\n---BACK---\n\n'+backEng+'\n\n'+backKan:''));
-    setPb('id-bar','id-txt',100,'Done');
-  }catch(e){console.error(e);alert('Scan error: '+e.message);}
-  finally{btn.disabled=false;btn.innerHTML='Scan Voter ID';}
-}
-
-// ── EXTRACT VOTER ID FIELDS ──────────────────────────────────
-function extractId(fe, fk, be, bk){
-  be=be||''; bk=bk||''; fk=fk||'';
-  const f={electorName:'',electorNameKan:'',fatherName:'',fatherNameKan:'',sex:'',epicNo:'',addr:'',part:'',serial:''};
-
-  // EPIC No — 3 letters + 7 digits, OCR may swap O↔0
-  const epicAll=fe+' '+be;
-  const epicM=epicAll.match(/\b([A-Z]{3}[0-9]{7})\b/)
-           ||epicAll.match(/IDENTITY\s*CARD\s+([A-Z]{3}[A-Z0-9]{6,8})/i)
-           ||epicAll.match(/\b([A-Z]{3}[O][0-9]{6,7})\b/i);
-  if(epicM) f.epicNo=epicM[1].toUpperCase().replace(/([A-Z]{3})O/,'$10');
-
-  // English fields — label-based first, positional fallback second
-  f.electorName = matchEngField(fe, [
-    /elector[''s]*\s*name\s*[:\-]?\s*/i,
-    /voters?\s*name\s*[:\-]?\s*/i,
-    /name\s*of\s*elector\s*[:\-]?\s*/i,
-    /electors?\s+name\s*[:\-]?\s*/i,
-    /elector\s+s\s+name\s*[:\-]?\s*/i,
-    /\d+\s+name\s*[:\-]\s*/i,
-    /^name\s*[:\-]\s*/i,
-  ]);
-  if(!f.electorName) f.electorName = scanForName(fe, f.epicNo);
-
-  f.fatherName = matchEngField(fe, [
-    /father[''s]*\s*name\s*[:\-]?\s*/i,
-    /husband[''s]*\s*name\s*[:\-]?\s*/i,
-    /father\s+s\s+name\s*[:\-]?\s*/i,
-    /fathers?\s+name\s*[:\-]?\s*/i,
-    /relation\s*[:\-]?\s*/i,
-  ]);
-  if(!f.fatherName) f.fatherName = scanForName(fe, f.epicNo, f.electorName);
-
-  // Sex
-  const sexM=fe.match(/\bsex\s*[:\-]\s*(male|female|m\b|f\b)/i);
-  if(sexM){const s=sexM[1].toLowerCase();f.sex=(s==='m'||s==='male')?'Male':'Female';}
-
-  // Kannada fields
-  f.electorNameKan = kanField(fk, [
-    /ಮತದಾರರ\s*ಹೆಸರು\s*[:\-]?/,
-    /ಮತದಾರ\s*ಹೆಸರ\s*[:\-]?/,
-  ]);
-  f.fatherNameKan = kanField(fk, [
-    /ತಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,
-    /ತಂದೆ\s*[/]\s*ಗಂಡನ\s*ಹೆಸರು\s*[:\-]?/,
-    /ತಂದೆ\s*ಹೆಸರ\s*[:\-]?/,
-    /ತಂದೆ\s*ಹೆಸರು\s*[:\-]?/,
-    /ಪತಿಯ\s*ಹೆಸರು\s*[:\-]?/,
-    /ಗಂಡನ\s*ಹೆಸರು\s*[:\-]?/,
-    /ಕಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,
-    /ಪತಿ\s*ಹೆಸರ\s*[:\-]?/,
-  ]);
-
-  // Positional fallback: if kanField found electorNameKan but not fatherNameKan,
-  // scan all Kannada lines and take the next distinct Kannada name after the elector name
-  if(f.electorNameKan && !f.fatherNameKan){
-    const noiseRe2=/ಸರ್ಕಾರ|ಯೋಜನ|ಚುನಾ|ಭಾರತ|ಆಯೋಗ|ಗುರುತಿನ|ಚೀಟಿ|ಪಟ್ಟಿ|ಮಾಹಿತಿ|ಮತದಾರ|ಸಂಖ್ಯೆ|ವ್ಯಾಪ್ತಿ/;
-    const kanLines=fk.split('\n').map(l=>l.trim()).filter(Boolean);
-    let foundElector=false;
-    for(const ln of kanLines){
-      // Strip zero-width chars
-      const cl=ln.replace(/[\u200B-\u200D\u200C\uFEFF]/g,'');
-      const kanCount=(cl.match(/[\u0C80-\u0CFF]/g)||[]).length;
-      if(kanCount<3 || noiseRe2.test(cl)) continue;
-      // Simple kanOnly: keep leading Kannada tokens
-      const toks=cl.split(/\s+/);
-      const kept=[];
-      for(const t of toks){
-        const chars=[...t];
-        const kc=chars.filter(ch=>ch>='\u0C80'&&ch<='\u0CFF').length;
-        if(kc>=2&&kc/chars.length>0.5) kept.push(t); else break;
-      }
-      const name=kept.join(' ').trim();
-      if(!name||name.length<3) continue;
-      if(name===f.electorNameKan){foundElector=true;continue;}
-      if(foundElector){f.fatherNameKan=name;break;}
-    }
-  }
-
-  // Address + Part/Serial — BACK SIDE ONLY
-  if(be && be.trim().length > 20){
-    const addrM=be.match(/address\s*[:\-]\s*([^\n]{5,100})/i);
-    if(addrM) f.addr=clean(addrM[1]);
-    const talukM=be.match(/taluk\s*[:\-]\s*([A-Za-z ()\-]{3,50})/i);
-    const distM=be.match(/district\s*[:\-]\s*([A-Za-z ]{3,40})/i);
-    const pts=[];
-    if(f.addr) pts.push(f.addr);
-    if(talukM) pts.push(clean(talukM[1])+' Taluk');
-    if(distM) pts.push(clean(distM[1])+' District');
-    if(pts.length) f.addr=pts.join(', ');
-    const partLabelM=be.match(/part\s*no\.?\s*[:\-]\s*(\d{1,4})/i);
-    const serialLabelM=be.match(/serial\s*no\.?\s*[:\-]\s*(\d{1,4})/i)||be.match(/sl\.?\s*no\.?\s*[:\-]\s*(\d{1,4})/i);
-    if(partLabelM) f.part=partLabelM[1];
-    if(serialLabelM) f.serial=serialLabelM[1];
-    if(!f.part && !f.serial){
-      const tail=be.slice(-60);
-      const slM=tail.match(/\b(\d{1,4})\s*\/\s*(\d{1,4})\s*$/);
-      if(slM){f.serial=slM[1];f.part=slM[2];}
-    }
-  }
-  return f;
-}
-
-// Positional name scanner — fallback when label matching fails.
-function scanForName(text, epicNo, alreadyFound){
-  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
-  const skipRe = /\b(election|commission|india|government|voter|elector|father|husband|sex|address|taluk|district|house|name|male|female|photo|identity|card|date|age|serial|part|no\.?)\b/i;
-  const results = [];
-  for(const ln of lines){
-    if(epicNo && ln.includes(epicNo)) continue;
-    if(skipRe.test(ln)) continue;
-    const cleaned = ln.replace(/^[^A-Za-z]+/, '').replace(/[^A-Za-z\s]+$/, '').trim();
-    if(!cleaned) continue;
-    const m = cleaned.match(/^([A-Za-z]+(?:\s+[A-Za-z]+){0,4})$/);
-    if(!m) continue;
-    const candidate = m[1].trim();
-    const scanWords = candidate.split(/\s+/);
-    if(!scanWords.every(w => /^[A-Z]/.test(w))) continue;
-    if(alreadyFound && candidate.toLowerCase()===alreadyFound.toLowerCase()) continue;
-    if(candidate.split(/\s+/).length < 2) continue;
-    results.push(candidate);
-  }
-  return results[0] ? clean(results[0]) : '';
-}
-
-// Label-based English field matcher.
-function matchEngField(text, labelPatterns){
-  const norm = s => s
-    .replace(/[\u2018\u2019\u201A\u201B\u2032\u0060]/g,"'")
-    .replace(/[\u201C\u201D\u201E]/g,'"');
-
-  const raw  = norm(text);
-  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
-
-  function extractName(s){
-    if(!s) return '';
-    s = s.replace(/^[^A-Za-z]+/, '').trim();
-    if(!s) return '';
-    const allWords = s.split(/\s+/);
-    const nameWords = [];
-    for(const w of allWords){
-      if(/^[A-Za-z]+$/.test(w)) nameWords.push(w);
-      else break;
-    }
-    if(nameWords.length < 1) return '';
-    const candidate = nameWords.join(' ');
-    if(candidate.length < 3) return '';
-    if(!nameWords.every(w => /^[A-Z]/.test(w))) return '';
-    const lower = candidate.toLowerCase();
-    if(/^(male|female|india|photo|card|date|age|sex|election|commission|identity)$/.test(lower)) return '';
-    return candidate;
-  }
-
-  for(const re of labelPatterns){
-    for(let i = 0; i < lines.length; i++){
-      if(!re.test(lines[i])) continue;
-      const after = lines[i].replace(re, '').trim();
-      const n1 = extractName(after);
-      if(n1) return clean(n1);
-      for(let d = 1; d <= 3; d++){
-        if(i + d < lines.length){
-          const n = extractName(lines[i + d]);
-          if(n) return clean(n);
-        }
-      }
-    }
-    for(let i = 0; i < lines.length - 1; i++){
-      const joined = lines[i] + ' ' + lines[i+1];
-      if(!re.test(joined)) continue;
-      const after = joined.replace(re, '').trim();
-      const n = extractName(after);
-      if(n) return clean(n);
-    }
-  }
-  return '';
-}
-
-// Kannada field extractor — label anchor + token-by-token filter.
-function kanField(kanText, labelPatterns){
-  const lines=kanText.split('\n').map(l=>l.trim()).filter(Boolean);
-
-  function kanOnly(s){
-    s = s.replace(/[\u200B-\u200D\u200C\uFEFF\u00AD]/g, '');
-    const tokens=s.split(/\s+/);
-    const kept=[];
-    for(const tok of tokens){
-      if(!tok) continue;
-      const chars=[...tok];
-      const kanCount=chars.filter(ch=>ch>='\u0C80'&&ch<='\u0CFF').length;
-      if(kanCount >= 2 && kanCount/chars.length > 0.5){
-        kept.push(tok);
-      } else {
-        break;
-      }
-    }
-    return kept.join(' ').trim();
-  }
-
-  const noiseRe=/ಸರ್ಕಾರ|ಯೋಜನ|ಚುನಾ|ಭಾರತ|ಆಯೋಗ|ಗುರುತಿನ|ಚೀಟಿ|ಪಟ್ಟಿ|ಮಾಹಿತಿ|ವ್ಯಾಪ್ತಿ/;
-
-  for(const re of labelPatterns){
-    for(let i=0;i<lines.length;i++){
-      if(!re.test(lines[i])) continue;
-      const sameLine=lines[i].replace(re,'').replace(/^[\s:|–\-]+/,'').trim();
-      let cand='';
-      if(sameLine && /[\u0C80-\u0CFF]{2,}/.test(sameLine)){
-        cand=sameLine;
-      } else {
-        // Look up to 3 lines ahead for the value
-        for(let d=1;d<=3;d++){
-          if(i+d>=lines.length) break;
-          const nx=lines[i+d].trim();
-          // Skip if this line looks like another label
-          if(/:/.test(nx.slice(0,20))) continue;
-          if(/[\u0C80-\u0CFF]{3,}/.test(nx)){cand=nx;break;}
-        }
-      }
-      if(!cand) continue;
-      cand=cand.replace(/^[\s\d|.:–\-]+/,'').trim();
-      cand=kanOnly(cand);
-      if(!cand || noiseRe.test(cand)) continue;
-      if((cand.match(/[\u0C80-\u0CFF]/g)||[]).length>=3) return cand;
-    }
-  }
-  return '';
-}
-
-function renderIdFields(f, raw){
-  const rows=[
-    {k:"Elector's Name",           v:f.electorName,    copy:true},
-    {k:"Elector's Name (Kannada)", v:f.electorNameKan, copy:true, h:!f.electorNameKan},
-    {k:"Father's Name",            v:f.fatherName,     copy:true},
-    {k:"Father's Name (Kannada)",  v:f.fatherNameKan,  copy:true, h:!f.fatherNameKan},
-    {k:"Sex",                      v:f.sex,                       h:!f.sex},
-    {k:"EPIC No.",                 v:f.epicNo,         copy:true},
-    {k:"Address",                  v:f.addr,           copy:true, w:true, h:!f.addr},
-    {k:"Part No.",                 v:f.part,                      h:!f.part},
-    {k:"Serial No.",               v:f.serial,                    h:!f.serial},
-  ].filter(r=>!r.h);
-
-  document.getElementById('id-fields').innerHTML=rows.map(r=>`
-    <div class="field-item${r.w?' w2':''}">
-      <div class="field-k">${r.k}</div>
-      <div class="field-v${r.v?'':' nil'}">${r.v||'Not found'}</div>
-      ${r.copy&&r.v?`<button class="copy-btn" data-val="${r.v.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}" onclick="copyField(this)" title="Copy">Copy</button>`:''}
-    </div>`).join('');
-  document.getElementById('id-raw').textContent=raw;
-  document.getElementById('id-out').style.display='block';
-  document.getElementById('id-out').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-function copyField(btn){
-  const text = btn.dataset.val || '';
-  if(!text) return;
-  navigator.clipboard.writeText(text).then(()=>{
-    btn.textContent='Copied!'; btn.classList.add('copied');
-    setTimeout(()=>{ btn.textContent='Copy'; btn.classList.remove('copied'); }, 1800);
-  }).catch(()=>{
-    const ta=document.createElement('textarea');
-    ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta);
-    btn.textContent='Copied!'; btn.classList.add('copied');
-    setTimeout(()=>{ btn.textContent='Copy'; btn.classList.remove('copied'); }, 1800);
-  });
-}
-
-// ── PDF SCAN ─────────────────────────────────────────────────
-async function scanPdf(){
-  if(!G.pdfFile){alert('Please choose a PDF file first.');return;}
-  const btn=document.getElementById('pdf-btn-go');
-  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Processing…';
-  document.getElementById('pdf-prog').classList.add('on');
-  G.entries=[];
-  try{
-    const buf=await G.pdfFile.arrayBuffer();
-    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
-    const total=pdf.numPages;
-    setPb('pdf-bar','pdf-txt',2,`Checking PDF format (${total} pages)…`);
-
-    // Detect native text vs scanned image
-    let nativeCount=0;
-    let kanTotal=0, matraCount=0;
-    for(let pn=1;pn<=Math.min(5,total);pn++){
-      const pg=await pdf.getPage(pn);
-      const tc=await pg.getTextContent();
-      const items=tc.items.filter(i=>i.str&&i.str.trim().length>1);
-      nativeCount+=items.length;
-      for(const item of items){
-        for(const ch of (item.str||'')){
-          const cp=ch.codePointAt(0);
-          if(cp>=0x0C80&&cp<=0x0CFF) kanTotal++;
-          // Dependent vowel signs (matras) U+0CBE–U+0CCD
-          // Real Kannada: ~25-40% of chars are matras
-          // Broken-font PDFs: 0-2% (matras mapped to wrong codepoints)
-          if(cp>=0x0CBE&&cp<=0x0CCD) matraCount++;
-        }
-      }
-    }
-    const matraRatio = kanTotal>20 ? matraCount/kanTotal : 0;
-    const hasNative = nativeCount>30 && matraRatio>0.05;
-    console.log('[VT] nativeCount='+nativeCount+' kanChars='+kanTotal+' matras='+matraCount+' ratio='+(matraRatio*100).toFixed(1)+'% -> hasNative='+hasNative);
-
-    if(hasNative){
-      // Fast native path
-      setPb('pdf-bar','pdf-txt',5,'Extracting text…');
-      const pageP=Array.from({length:total},(_,i)=>pdf.getPage(i+1).then(pg=>pg.getTextContent().then(tc=>({pn:i+1,tc}))));
-      let done=0;const allData=[];
-      for(let i=0;i<pageP.length;i+=10){
-        const batch=await Promise.all(pageP.slice(i,i+10));
-        allData.push(...batch);done=allData.length;
-        setPb('pdf-bar','pdf-txt',5+Math.round(done/total*80),`Extracted ${done}/${total} pages…`);
-      }
-      setPb('pdf-bar','pdf-txt',88,'Parsing entries…');
-      for(const {pn,tc} of allData.sort((a,b)=>a.pn-b.pn)) G.entries.push(...parseNativePage(tc,pn));
-    } else {
-      // OCR path — 4 parallel workers
-      setPb('pdf-bar','pdf-txt',3,'Loading OCR engine…');
-      const T=await getTess();
-      setPb('pdf-bar','pdf-txt',5,`Starting OCR on ${total} pages…`);
-      const N=4;
-      const workers=await Promise.all(Array.from({length:N},()=>T.createWorker(['kan','eng'],1)));
-      const canvases=[];
-      for(let pn=1;pn<=total;pn++){
-        const pg=await pdf.getPage(pn);
-        const vp=pg.getViewport({scale:1.3});
-        const cv=document.createElement('canvas');
-        cv.width=vp.width;cv.height=vp.height;
-        await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
-        const blob=await new Promise(res=>cv.toBlob(res,'image/jpeg',0.85));
-        canvases.push({pn,url:URL.createObjectURL(blob)});
-        if(pn%5===0) setPb('pdf-bar','pdf-txt',8+Math.round(pn/total*22),`Rendered ${pn}/${total}…`);
-      }
-      setPb('pdf-bar','pdf-txt',32,'Running OCR…');
-      let doneP=0;
-      const chunks=Array.from({length:N},()=>[]);
-      canvases.forEach((c,i)=>chunks[i%N].push(c));
-      async function ocrChunk(w,pages){
-        const res=[];
-        for(const {pn,url} of pages){
-          const {data:{text}}=await w.recognize(url);
-          URL.revokeObjectURL(url);
-          res.push({pn,text});doneP++;
-          setPb('pdf-bar','pdf-txt',32+Math.round(doneP/total*62),`OCR: ${doneP}/${total} pages…`);
-        }
-        return res;
-      }
-      const allR=(await Promise.all(workers.map((w,i)=>ocrChunk(w,chunks[i])))).flat().sort((a,b)=>a.pn-b.pn);
-      await Promise.all(workers.map(w=>w.terminate()));
-      setPb('pdf-bar','pdf-txt',96,'Parsing voter entries…');
-      for(const {pn,text} of allR) G.entries.push(...parseOcrPage(text,pn));
-    }
-
-    // Deduplicate: main parser + fallback can create entries for the same person.
-  // Key by nameKan+pageNum — same person on same page = same name.
-  // When duplicates found, prefer the entry with the longest serial (OCR sometimes
-  // drops digits: "968" → "98"; longer string = more complete OCR read).
-  const byName = new Map();
-  for(const e of G.entries){
-    const key = (e.nameKan||e.name||'?') + '|' + e.pageNum;
-    if(!byName.has(key)){
-      byName.set(key, e);
-    } else {
-      const existing = byName.get(key);
-      // Keep whichever has more serial digits; if tied, prefer the one with a relation
-      const newWins = (String(e.serial||'').length > String(existing.serial||'').length)
-                   || (String(e.serial||'').length === String(existing.serial||'').length && e.relationType && !existing.relationType);
-      if(newWins) byName.set(key, e);
-    }
-  }
-  // Second-pass dedup: same serial+pageNum — keep entry with relationType (main parser)
-  // over one without (fallback), or the one with cleaner (shorter) nameKan
-  const bySerial = new Map();
-  for(const e of [...byName.values()]){
-    if(!e.serial){ bySerial.set(Math.random(),e); continue; }
-    const key2 = e.serial+'|'+e.pageNum+'|'+(e.partNo||'');
-    if(!bySerial.has(key2)){
-      bySerial.set(key2,e);
-    } else {
-      const ex=bySerial.get(key2);
-      // Prefer entry that has a relation type parsed (main parser quality)
-      // If tied, prefer shorter nameKan (less garbage)
-      const newWins = (e.relationType && !ex.relationType)
-                   || (!e.relationType === !ex.relationType && e.nameKan.length < ex.nameKan.length);
-      if(newWins) bySerial.set(key2,e);
-    }
-  }
-  G.entries = [...bySerial.values()];
-  G.entries.sort((a,b)=>(a.pageNum-b.pageNum)||((+a.serial||0)-(+b.serial||0)));
-    setPb('pdf-bar','pdf-txt',100,`Done — ${G.entries.length} voter entries found across ${total} pages`);
-    document.getElementById('pdf-not-ready').style.display='none';
-    const rb=document.getElementById('pdf-ready-banner');
-    rb.textContent=`✓ ${G.entries.length} voter entries loaded from ${total} pages. Enter a name to search.`;
-    rb.style.display='block';
-    document.getElementById('s-name').disabled=false;
-    document.getElementById('s-rel').disabled=false;
-    document.getElementById('search-btn').disabled=false;
-    document.getElementById('browse-box').style.display='block';
-    document.getElementById('search-box').scrollIntoView({behavior:'smooth',block:'start'});
-  }catch(e){console.error(e);alert('PDF error: '+e.message);}
-  finally{btn.disabled=false;btn.innerHTML='Process PDF';}
-}
-
-// ── PARSE NATIVE TEXT PAGE ────────────────────────────────────
-function parseNativePage(tc, pageNum){
-  const items=tc.items.filter(i=>i.str&&i.str.trim()).map(i=>({text:i.str.trim(),x:Math.round(i.transform[4]),y:Math.round(i.transform[5])}));
-  if(!items.length) return [];
-  const sorted=[...items].sort((a,b)=>b.y-a.y);
-  const rows=[];
-  for(const item of sorted){const row=rows.find(r=>Math.abs(r[0].y-item.y)<=4);if(row)row.push(item);else rows.push([item]);}
-  const lines=rows.map(r=>r.sort((a,b)=>a.x-b.x).map(i=>i.text).join(' ').trim()).filter(Boolean);
-  let partNo='';
-  for(const ln of lines.slice(0,15)){const pm=ln.match(/ಭಾಗದ?\s*ಸಂಖ್ಯೆ\s*[:\-]?\s*(\d+)/)||ln.match(/ಭಾಗ\s*[:\-#]\s*(\d+)/i);if(pm){partNo=pm[1];break;}}
-  return parseOcrPage(lines.join('\n'),pageNum,partNo);
-}
-
-// ── PARSE OCR PAGE ────────────────────────────────────────────
-// Two-phase approach:
-//   Phase 1: every line that starts with a serial number → candidate name row
-//   Phase 2: every line that starts with a relation word → candidate relation row
-//   Phase 3: merge — relation row attaches to most recent serial row
-// This way entries are NEVER dropped just because OCR garbled the relation word.
-// The fallback (parseOcrFallback) also runs in parallel and results are merged.
-function parseOcrPage(text, pageNum, knownPart){
-  const rawLines=text.split('\n').map(l=>l.trim()).filter(Boolean);
-
-  // Extract part number from page header
-  let partNo=knownPart||'';
-  if(!partNo){
-    for(const ln of rawLines.slice(0,30)){
-      const pm=ln.match(/ಭಾಗದ?\s*ಸಂಖ್ಯೆ\s*[:\-]?\s*(\d+)/)
-            ||ln.match(/ಭಾಗ\s*[:\-#]\s*(\d+)/i)
-            ||ln.match(/part\s*[:\-#]\s*(\d+)/i)
-            ||ln.match(/\bpart\b.*?(\d{1,4})/i);
-      if(pm){partNo=pm[1];break;}
-    }
-  }
-
-  function cleanLn(ln){
-    return ln
-      .replace(/\|/g,' ')
-      .replace(/\$(\d)/g,'$1').replace(/^\$\s*/,'')
-      .replace(/([\u0C80-\u0CFF])\./g,'$1')
-      .replace(/\u0CCD\u0CCD/g,'\u0CCD')          // double virama → single
-      .replace(/[*#@!]+/g,' ')                     // asterisks, hash etc.
-      .replace(/\s+/g,' ').trim();
-  }
-  function canon(t){
-    return t.replace(/[.\-\s\u200B-\u200D\u200C\uFEFF]/g,'');
-  }
-  // Inline normaliser: strip ZW + NFC + NFKC
-  const _n=s=>(s||'').replace(/[\u200B-\u200D\u200C\uFEFF\u00AD]/g,'').normalize('NFC').normalize('NFKC');
-
-  // Normalize set values to NFKC so they match normalized token lookups
-  const _nk=s=>s.normalize('NFC').normalize('NFKC');
-  const REL=new Set(['ತಂದೆ','ಗಂಡ','ತಾಯಿ','ಇತರೆ','ಪತಿ','ಸ್ವಂತ','ಮಗ','ಮಗಳು','ಪತ್ನಿ'].map(_nk));
-  const SEX=new Set(['ಗಂ','ಹೆಂ'].map(_nk));
-  const SKIP=/ಕ್ರಮ\s*ಸಂಖ್ಯೆ|ಮನೆ.*ಫ್ಲಾಟ್|ಮತದಾರರ\s*ಹೆಸರು|ಭಾಗದ?\s*ಸಂಖ್ಯೆ|ರಾಜ್ಯದ\s*ಕೋಡ್|ವಿಧಾನ\s*ಸಭಾ|ಭಾರತ\s*ಚುನಾ|ಸಂಬಂಧ|ಮ\.ಗು\.ಚೀ|ವಿಭಾಗ\s*[:\-]|ಸಂಖ್ಯೆ\s*ಮತ್ತು|ಮತದಾರರ\s*ಪಟ್ಟಿ|ವಿವರಗಳು|ಮತಗಟ್ಟೆ|ಹದ್ದುಬಸ್ತ್|ಕ್ಷೇತ್ರದ|ಮತದಾರರ\s*ಸಂಖ|ಮುಖ್ಯರಸ್ತೆ|ಮತಕ್ಷೇತ್ರ|ವಿಧಾನಸಭಾ|ಕಛೇರಿ/;
-  const HEADER_NAME=/\d|ಮತ್ತು|ರಸ್ತೆ|ವಿವರ|ಸಂಖ್ಯೆ|ಸಂಖೆ|ಹದ್ದು|ಮತಗಟ್ಟೆ|ಕ್ಷೇತ್ರ|ಮನೆ\s*ಸಂ|ಹಳ್ಳಿ|ನಗರ|ವಾರ್ಡ್|ಮಂಡಳಿ|ಮತದಾರ|[,:]/;
-
-  // ── Step 1: Reconstruct multi-line rows ──────────────────────
-  // A row continues when: starts with relation word, or relation is at pos≤1 without leading digit
-  const rows=[];
-  let pending='';
-  for(const raw of rawLines){
-    if(SKIP.test(raw)) continue;
-    const ln=cleanLn(raw);
-    if(!ln||ln.length<2) continue;
-    const toks=ln.split(/\s+/).filter(Boolean);
-    if(!toks.length) continue;
-
-    const firstCanon=canon(toks[0]);
-    const startsWithDigit=/^\d+$/.test(firstCanon);
-    const startsWithRel=REL.has(firstCanon);
-
-    let relPos=-1;
-    for(let i=0;i<toks.length;i++){if(REL.has(canon(toks[i]))){relPos=i;break;}}
-
-    const isContinuation=startsWithRel||(relPos>=0&&relPos<=1&&!startsWithDigit);
-
-    if(isContinuation&&pending){
-      pending=pending+' '+ln;
-    } else {
-      if(pending) rows.push(pending);
-      pending=ln;
-    }
-  }
-  if(pending) rows.push(pending);
-
-  // ── Step 2: Parse each row using multi-anchor strategy ───────
-  // CRITICAL CHANGE: we no longer drop rows with no relation word.
-  // Anchor priority: (1) relation word → (2) sex word → (3) serial + position only
-  const entries=[];
-
-  for(const row of rows){
-    const tokens=row.split(/\s+/).filter(Boolean);
-
-    // --- Anchor 1: relation word ---
-    // Use _n() (NFC+NFKC) on each token before set lookup — OCR may produce
-    // Unicode-variant forms of ತಂದೆ / ಗಂ that look identical but don't match literally
-    let relIdx=-1;
-    for(let t=0;t<tokens.length;t++){
-      if(REL.has(_n(canon(tokens[t])))){relIdx=t;break;}
-    }
-
-    // --- Anchor 2: sex word ---
-    let sexIdx=-1;
-    const sexSearchFrom = relIdx>=0 ? relIdx+1 : 0;
-    for(let t=sexSearchFrom;t<tokens.length;t++){
-      if(SEX.has(_n(canon(tokens[t])))){sexIdx=t;break;}
-    }
-
-    // --- Determine name region cutoff ---
-    // If we have relation: name is before relation.
-    // If no relation but have sex: name is before sex.
-    // If neither: name is the Kannada tokens after serial/house — still capture.
-    const nameCutoff = relIdx>=0 ? relIdx : (sexIdx>=0 ? sexIdx : tokens.length);
-
-    // --- Extract serial + houseNo + name from pre-anchor region ---
-    const pre=tokens.slice(0,nameCutoff);
-    let serial='',houseNo='',ps=0;
-    if(pre.length>0 && /^\d+$/.test(canon(pre[0]))){serial=canon(pre[0]);ps++;}
-    if(pre.length>ps && /^\d+$/.test(canon(pre[ps]))){houseNo=canon(pre[ps]);ps++;}
-
-    const nameKanRaw=pre.slice(ps)
-      .map(t=>canon(t).replace(/[*|#@%]/g,''))
-      .filter(t=>/[\u0C80-\u0CFF]/.test(t)&&t.length>0)
-      .join(' ').trim();
-
-    if(!nameKanRaw || nameKanRaw.length<2) continue;
-    if(HEADER_NAME.test(nameKanRaw)) continue;
-    // Reject if nameKan contains digits, slashes, or Latin chars — OCR house/address bleed-in
-    if(/[0-9\/\\]/.test(nameKanRaw)) continue;
-    if(/[A-Za-z]{2,}/.test(nameKanRaw)) continue;  // 2+ consecutive Latin = garbage token
-
-    // --- Extract relative name from post-relation region ---
-    let relativeKanRaw='';
-    let relationType='';
-    if(relIdx>=0){
-      relationType=canon(tokens[relIdx]);
-      const relEnd=sexIdx>=0?sexIdx:tokens.length;
-      relativeKanRaw=tokens.slice(relIdx+1,relEnd)
-        .map(t=>canon(t).replace(/[*|#@%]/g,''))
-        .filter(t=>/[\u0C80-\u0CFF]/.test(t)&&t.length>0)
-        .join(' ').trim();
-    }
-
-    // --- Extract sex, age, EPIC from post-sex region ---
-    let sex='',age='',epicNo='';
-    if(sexIdx>=0){
-      sex=canon(tokens[sexIdx])==='ಗಂ'?'ಗಂ (Male)':'ಹೆಂ (Female)';
-      for(const t of tokens.slice(sexIdx+1)){
-        const ct=canon(t);
-        if(/^\d{1,3}$/.test(ct)&&parseInt(ct)>0&&parseInt(ct)<120&&!age) age=ct;
-        else if(/^[A-Z]{3}\d{7}$/.test(ct)) epicNo=ct;
-      }
-    }
-
-    entries.push({
-      serial, houseNo, partNo, pageNum,
-      nameKan:_n(nameKanRaw), name:'',
-      relativeKan:_n(relativeKanRaw), relative:'',
-      relationType, sex, age, epicNo,
-      address:houseNo?'House No. '+houseNo:''
-    });
-  }
-
-  // ── Step 3: Supplement with fallback for any missed serials ──
-  // Run the number-anchored fallback and add any serials not already captured.
-  const capturedSerials=new Set(entries.map(e=>e.serial).filter(Boolean));
-  const fallbackEntries=parseOcrFallback(text,partNo,pageNum);
-  for(const fe of fallbackEntries){
-    if(!fe.serial || !capturedSerials.has(fe.serial)){
-      entries.push(fe);
-    }
-  }
-
-  return entries;
-}
-
-
-function parseOcrFallback(text,partNo,pageNum){
-  const entries=[];
-  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
-  const _n=s=>(s||'').replace(/[\u200B-\u200D\u200C\uFEFF]/g,'').normalize('NFC').normalize('NFKC');
-  const HEADER_NOISE=/ಕ್ಷೇತ್ರ|ಮತಗಟ್ಟೆ|ಹದ್ದು|ಮುಖ್ಯರಸ್ತೆ|ಸಂಖ|ವಿವರ|ಮತ್ತು|[,:]/;
-  let i=0;
-  while(i<lines.length){
-    const ln=lines[i];
-    // Require serial ≥ 2 digits (single digit = likely house/age fragment, not serial)
-    const ser=ln.match(/^(\d{2,4})[.)]\s*(.*)$/)||ln.match(/^(\d{2,4})\s*$/);
-    if(ser&&parseInt(ser[1])>=1&&parseInt(ser[1])<=9999){
-      const serial=ser[1];
-      const block=ser[2]?[ser[2].trim()]:[];
-      let j=i+1;
-      while(j<lines.length&&j<i+12){
-        const nx=lines[j];
-        if(/^(\d{1,4})[.)]/.test(nx)||/^(\d{1,4})\s*$/.test(nx)) break;
-        if(/ಚುನಾ|ಭಾರತ\s*ಸರ್ಕಾರ/i.test(nx)) break;
-        block.push(nx);j++;
-      }
-      let nameKan='',relativeKan='',sex='',age='',relationType='';
-      for(const b of block){
-        const ct=b.replace(/[\u200B-\u200D\u200C\uFEFF\u0CCD\u0CCD]/g,m=>m==='\u0CCD\u0CCD'?'\u0CCD':m);
-        const sm=ct.match(/\b(ಗಂ|ಹೆಂ)\b/);
-        const rm=ct.match(/\b(ತಂದೆ|ಗಂಡ|ತಾಯಿ|ಇತರೆ|ಪತಿ|ಪತ್ನಿ)\b/);
-        const am=ct.match(/\b(\d{2,3})\b/);
-        if(am&&parseInt(am[1])>0&&parseInt(am[1])<120&&!age) age=am[1];
-        if(sm) sex=sm[1]==='ಗಂ'?'ಗಂ (Male)':'ಹೆಂ (Female)';
-        if(!nameKan&&/[\u0C80-\u0CFF]{3,}/.test(ct)&&!rm&&!sm){
-          if(!HEADER_NOISE.test(ct)) nameKan=ct.replace(/[*#@!]/g,'').trim();
-        } else if(rm&&/[\u0C80-\u0CFF]{3,}/.test(ct)){
-          relationType=rm[1];
-          relativeKan=ct.replace(rm[0],'').replace(/[*#@!]/g,'').trim();
-        }
-      }
-      // Also reject nameKan containing digits, slashes, or Latin chars (OCR address bleed-in)
-      const hasGarbage = /[0-9\/]/.test(nameKan) || /[A-Za-z]{2,}/.test(nameKan);
-      if(nameKan&&!HEADER_NOISE.test(nameKan)&&!hasGarbage){
-        entries.push({serial,partNo,pageNum,
-          nameKan:_n(nameKan),name:'',
-          relativeKan:_n(relativeKan),relative:'',
-          sex,age,relationType,address:'',houseNo:'',epicNo:''});
-      }
-      i=j;continue;
-    }
-    i++;
-  }
-  return entries;
-}
-
-
-
-// ── SEARCH ───────────────────────────────────────────────────
-// Word-level scorer — no character-level fuzzy matching.
-// Fuse.js is removed. Every result must have a genuine word match.
-//
-// Scoring per field (0–100):
-//   100 — every query word exactly matches a stored word
-//    80 — every query word is a prefix of a stored word
-//    60 — every query word is contained inside a stored word (≥3 chars)
-//     0 — any query word has no match at all → entry excluded
-//
-// Final score = nameScore×70% + relScore×30%
-// Results with score 0 are never shown.
-
-function nfc(s){ return (s||'').normalize('NFC').replace(/[\u200B-\u200D\uFEFF\u200C]/g,'').trim(); }
-
-// Strip zero-width chars from a single token (OCR inserts these inside words)
-function cleanTok(t){
-  return t.replace(/[\u200B-\u200D\u200C\uFEFF\u00AD]/g,'');
-}
-
-// Compare one query word against one stored word.
-// Tiers (highest wins):
-//   100 — exact
-//    80 — prefix match (either is prefix of the other) — catches missing vowel signs
-//    60 — query is a substring of stored (≥3 chars)
-//    50 — first ⌈2/3 × len⌉ chars match, minimum 3 — catches single-codepoint OCR errors
-//     0 — no meaningful match
-function wordSim(qwRaw, swRaw){
-  function norm(x){ return cleanTok((x||'').normalize('NFC')).normalize('NFKC'); }
-  const q = norm(qwRaw);
-  const s = norm(swRaw);
-  if(!q || !s) return 0;
-  if(s === q)                                           return 100;
-  if(s.startsWith(q) || q.startsWith(s))               return 85;
-  if(q.length >= 3 && s.includes(q))                   return 70;
-  // Leading-codepoints match: at least ⌈2/3⌉ of the shorter word
-  const minLen = Math.min(q.length, s.length);
-  const lead = Math.max(3, Math.ceil(minLen * 2 / 3));
-  if(minLen >= 4 && s.slice(0,lead) === q.slice(0,lead)) return 55;
-  // Suffix match: Kannada names often share suffix (ಸ್ವಾಮಿ, ರಾಜ etc.)
-  if(q.length >= 4 && s.length >= 4 && s.slice(-3) === q.slice(-3)) return 40;
-  return 0;
-}
-
-// Score how well queryWords match against the words in a stored field.
-// Returns 0 if any query word has zero match across all stored words (hard exclusion).
-function wordScore(queryWords, storedText){
-  if(!queryWords.length) return 100;
-  const stored = nfc(storedText);
-  if(!stored) return 0;
-  const sWords = stored.split(/\s+/).filter(Boolean);
-  let total = 0;
-  for(const qw of queryWords){
-    if(!qw) continue;
-    let best = 0;
-    for(const sw of sWords){ best = Math.max(best, wordSim(qw, sw)); if(best===100) break; }
-    if(best === 0) return 0;   // hard exclusion — this word matched nothing
-    total += best;
-  }
-  return Math.round(total / queryWords.length);
-}
-
-function doSearch(){
-  const rawName = document.getElementById('s-name').value.trim();
-  const rawRel  = document.getElementById('s-rel').value.trim();
-  if(!rawName && !rawRel){ alert('Enter at least a name to search.'); return; }
-  if(!G.entries.length){ alert('Please process a PDF first.'); return; }
-
-  const qName = nfc(rawName).split(/\s+/).filter(Boolean);
-  const qRel  = nfc(rawRel).split(/\s+/).filter(Boolean);
-
-  const scored = [];
-  for(const e of G.entries){
-    // Score against all available name fields
-    const ns = Math.max(
-      wordScore(qName, e.nameKan),
-      wordScore(qName, e.name),
-      // Also try query as single token vs concatenated stored name (no-space variant)
-      wordScore([qName.join('')], e.nameKan.replace(/\s+/g,''))
-    );
-    // Score against all available relative fields
-    const rs = qRel.length
-      ? Math.max(wordScore(qRel, e.relativeKan), wordScore(qRel, e.relative))
-      : 100;
-
-    // Hard exclusion: if a constraint was given and score is 0, skip
-    if(qName.length && ns === 0) continue;
-    if(qRel.length  && rs === 0) continue;
-
-    const combined = Math.round(ns * 0.7 + rs * 0.3);
-    if(combined > 0) scored.push({ item: e, score: combined });
-  }
-
-  // Sort: highest score first, then by serial number for ties
-  scored.sort((a,b) => b.score - a.score || (+a.item.serial||0) - (+b.item.serial||0));
-
-  showResults(scored.slice(0, 15), nfc(rawName)||nfc(rawRel));
-}
-
-function showResults(list, query){
-  const wrap  = document.getElementById('roll-out');
-  const cards = document.getElementById('roll-cards');
-  wrap.style.display = 'block';
-
-  if(!list.length){
-    cards.innerHTML = `<div class="empty"><div class="e-ico">🔍</div>
-      <p>No matches found for "<b>${query}</b>".<br>
-      Check spelling or try fewer words.</p></div>`;
-    wrap.scrollIntoView({behavior:'smooth',block:'start'});
-    return;
-  }
-
-  const relMap = {ತಂದೆ:'Father',ಗಂಡ:'Husband',ತಾಯಿ:'Mother',ಪತಿ:'Husband',ಇತರೆ:'Other',ಸ್ವಂತ:'Self',ಮಗ:'Son',ಮಗಳು:'Daughter'};
-
-  cards.innerHTML = list.map((r,idx) => {
-    const e   = r.item;
-    const pct = r.score;
-    const bc  = pct >= 80 ? 'hi' : pct >= 60 ? 'mid' : 'lo';
-    const nm  = e.nameKan || e.name || '—';
-    const nmAlt = (e.nameKan && e.name) ? e.name : '';
-    const rel = e.relativeKan || e.relative || '';
-    const relAlt = (e.relativeKan && e.relative) ? e.relative : '';
-    const relLbl = relMap[e.relationType] || e.relationType || '';
-
-    return `
-      <div class="result-item${idx===0?' top':''}">
-        ${idx===0?'<div class="best-pin">Best Match</div>':''}
-        <div class="result-top-row">
-          <div style="min-width:0;flex:1">
-            <div class="result-name">${nm}</div>
-            ${rel?`<div class="result-rel" style="margin-top:6px">${relLbl?relLbl+': ':''}<b>${rel}</b></div>`:''}
-          </div>
-          <span class="badge ${bc}">${pct}%</span>
-        </div>
-        <div class="result-tags">
-          ${e.serial?`<div class="tag hl">ಕ್ರಮ ಸಂ. <b>${e.serial}</b></div>`:''}
-          ${e.houseNo?`<div class="tag">ಮನೆ <b>${e.houseNo}</b></div>`:''}
-          ${e.partNo?`<div class="tag hl">ಭಾಗ <b>${e.partNo}</b></div>`:''}
-          <div class="tag">ಪುಟ <b>${e.pageNum}</b></div>
-          ${e.age?`<div class="tag">ವಯಸ್ಸು <b>${e.age}</b></div>`:''}
-          ${e.sex?`<div class="tag">${e.sex}</div>`:''}
-          ${e.epicNo?`<div class="tag">EPIC <b>${e.epicNo}</b></div>`:''}
-        </div>
-      </div>`;
-  }).join('');
-
-  wrap.scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-// ── BROWSE BY PART / SERIAL ──────────────────────────────────
-// Lets users find entries by part number or serial — bypasses search entirely.
-// Critical for cases where OCR mangled a name beyond search recognition.
-function doBrowse(){
-  const partQ  = document.getElementById('br-part').value.trim();
-  const serialQ= document.getElementById('br-serial').value.trim();
-  if(!partQ && !serialQ){ alert('Enter a Part No. or Serial No. to browse.'); return; }
-
-  let matches = G.entries.filter(e=>{
-    // Serial match: exact string match, tolerating leading zeros
-    const serialOk = !serialQ || String(e.serial)===serialQ ||
-                     String(e.serial).replace(/^0+/,'')===serialQ.replace(/^0+/,'');
-    if(!serialOk) return false;
-    // Part match: if the entry has no partNo stored, don't exclude it on part filter —
-    // just let serial do the work. This handles PDFs where the header isn't readable.
-    if(!partQ) return true;
-    if(!e.partNo) return true; // partNo not extracted — include anyway
-    return String(e.partNo)===partQ || String(e.partNo).replace(/^0+/,'')===partQ.replace(/^0+/,'');
-  });
-
-  // If only part given, sort by serial and show up to 30 entries
-  matches.sort((a,b)=>(+a.serial||0)-(+b.serial||0));
-  if(matches.length>30) matches=matches.slice(0,30);
-
-  const relMap = {ತಂದೆ:'Father',ಗಂಡ:'Husband',ತಾಯಿ:'Mother',ಪತಿ:'Husband',ಇತರೆ:'Other',ಸ್ವಂತ:'Self',ಮಗ:'Son',ಮಗಳು:'Daughter'};
-  const cards = document.getElementById('browse-cards');
-  if(!matches.length){
-    cards.innerHTML='<p style="color:#94a3b8;font-size:13px">No entries found. Try a different part or serial number.</p>';
-    return;
-  }
-  cards.innerHTML = matches.map(e=>{
-    const rel    = e.relativeKan||e.relative||'';
-    const relLbl = relMap[e.relationType]||e.relationType||'';
-    return `<div class="result-item" style="margin-bottom:8px">
-      <div class="result-top-row">
-        <div style="min-width:0;flex:1">
-          <div class="result-name" style="font-size:16px">${e.nameKan||e.name||'—'}</div>
-          ${rel?`<div class="result-rel" style="margin-top:4px">${relLbl?relLbl+': ':''}<b>${rel}</b></div>`:''}
-        </div>
-      </div>
-      <div class="result-tags" style="margin-top:8px">
-        ${e.serial?`<div class="tag hl">ಕ್ರಮ ಸಂ. <b>${e.serial}</b></div>`:''}
-        ${e.houseNo?`<div class="tag">ಮನೆ <b>${e.houseNo}</b></div>`:''}
-        ${e.partNo?`<div class="tag hl">ಭಾಗ <b>${e.partNo}</b></div>`:''}
-        <div class="tag">ಪುಟ <b>${e.pageNum}</b></div>
-        ${e.age?`<div class="tag">ವಯಸ್ಸು <b>${e.age}</b></div>`:''}
-        ${e.sex?`<div class="tag">${e.sex}</div>`:''}
-      </div>
-    </div>`;
-  }).join('');
-  document.getElementById('browse-box').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-// ── DEBUG ────────────────────────────────────────────────────
-function showDebugEntries(){
-  const el=document.getElementById('debug-entries');
-  if(!G.entries.length){el.textContent='No entries loaded yet.';return;}
-  el.innerHTML=G.entries.slice(0,10).map((e,i)=>
-    `<div style="border-bottom:1px solid #e2e8f0;padding:4px 0">
-      #${i+1} serial=<b>${e.serial||'?'}</b> part=<b>${e.partNo||'(empty)'}</b>
-      page=<b>${e.pageNum}</b><br>
-      name=<b>${e.nameKan||'—'}</b><br>
-      relative=<b>${e.relativeKan||'—'}</b> (${e.relationType||'?'})
-    </div>`
-  ).join('');
-}
-
-// ── INIT ─────────────────────────────────────────────────────
+async function scanId(){if(!G.frontFile){alert('Please choose the front image first.');return;}const btn=document.getElementById('id-btn');btn.disabled=true;btn.innerHTML='<span class="spin"></span>Scanning…';document.getElementById('id-prog').classList.add('on');try{const T=await getTess();setPb('id-bar','id-txt',5,'Reading front (English)…');const w1=await T.createWorker(['eng','hin'],1,{logger:m=>{if(m.status==='recognizing text')setPb('id-bar','id-txt',5+m.progress*22,'Reading front (English)…');}});const frontEng=(await w1.recognize(G.frontFile)).data.text;await w1.terminate();setPb('id-bar','id-txt',29,'Reading front (Kannada)…');const w2=await T.createWorker(['kan','eng'],1,{logger:m=>{if(m.status==='recognizing text')setPb('id-bar','id-txt',29+m.progress*22,'Reading front (Kannada)…');}});const frontKan=(await w2.recognize(G.frontFile)).data.text;await w2.terminate();let backEng='',backKan='';if(G.backFile){setPb('id-bar','id-txt',53,'Reading back (English)…');const w3=await T.createWorker(['eng','hin'],1,{logger:m=>{if(m.status==='recognizing text')setPb('id-bar','id-txt',53+m.progress*18,'Reading back (English)…');}});backEng=(await w3.recognize(G.backFile)).data.text;await w3.terminate();setPb('id-bar','id-txt',73,'Reading back (Kannada)…');const w4=await T.createWorker(['kan','eng'],1,{logger:m=>{if(m.status==='recognizing text')setPb('id-bar','id-txt',73+m.progress*18,'Reading back (Kannada)…');}});backKan=(await w4.recognize(G.backFile)).data.text;await w4.terminate();}setPb('id-bar','id-txt',95,'Extracting details…');const f=extractId(frontEng,frontKan,backEng,backKan);renderIdFields(f,frontEng+'\n\n---KANNADA---\n\n'+frontKan+(backEng?'\n\n---BACK---\n\n'+backEng+'\n\n'+backKan:''));setPb('id-bar','id-txt',100,'Done');}catch(e){console.error(e);alert('Scan error: '+e.message);}finally{btn.disabled=false;btn.innerHTML='Scan Voter ID';}}
+function extractId(fe,fk,be,bk){be=be||'';bk=bk||'';fk=fk||'';const f={electorName:'',electorNameKan:'',fatherName:'',fatherNameKan:'',sex:'',epicNo:'',addr:'',part:'',serial:''};const epicAll=fe+' '+be;const epicM=epicAll.match(/\b([A-Z]{3}[0-9]{7})\b/)||epicAll.match(/IDENTITY\s*CARD\s+([A-Z]{3}[A-Z0-9]{6,8})/i)||epicAll.match(/\b([A-Z]{3}[O][0-9]{6,7})\b/i);if(epicM)f.epicNo=epicM[1].toUpperCase().replace(/([A-Z]{3})O/,'$10');f.electorName=matchEngField(fe,[/elector[''s]*\s*name\s*[:\-]?\s*/i,/voters?\s*name\s*[:\-]?\s*/i,/name\s*of\s*elector\s*[:\-]?\s*/i,/electors?\s+name\s*[:\-]?\s*/i,/elector\s+s\s+name\s*[:\-]?\s*/i,/\d+\s+name\s*[:\-]\s*/i,/^name\s*[:\-]\s*/i]);if(!f.electorName)f.electorName=scanForName(fe,f.epicNo);f.fatherName=matchEngField(fe,[/father[''s]*\s*name\s*[:\-]?\s*/i,/husband[''s]*\s*name\s*[:\-]?\s*/i,/father\s+s\s+name\s*[:\-]?\s*/i,/fathers?\s+name\s*[:\-]?\s*/i,/relation\s*[:\-]?\s*/i]);if(!f.fatherName)f.fatherName=scanForName(fe,f.epicNo,f.electorName);const sexM=fe.match(/\bsex\s*[:\-]\s*(male|female|m\b|f\b)/i);if(sexM){const s=sexM[1].toLowerCase();f.sex=(s==='m'||s==='male')?'Male':'Female';}f.electorNameKan=kanField(fk,[/ಮತದಾರರ\s*ಹೆಸರು\s*[:\-]?/,/ಮತದಾರ\s*ಹೆಸರ\s*[:\-]?/]);f.fatherNameKan=kanField(fk,[/ತಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,/ತಂದೆ\s*[/]\s*ಗಂಡನ\s*ಹೆಸರು\s*[:\-]?/,/ತಂದೆ\s*ಹೆಸರ\s*[:\-]?/,/ತಂದೆ\s*ಹೆಸರು\s*[:\-]?/,/ಪತಿಯ\s*ಹೆಸರು\s*[:\-]?/,/ಗಂಡನ\s*ಹೆಸರು\s*[:\-]?/,/ಕಂದೆಯ\s*ಹೆಸರು\s*[:\-]?/,/ಪತಿ\s*ಹೆಸರ\s*[:\-]?/]);if(f.electorNameKan&&!f.fatherNameKan){const noiseRe2=/ಸರ್ಕಾರ|ಯೋಜನ|ಚುನಾ|ಭಾರತ|ಆಯೋಗ|ಗುರುತಿನ|ಚೀಟಿ|ಪಟ್ಟಿ|ಮಾಹಿತಿ|ಮತದಾರ|ಸಂಖ್ಯೆ|ವ್ಯಾಪ್ತಿ/;const kanLines=fk.split('\n').map(l=>l.trim()).filter(Boolean);let foundElector=false;for(const ln of kanLines){const cl=ln.replace(/[\u200B-\u200D\u200C\uFEFF]/g,'');const kanCount=(cl.match(/[\u0C80-\u0CFF]/g)||[]).length;if(kanCount<3||noiseRe2.test(cl))continue;const toks=cl.split(/\s+/);const kept=[];for(const t of toks){const chars=[...t];const kc=chars.filter(ch=>ch>='\u0C80'&&ch<='\u0CFF').length;if(kc>=2&&kc/chars.length>0.5)kept.push(t);else break;}const name=kept.join(' ').trim();if(!name||name.length<3)continue;if(name===f.electorNameKan){foundElector=true;continue;}if(foundElector){f.fatherNameKan=name;break;}}}if(be&&be.trim().length>20){const addrM=be.match(/address\s*[:\-]\s*([^\n]{5,100})/i);if(addrM)f.addr=clean(addrM[1]);const talukM=be.match(/taluk\s*[:\-]\s*([A-Za-z ()\-]{3,50})/i);const distM=be.match(/district\s*[:\-]\s*([A-Za-z ]{3,40})/i);const pts=[];if(f.addr)pts.push(f.addr);if(talukM)pts.push(clean(talukM[1])+' Taluk');if(distM)pts.push(clean(distM[1])+' District');if(pts.length)f.addr=pts.join(', ');const partLabelM=be.match(/part\s*no\.?\s*[:\-]\s*(\d{1,4})/i);const serialLabelM=be.match(/serial\s*no\.?\s*[:\-]\s*(\d{1,4})/i)||be.match(/sl\.?\s*no\.?\s*[:\-]\s*(\d{1,4})/i);if(partLabelM)f.part=partLabelM[1];if(serialLabelM)f.serial=serialLabelM[1];if(!f.part&&!f.serial){const tail=be.slice(-60);const slM=tail.match(/\b(\d{1,4})\s*\/\s*(\d{1,4})\s*$/);if(slM){f.serial=slM[1];f.part=slM[2];}}}return f;}
+function scanForName(text,epicNo,alreadyFound){const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);const skipRe=/\b(election|commission|india|government|voter|elector|father|husband|sex|address|taluk|district|house|name|male|female|photo|identity|card|date|age|serial|part|no\.?)\b/i;const results=[];for(const ln of lines){if(epicNo&&ln.includes(epicNo))continue;if(skipRe.test(ln))continue;const cleaned=ln.replace(/^[^A-Za-z]+/,'').replace(/[^A-Za-z\s]+$/,'').trim();if(!cleaned)continue;const m=cleaned.match(/^([A-Za-z]+(?:\s+[A-Za-z]+){0,4})$/);if(!m)continue;const candidate=m[1].trim();const scanWords=candidate.split(/\s+/);if(!scanWords.every(w=>/^[A-Z]/.test(w)))continue;if(alreadyFound&&candidate.toLowerCase()===alreadyFound.toLowerCase())continue;if(candidate.split(/\s+/).length<2)continue;results.push(candidate);}return results[0]?clean(results[0]):'';}
+function matchEngField(text,labelPatterns){const norm=s=>s.replace(/[\u2018\u2019\u201A\u201B\u2032\u0060]/g,"'").replace(/[\u201C\u201D\u201E]/g,'"');const raw=norm(text);const lines=raw.split('\n').map(l=>l.trim()).filter(Boolean);function extractName(s){if(!s)return'';s=s.replace(/^[^A-Za-z]+/,'').trim();if(!s)return'';const allWords=s.split(/\s+/);const nameWords=[];for(const w of allWords){if(/^[A-Za-z]+$/.test(w))nameWords.push(w);else break;}if(nameWords.length<1)return'';const candidate=nameWords.join(' ');if(candidate.length<3)return'';if(!nameWords.every(w=>/^[A-Z]/.test(w)))return'';const lower=candidate.toLowerCase();if(/^(male|female|india|photo|card|date|age|sex|election|commission|identity)$/.test(lower))return'';return candidate;}for(const re of labelPatterns){for(let i=0;i<lines.length;i++){if(!re.test(lines[i]))continue;const after=lines[i].replace(re,'').trim();const n1=extractName(after);if(n1)return clean(n1);for(let d=1;d<=3;d++){if(i+d<lines.length){const n=extractName(lines[i+d]);if(n)return clean(n);}}}for(let i=0;i<lines.length-1;i++){const joined=lines[i]+' '+lines[i+1];if(!re.test(joined))continue;const after=joined.replace(re,'').trim();const n=extractName(after);if(n)return clean(n);}}return'';}
+function kanField(kanText,labelPatterns){const lines=kanText.split('\n').map(l=>l.trim()).filter(Boolean);function kanOnly(s){s=s.replace(/[\u200B-\u200D\u200C\uFEFF\u00AD]/g,'');const tokens=s.split(/\s+/);const kept=[];for(const tok of tokens){if(!tok)continue;const chars=[...tok];const kanCount=chars.filter(ch=>ch>='\u0C80'&&ch<='\u0CFF').length;if(kanCount>=2&&kanCount/chars.length>0.5){kept.push(tok);}else{break;}}return kept.join(' ').trim();}const noiseRe=/ಸರ್ಕಾರ|ಯೋಜನ|ಚುನಾ|ಭಾರತ|ಆಯೋಗ|ಗುರುತಿನ|ಚೀಟಿ|ಪಟ್ಟಿ|ಮಾಹಿತಿ|ವ್ಯಾಪ್ತಿ/;for(const re of labelPatterns){for(let i=0;i<lines.length;i++){if(!re.test(lines[i]))continue;const sameLine=lines[i].replace(re,'').replace(/^[\s:|–\-]+/,'').trim();let cand='';if(sameLine&&/[\u0C80-\u0CFF]{2,}/.test(sameLine)){cand=sameLine;}else{for(let d=1;d<=3;d++){if(i+d>=lines.length)break;const nx=lines[i+d].trim();if(/:/.test(nx.slice(0,20)))continue;if(/[\u0C80-\u0CFF]{3,}/.test(nx)){cand=nx;break;}}}if(!cand)continue;cand=cand.replace(/^[\s\d|.:–\-]+/,'').trim();cand=kanOnly(cand);if(!cand||noiseRe.test(cand))continue;if((cand.match(/[\u0C80-\u0CFF]/g)||[]).length>=3)return cand;}}return'';}
+function renderIdFields(f,raw){const rows=[{k:"Elector's Name",v:f.electorName,copy:true},{k:"Elector's Name (Kannada)",v:f.electorNameKan,copy:true,h:!f.electorNameKan},{k:"Father's Name",v:f.fatherName,copy:true},{k:"Father's Name (Kannada)",v:f.fatherNameKan,copy:true,h:!f.fatherNameKan},{k:"Sex",v:f.sex,h:!f.sex},{k:"EPIC No.",v:f.epicNo,copy:true},{k:"Address",v:f.addr,copy:true,w:true,h:!f.addr},{k:"Part No.",v:f.part,h:!f.part},{k:"Serial No.",v:f.serial,h:!f.serial}].filter(r=>!r.h);document.getElementById('id-fields').innerHTML=rows.map(r=>`<div class="field-item${r.w?' w2':''}"><div class="field-k">${r.k}</div><div class="field-v${r.v?'':' nil'}">${r.v||'Not found'}</div>${r.copy&&r.v?`<button class="copy-btn" data-val="${r.v.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}" onclick="copyField(this)" title="Copy">Copy</button>`:''}</div>`).join('');document.getElementById('id-raw').textContent=raw;document.getElementById('id-out').style.display='block';document.getElementById('id-out').scrollIntoView({behavior:'smooth',block:'start'});}
+function copyField(btn){const text=btn.dataset.val||'';if(!text)return;navigator.clipboard.writeText(text).then(()=>{btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1800);}).catch(()=>{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1800);});}
+async function scanPdf(){if(!G.pdfFile){alert('Please choose a PDF file first.');return;}const btn=document.getElementById('pdf-btn-go');btn.disabled=true;btn.innerHTML='<span class="spin"></span>Processing…';document.getElementById('pdf-prog').classList.add('on');G.entries=[];try{const buf=await G.pdfFile.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;const total=pdf.numPages;setPb('pdf-bar','pdf-txt',2,`Checking PDF format (${total} pages)…`);let nativeCount=0,kanTotal=0,matraCount=0;for(let pn=1;pn<=Math.min(5,total);pn++){const pg=await pdf.getPage(pn);const tc=await pg.getTextContent();const items=tc.items.filter(i=>i.str&&i.str.trim().length>1);nativeCount+=items.length;for(const item of items){for(const ch of(item.str||'')){const cp=ch.codePointAt(0);if(cp>=0x0C80&&cp<=0x0CFF)kanTotal++;if(cp>=0x0CBE&&cp<=0x0CCD)matraCount++;}}}const matraRatio=kanTotal>20?matraCount/kanTotal:0;const hasNative=nativeCount>30&&matraRatio>0.05;if(hasNative){setPb('pdf-bar','pdf-txt',5,'Extracting text…');const pageP=Array.from({length:total},(_,i)=>pdf.getPage(i+1).then(pg=>pg.getTextContent().then(tc=>({pn:i+1,tc}))));let done=0;const allData=[];for(let i=0;i<pageP.length;i+=10){const batch=await Promise.all(pageP.slice(i,i+10));allData.push(...batch);done=allData.length;setPb('pdf-bar','pdf-txt',5+Math.round(done/total*80),`Extracted ${done}/${total} pages…`);}setPb('pdf-bar','pdf-txt',88,'Parsing entries…');for(const{pn,tc}of allData.sort((a,b)=>a.pn-b.pn))G.entries.push(...parseNativePage(tc,pn));}else{setPb('pdf-bar','pdf-txt',3,'Loading OCR engine…');const T=await getTess();setPb('pdf-bar','pdf-txt',5,`Starting OCR on ${total} pages…`);const N=4;const workers=await Promise.all(Array.from({length:N},()=>T.createWorker(['kan','eng'],1)));const canvases=[];for(let pn=1;pn<=total;pn++){const pg=await pdf.getPage(pn);const vp=pg.getViewport({scale:1.3});const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;const blob=await new Promise(res=>cv.toBlob(res,'image/jpeg',0.85));canvases.push({pn,url:URL.createObjectURL(blob)});if(pn%5===0)setPb('pdf-bar','pdf-txt',8+Math.round(pn/total*22),`Rendered ${pn}/${total}…`);}setPb('pdf-bar','pdf-txt',32,'Running OCR…');let doneP=0;const chunks=Array.from({length:N},()=>[]);canvases.forEach((c,i)=>chunks[i%N].push(c));async function ocrChunk(w,pages){const res=[];for(const{pn,url}of pages){const{data:{text}}=await w.recognize(url);URL.revokeObjectURL(url);res.push({pn,text});doneP++;setPb('pdf-bar','pdf-txt',32+Math.round(doneP/total*62),`OCR: ${doneP}/${total} pages…`);}return res;}const allR=(await Promise.all(workers.map((w,i)=>ocrChunk(w,chunks[i])))).flat().sort((a,b)=>a.pn-b.pn);await Promise.all(workers.map(w=>w.terminate()));setPb('pdf-bar','pdf-txt',96,'Parsing voter entries…');for(const{pn,text}of allR)G.entries.push(...parseOcrPage(text,pn));}const byName=new Map();for(const e of G.entries){const key=(e.nameKan||e.name||'?')+'|'+e.pageNum;if(!byName.has(key)){byName.set(key,e);}else{const existing=byName.get(key);const newWins=(String(e.serial||'').length>String(existing.serial||'').length)||(String(e.serial||'').length===String(existing.serial||'').length&&e.relationType&&!existing.relationType);if(newWins)byName.set(key,e);}}const bySerial=new Map();for(const e of[...byName.values()]){if(!e.serial){bySerial.set(Math.random(),e);continue;}const key2=e.serial+'|'+e.pageNum+'|'+(e.partNo||'');if(!bySerial.has(key2)){bySerial.set(key2,e);}else{const ex=bySerial.get(key2);const newWins=(e.relationType&&!ex.relationType)||(!e.relationType===!ex.relationType&&e.nameKan.length<ex.nameKan.length);if(newWins)bySerial.set(key2,e);}}G.entries=[...bySerial.values()];G.entries.sort((a,b)=>(a.pageNum-b.pageNum)||((+a.serial||0)-(+b.serial||0)));setPb('pdf-bar','pdf-txt',100,`Done — ${G.entries.length} voter entries found across ${total} pages`);document.getElementById('pdf-not-ready').style.display='none';const rb=document.getElementById('pdf-ready-banner');rb.textContent=`✓ ${G.entries.length} voter entries loaded from ${total} pages. Enter a name to search.`;rb.style.display='block';document.getElementById('s-name').disabled=false;document.getElementById('s-rel').disabled=false;document.getElementById('search-btn').disabled=false;document.getElementById('browse-box').style.display='block';document.getElementById('search-box').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){console.error(e);alert('PDF error: '+e.message);}finally{btn.disabled=false;btn.innerHTML='Process PDF';}}
+function parseNativePage(tc,pageNum){const items=tc.items.filter(i=>i.str&&i.str.trim()).map(i=>({text:i.str.trim(),x:Math.round(i.transform[4]),y:Math.round(i.transform[5])}));if(!items.length)return[];const sorted=[...items].sort((a,b)=>b.y-a.y);const rows=[];for(const item of sorted){const row=rows.find(r=>Math.abs(r[0].y-item.y)<=4);if(row)row.push(item);else rows.push([item]);}const lines=rows.map(r=>r.sort((a,b)=>a.x-b.x).map(i=>i.text).join(' ').trim()).filter(Boolean);let partNo='';for(const ln of lines.slice(0,15)){const pm=ln.match(/ಭಾಗದ?\s*ಸಂಖ್ಯೆ\s*[:\-]?\s*(\d+)/)||ln.match(/ಭಾಗ\s*[:\-#]\s*(\d+)/i);if(pm){partNo=pm[1];break;}}return parseOcrPage(lines.join('\n'),pageNum,partNo);}
+function parseOcrPage(text,pageNum,knownPart){const rawLines=text.split('\n').map(l=>l.trim()).filter(Boolean);let partNo=knownPart||'';if(!partNo){for(const ln of rawLines.slice(0,30)){const pm=ln.match(/ಭಾಗದ?\s*ಸಂಖ್ಯೆ\s*[:\-]?\s*(\d+)/)||ln.match(/ಭಾಗ\s*[:\-#]\s*(\d+)/i)||ln.match(/part\s*[:\-#]\s*(\d+)/i)||ln.match(/\bpart\b.*?(\d{1,4})/i);if(pm){partNo=pm[1];break;}}}function cleanLn(ln){return ln.replace(/\|/g,' ').replace(/\$(\d)/g,'$1').replace(/^\$\s*/,'').replace(/([\u0C80-\u0CFF])\./g,'$1').replace(/\u0CCD\u0CCD/g,'\u0CCD').replace(/[*#@!]+/g,' ').replace(/\s+/g,' ').trim();}function canon(t){return t.replace(/[.\-\s\u200B-\u200D\u200C\uFEFF]/g,'');}const _n=s=>(s||'').replace(/[\u200B-\u200D\u200C\uFEFF\u00AD]/g,'').normalize('NFC').normalize('NFKC');const _nk=s=>s.normalize('NFC').normalize('NFKC');const REL=new Set(['ತಂದೆ','ಗಂಡ','ತಾಯಿ','ಇತರೆ','ಪತಿ','ಸ್ವಂತ','ಮಗ','ಮಗಳು','ಪತ್ನಿ'].map(_nk));const SEX=new Set(['ಗಂ','ಹೆಂ'].map(_nk));const SKIP=/ಕ್ರಮ\s*ಸಂಖ್ಯೆ|ಮನೆ.*ಫ್ಲಾಟ್|ಮತದಾರರ\s*ಹೆಸರು|ಭಾಗದ?\s*ಸಂಖ್ಯೆ|ರಾಜ್ಯದ\s*ಕೋಡ್|ವಿಧಾನ\s*ಸಭಾ|ಭಾರತ\s*ಚುನಾ|ಸಂಬಂಧ|ಮ\.ಗು\.ಚೀ|ವಿಭಾಗ\s*[:\-]|ಸಂಖ್ಯೆ\s*ಮತ್ತು|ಮತದಾರರ\s*ಪಟ್ಟಿ|ವಿವರಗಳು|ಮತಗಟ್ಟೆ|ಹದ್ದುಬಸ್ತ್|ಕ್ಷೇತ್ರದ|ಮತದಾರರ\s*ಸಂಖ|ಮುಖ್ಯರಸ್ತೆ|ಮತಕ್ಷೇತ್ರ|ವಿಧಾನಸಭಾ|ಕಛೇರಿ/;const HEADER_NAME=/\d|ಮತ್ತು|ರಸ್ತೆ|ವಿವರ|ಸಂಖ್ಯೆ|ಸಂಖೆ|ಹದ್ದು|ಮತಗಟ್ಟೆ|ಕ್ಷೇತ್ರ|ಮನೆ\s*ಸಂ|ಹಳ್ಳಿ|ನಗರ|ವಾರ್ಡ್|ಮಂಡಳಿ|ಮತದಾರ|[,:]/;const rows=[];let pending='';for(const raw of rawLines){if(SKIP.test(raw))continue;const ln=cleanLn(raw);if(!ln||ln.length<2)continue;const toks=ln.split(/\s+/).filter(Boolean);if(!toks.length)continue;const firstCanon=canon(toks[0]);const startsWithDigit=/^\d+$/.test(firstCanon);const startsWithRel=REL.has(firstCanon);let relPos=-1;for(let i=0;i<toks.length;i++){if(REL.has(canon(toks[i]))){relPos=i;break;}}const isContinuation=startsWithRel||(relPos>=0&&relPos<=1&&!startsWithDigit);if(isContinuation&&pending){pending=pending+' '+ln;}else{if(pending)rows.push(pending);pending=ln;}}if(pending)rows.push(pending);const entries=[];for(const row of rows){const tokens=row.split(/\s+/).filter(Boolean);let relIdx=-1;for(let t=0;t<tokens.length;t++){if(REL.has(_n(canon(tokens[t])))){relIdx=t;break;}}let sexIdx=-1;const sexSearchFrom=relIdx>=0?relIdx+1:0;for(let t=sexSearchFrom;t<tokens.length;t++){if(SEX.has(_n(canon(tokens[t])))){sexIdx=t;break;}}const nameCutoff=relIdx>=0?relIdx:(sexIdx>=0?sexIdx:tokens.length);const pre=tokens.slice(0,nameCutoff);let serial='',houseNo='',ps=0;if(pre.length>0&&/^\d+$/.test(canon(pre[0]))){serial=canon(pre[0]);ps++;}if(pre.length>ps&&/^\d+$/.test(canon(pre[ps]))){houseNo=canon(pre[ps]);ps++;}const nameKanRaw=pre.slice(ps).map(t=>canon(t).replace(/[*|#@%]/g,'')).filter(t=>/[\u0C80-\u0CFF]/.test(t)&&t.length>0).join(' ').trim();if(!nameKanRaw||nameKanRaw.length<2)continue;if(HEADER_NAME.test(nameKanRaw))continue;if(/[0-9\/\\]/.test(nameKanRaw))continue;if(/[A-Za-z]{2,}/.test(nameKanRaw))continue;let relativeKanRaw='',relationType='';if(relIdx>=0){relationType=canon(tokens[relIdx]);const relEnd=sexIdx>=0?sexIdx:tokens.length;relativeKanRaw=tokens.slice(relIdx+1,relEnd).map(t=>canon(t).replace(/[*|#@%]/g,'')).filter(t=>/[\u0C80-\u0CFF]/.test(t)&&t.length>0).join(' ').trim();}let sex='',age='',epicNo='';if(sexIdx>=0){sex=canon(tokens[sexIdx])==='ಗಂ'?'ಗಂ (Male)':'ಹೆಂ (Female)';for(const t of tokens.slice(sexIdx+1)){const ct=canon(t);if(/^\d{1,3}$/.test(ct)&&parseInt(ct)>0&&parseInt(ct)<120&&!age)age=ct;else if(/^[A-Z]{3}\d{7}$/.test(ct))epicNo=ct;}}entries.push({serial,houseNo,partNo,pageNum,nameKan:_n(nameKanRaw),name:'',relativeKan:_n(relativeKanRaw),relative:'',relationType,sex,age,epicNo,address:houseNo?'House No. '+houseNo:''});}const capturedSerials=new Set(entries.map(e=>e.serial).filter(Boolean));const fallbackEntries=parseOcrFallback(text,partNo,pageNum);for(const fe of fallbackEntries){if(!fe.serial||!capturedSerials.has(fe.serial)){entries.push(fe);}}return entries;}
+function parseOcrFallback(text,partNo,pageNum){const entries=[];const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);const _n=s=>(s||'').replace(/[\u200B-\u200D\u200C\uFEFF]/g,'').normalize('NFC').normalize('NFKC');const HEADER_NOISE=/ಕ್ಷೇತ್ರ|ಮತಗಟ್ಟೆ|ಹದ್ದು|ಮುಖ್ಯರಸ್ತೆ|ಸಂಖ|ವಿವರ|ಮತ್ತು|[,:]/;let i=0;while(i<lines.length){const ln=lines[i];const ser=ln.match(/^(\d{2,4})[.)]\s*(.*)$/)||ln.match(/^(\d{2,4})\s*$/);if(ser&&parseInt(ser[1])>=1&&parseInt(ser[1])<=9999){const serial=ser[1];const block=ser[2]?[ser[2].trim()]:[];let j=i+1;while(j<lines.length&&j<i+12){const nx=lines[j];if(/^(\d{1,4})[.)]/.test(nx)||/^(\d{1,4})\s*$/.test(nx))break;if(/ಚುನಾ|ಭಾರತ\s*ಸರ್ಕಾರ/i.test(nx))break;block.push(nx);j++;}let nameKan='',relativeKan='',sex='',age='',relationType='';for(const b of block){const ct=b.replace(/[\u200B-\u200D\u200C\uFEFF\u0CCD\u0CCD]/g,m=>m==='\u0CCD\u0CCD'?'\u0CCD':m);const sm=ct.match(/\b(ಗಂ|ಹೆಂ)\b/);const rm=ct.match(/\b(ತಂದೆ|ಗಂಡ|ತಾಯಿ|ಇತರೆ|ಪತಿ|ಪತ್ನಿ)\b/);const am=ct.match(/\b(\d{2,3})\b/);if(am&&parseInt(am[1])>0&&parseInt(am[1])<120&&!age)age=am[1];if(sm)sex=sm[1]==='ಗಂ'?'ಗಂ (Male)':'ಹೆಂ (Female)';if(!nameKan&&/[\u0C80-\u0CFF]{3,}/.test(ct)&&!rm&&!sm){if(!HEADER_NOISE.test(ct))nameKan=ct.replace(/[*#@!]/g,'').trim();}else if(rm&&/[\u0C80-\u0CFF]{3,}/.test(ct)){relationType=rm[1];relativeKan=ct.replace(rm[0],'').replace(/[*#@!]/g,'').trim();}}const hasGarbage=/[0-9\/]/.test(nameKan)||/[A-Za-z]{2,}/.test(nameKan);if(nameKan&&!HEADER_NOISE.test(nameKan)&&!hasGarbage){entries.push({serial,partNo,pageNum,nameKan:_n(nameKan),name:'',relativeKan:_n(relativeKan),relative:'',sex,age,relationType,address:'',houseNo:'',epicNo:''});}i=j;continue;}i++;}return entries;}
+function nfc(s){return(s||'').normalize('NFC').replace(/[\u200B-\u200D\uFEFF\u200C]/g,'').trim();}
+function cleanTok(t){return t.replace(/[\u200B-\u200D\u200C\uFEFF\u00AD]/g,'');}
+function wordSim(qwRaw,swRaw){function norm(x){return cleanTok((x||'').normalize('NFC')).normalize('NFKC');}const q=norm(qwRaw);const s=norm(swRaw);if(!q||!s)return 0;if(s===q)return 100;if(s.startsWith(q)||q.startsWith(s))return 85;if(q.length>=3&&s.includes(q))return 70;const minLen=Math.min(q.length,s.length);const lead=Math.max(3,Math.ceil(minLen*2/3));if(minLen>=4&&s.slice(0,lead)===q.slice(0,lead))return 55;if(q.length>=4&&s.length>=4&&s.slice(-3)===q.slice(-3))return 40;return 0;}
+function wordScore(queryWords,storedText){if(!queryWords.length)return 100;const stored=nfc(storedText);if(!stored)return 0;const sWords=stored.split(/\s+/).filter(Boolean);let total=0;for(const qw of queryWords){if(!qw)continue;let best=0;for(const sw of sWords){best=Math.max(best,wordSim(qw,sw));if(best===100)break;}if(best===0)return 0;total+=best;}return Math.round(total/queryWords.length);}
+function doSearch(){const rawName=document.getElementById('s-name').value.trim();const rawRel=document.getElementById('s-rel').value.trim();if(!rawName&&!rawRel){alert('Enter at least a name to search.');return;}if(!G.entries.length){alert('Please process a PDF first.');return;}const qName=nfc(rawName).split(/\s+/).filter(Boolean);const qRel=nfc(rawRel).split(/\s+/).filter(Boolean);const scored=[];for(const e of G.entries){const ns=Math.max(wordScore(qName,e.nameKan),wordScore(qName,e.name),wordScore([qName.join('')],e.nameKan.replace(/\s+/g,'')));const rs=qRel.length?Math.max(wordScore(qRel,e.relativeKan),wordScore(qRel,e.relative)):100;if(qName.length&&ns===0)continue;if(qRel.length&&rs===0)continue;const combined=Math.round(ns*0.7+rs*0.3);if(combined>0)scored.push({item:e,score:combined});}scored.sort((a,b)=>b.score-a.score||(+a.item.serial||0)-(+b.item.serial||0));showResults(scored.slice(0,15),nfc(rawName)||nfc(rawRel));}
+function showResults(list,query){const wrap=document.getElementById('roll-out');const cards=document.getElementById('roll-cards');wrap.style.display='block';if(!list.length){cards.innerHTML=`<div class="empty"><div class="e-ico">🔍</div><p>No matches found for "<b>${query}</b>".<br>Check spelling or try fewer words.</p></div>`;wrap.scrollIntoView({behavior:'smooth',block:'start'});return;}const relMap={ತಂದೆ:'Father',ಗಂಡ:'Husband',ತಾಯಿ:'Mother',ಪತಿ:'Husband',ಇತರೆ:'Other',ಸ್ವಂತ:'Self',ಮಗ:'Son',ಮಗಳು:'Daughter'};cards.innerHTML=list.map((r,idx)=>{const e=r.item;const pct=r.score;const bc=pct>=80?'hi':pct>=60?'mid':'lo';const nm=e.nameKan||e.name||'—';const rel=e.relativeKan||e.relative||'';const relLbl=relMap[e.relationType]||e.relationType||'';return`<div class="result-item${idx===0?' top':''}"> ${idx===0?'<div class="best-pin">Best Match</div>':''}<div class="result-top-row"><div style="min-width:0;flex:1"><div class="result-name">${nm}</div>${rel?`<div class="result-rel" style="margin-top:6px">${relLbl?relLbl+': ':''}<b>${rel}</b></div>`:''}</div><span class="badge ${bc}">${pct}%</span></div><div class="result-tags">${e.serial?`<div class="tag hl">ಕ್ರಮ ಸಂ. <b>${e.serial}</b></div>`:''}${e.houseNo?`<div class="tag">ಮನೆ <b>${e.houseNo}</b></div>`:''}${e.partNo?`<div class="tag hl">ಭಾಗ <b>${e.partNo}</b></div>`:''}<div class="tag">ಪುಟ <b>${e.pageNum}</b></div>${e.age?`<div class="tag">ವಯಸ್ಸು <b>${e.age}</b></div>`:''}${e.sex?`<div class="tag">${e.sex}</div>`:''}${e.epicNo?`<div class="tag">EPIC <b>${e.epicNo}</b></div>`:''}</div></div>`;}).join('');wrap.scrollIntoView({behavior:'smooth',block:'start'});}
+function doBrowse(){const partQ=document.getElementById('br-part').value.trim();const serialQ=document.getElementById('br-serial').value.trim();if(!partQ&&!serialQ){alert('Enter a Part No. or Serial No. to browse.');return;}let matches=G.entries.filter(e=>{const serialOk=!serialQ||String(e.serial)===serialQ||String(e.serial).replace(/^0+/,'')===serialQ.replace(/^0+/,'');if(!serialOk)return false;if(!partQ)return true;if(!e.partNo)return true;return String(e.partNo)===partQ||String(e.partNo).replace(/^0+/,'')===partQ.replace(/^0+/,'');});matches.sort((a,b)=>(+a.serial||0)-(+b.serial||0));if(matches.length>30)matches=matches.slice(0,30);const relMap={ತಂದೆ:'Father',ಗಂಡ:'Husband',ತಾಯಿ:'Mother',ಪತಿ:'Husband',ಇತರೆ:'Other',ಸ್ವಂತ:'Self',ಮಗ:'Son',ಮಗಳು:'Daughter'};const cards=document.getElementById('browse-cards');if(!matches.length){cards.innerHTML='<p style="color:#94a3b8;font-size:13px">No entries found. Try a different part or serial number.</p>';return;}cards.innerHTML=matches.map(e=>{const rel=e.relativeKan||e.relative||'';const relLbl=relMap[e.relationType]||e.relationType||'';return`<div class="result-item" style="margin-bottom:8px"><div class="result-top-row"><div style="min-width:0;flex:1"><div class="result-name" style="font-size:16px">${e.nameKan||e.name||'—'}</div>${rel?`<div class="result-rel" style="margin-top:4px">${relLbl?relLbl+': ':''}<b>${rel}</b></div>`:''}</div></div><div class="result-tags" style="margin-top:8px">${e.serial?`<div class="tag hl">ಕ್ರಮ ಸಂ. <b>${e.serial}</b></div>`:''}${e.houseNo?`<div class="tag">ಮನೆ <b>${e.houseNo}</b></div>`:''}${e.partNo?`<div class="tag hl">ಭಾಗ <b>${e.partNo}</b></div>`:''}<div class="tag">ಪುಟ <b>${e.pageNum}</b></div>${e.age?`<div class="tag">ವಯಸ್ಸು <b>${e.age}</b></div>`:''}${e.sex?`<div class="tag">${e.sex}</div>`:''}</div></div>`;}).join('');document.getElementById('browse-box').scrollIntoView({behavior:'smooth',block:'start'});}
+function showDebugEntries(){const el=document.getElementById('debug-entries');if(!G.entries.length){el.textContent='No entries loaded yet.';return;}el.innerHTML=G.entries.slice(0,10).map((e,i)=>`<div style="border-bottom:1px solid #e2e8f0;padding:4px 0">#${i+1} serial=<b>${e.serial||'?'}</b> part=<b>${e.partNo||'(empty)'}</b> page=<b>${e.pageNum}</b><br>name=<b>${e.nameKan||'—'}</b><br>relative=<b>${e.relativeKan||'—'}</b> (${e.relationType||'?'})</div>`).join('');}
 wireFile('fi-front','front-btn','front-lbl','front-thumb',file=>{G.frontFile=file;document.getElementById('id-btn').disabled=false;});
 wireFile('fi-back','back-btn','back-lbl','back-thumb',file=>{G.backFile=file;});
-wireFile('fi-pdf','pdf-btn','pdf-lbl',null,file=>{
-  if(file.type!=='application/pdf'){alert('Please upload a PDF file.');return;}
-  G.pdfFile=file;document.getElementById('pdf-btn-go').disabled=false;
-});
+wireFile('fi-pdf','pdf-btn','pdf-lbl',null,file=>{if(file.type!=='application/pdf'){alert('Please upload a PDF file.');return;}G.pdfFile=file;document.getElementById('pdf-btn-go').disabled=false;});
 document.getElementById('s-name').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
 document.getElementById('s-rel').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
-
-// Debug: Ctrl+Shift+D dumps first 20 stored entries to console
-document.addEventListener('keydown',e=>{
-  if(e.ctrlKey&&e.shiftKey&&e.key==='D'){
-    console.log('=== G.entries sample (first 20) ===');
-    G.entries.slice(0,20).forEach((e,i)=>console.log(i,JSON.stringify(e)));
-    console.log('Total:',G.entries.length);
-    alert('Check browser console (F12) for stored entries dump.');
-  }
-});
-
-// ── SHARE ────────────────────────────────────────────────────
-function shareApp(){
-  const raw = window.location.href;
-  // Detect sandbox/preview environments where no real URL exists
-  const isSandbox = !raw || raw === 'about:srcdoc' || raw.startsWith('about:') || raw.startsWith('blob:') || raw.includes('srcdoc');
-  const url = isSandbox ? '' : raw;
-  const inp = document.getElementById('share-url');
-  const hint = document.getElementById('share-url-hint');
-  if(isSandbox){
-    inp.value = '';
-    inp.placeholder = 'Paste your hosted URL here…';
-    inp.readOnly = false;
-    inp.focus();
-    hint.style.display = 'block';
-  } else {
-    inp.value = url;
-    inp.readOnly = true;
-    hint.style.display = 'none';
-  }
-  document.getElementById('share-modal').style.display = 'flex';
-}
-function closeShare(){
-  document.getElementById('share-modal').style.display = 'none';
-}
-function copyShareUrl(){
-  const inp = document.getElementById('share-url');
-  const url = inp.value.trim();
-  if(!url){ inp.focus(); return; }
-  const btn = document.getElementById('copy-url-btn');
-  navigator.clipboard.writeText(url).then(()=>{
-    btn.textContent = '✓ Copied!'; btn.style.background = '#16a34a';
-    setTimeout(()=>{ btn.textContent = 'Copy'; btn.style.background = '#2563eb'; }, 2000);
-  }).catch(()=>{
-    inp.select(); document.execCommand('copy');
-    btn.textContent = '✓ Copied!'; btn.style.background = '#16a34a';
-    setTimeout(()=>{ btn.textContent = 'Copy'; btn.style.background = '#2563eb'; }, 2000);
-  });
-}
-function shareWhatsApp(){
-  const url = document.getElementById('share-url').value.trim();
-  if(!url){ document.getElementById('share-url').focus(); return; }
-  const msg = encodeURIComponent('Check out VoterTrace — instantly read your Voter ID card and search Karnataka electoral rolls: ' + url);
-  window.open('https://wa.me/?text='+msg, '_blank');
-}
-function shareTelegram(){
-  const url = encodeURIComponent(document.getElementById('share-url').value.trim()||window.location.href);
-  const msg = encodeURIComponent('VoterTrace — read your Voter ID & search Karnataka electoral rolls');
-  window.open('https://t.me/share/url?url='+url+'&text='+msg, '_blank');
-}
-// Close modal on backdrop click
-document.getElementById('share-modal').addEventListener('click', function(e){
-  if(e.target === this) closeShare();
-});
-
-// ── QR CODES ──────────────────────────────────────────────────
-function makeQR(elementId, url){
-  try{
-    const el=document.getElementById(elementId);
-    if(!el) return;
-    new QRCode(el,{text:url,width:60,height:60,
-      colorDark:'#0f172a',colorLight:'#ffffff',
-      correctLevel:QRCode.CorrectLevel.M});
-  }catch(e){console.warn('QR:',e);}
-}
-setTimeout(()=>{
-  makeQR('qr-android','https://play.google.com/store/apps/details?id=in.gov.eci.app');
-  makeQR('qr-ios','https://apps.apple.com/in/app/ecinet/id6745955212');
-},900);
-
-// ── FAQ ACCORDION ────────────────────────────────────────────
-function toggleFaq(btn){
-  const arrow = btn.querySelector('.faq-arrow');
-  const answer = btn.nextElementSibling;
-  const isOpen = answer.classList.contains('open');
-  // Close all
-  document.querySelectorAll('.faq-a').forEach(a=>a.classList.remove('open'));
-  document.querySelectorAll('.faq-arrow').forEach(a=>a.classList.remove('open'));
-  // Open clicked (if it was closed)
-  if(!isOpen){
-    answer.classList.add('open');
-    arrow.classList.add('open');
-  }
-}
+document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.shiftKey&&e.key==='D'){console.log('=== G.entries sample (first 20) ===');G.entries.slice(0,20).forEach((e,i)=>console.log(i,JSON.stringify(e)));console.log('Total:',G.entries.length);alert('Check browser console (F12) for stored entries dump.');}});
+function shareApp(){const raw=window.location.href;const isSandbox=!raw||raw==='about:srcdoc'||raw.startsWith('about:')||raw.startsWith('blob:')||raw.includes('srcdoc');const url=isSandbox?'':raw;const inp=document.getElementById('share-url');const hint=document.getElementById('share-url-hint');if(isSandbox){inp.value='';inp.placeholder='Paste your hosted URL here…';inp.readOnly=false;inp.focus();hint.style.display='block';}else{inp.value=url;inp.readOnly=true;hint.style.display='none';}document.getElementById('share-modal').style.display='flex';}
+function closeShare(){document.getElementById('share-modal').style.display='none';}
+function copyShareUrl(){const inp=document.getElementById('share-url');const url=inp.value.trim();if(!url){inp.focus();return;}const btn=document.getElementById('copy-url-btn');navigator.clipboard.writeText(url).then(()=>{btn.textContent='✓ Copied!';btn.style.background='#16a34a';setTimeout(()=>{btn.textContent='Copy';btn.style.background='#2563eb';},2000);}).catch(()=>{inp.select();document.execCommand('copy');btn.textContent='✓ Copied!';btn.style.background='#16a34a';setTimeout(()=>{btn.textContent='Copy';btn.style.background='#2563eb';},2000);});}
+function shareWhatsApp(){const url=document.getElementById('share-url').value.trim();if(!url){document.getElementById('share-url').focus();return;}const msg=encodeURIComponent('Check out VoterTrace — instantly read your Voter ID card and search Karnataka electoral rolls: '+url);window.open('https://wa.me/?text='+msg,'_blank');}
+function shareTelegram(){const url=encodeURIComponent(document.getElementById('share-url').value.trim()||window.location.href);const msg=encodeURIComponent('VoterTrace — read your Voter ID & search Karnataka electoral rolls');window.open('https://t.me/share/url?url='+url+'&text='+msg,'_blank');}
+document.getElementById('share-modal').addEventListener('click',function(e){if(e.target===this)closeShare();});
+function makeQR(elementId,url){try{const el=document.getElementById(elementId);if(!el)return;new QRCode(el,{text:url,width:60,height:60,colorDark:'#0f172a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});}catch(e){console.warn('QR:',e);}}
+setTimeout(()=>{makeQR('qr-android','https://play.google.com/store/apps/details?id=in.gov.eci.app');makeQR('qr-ios','https://apps.apple.com/in/app/ecinet/id6745955212');},900);
+function toggleFaq(btn){const arrow=btn.querySelector('.faq-arrow');const answer=btn.nextElementSibling;const isOpen=answer.classList.contains('open');document.querySelectorAll('.faq-a').forEach(a=>a.classList.remove('open'));document.querySelectorAll('.faq-arrow').forEach(a=>a.classList.remove('open'));if(!isOpen){answer.classList.add('open');arrow.classList.add('open');}}
 </script>
 </body>
 </html>
