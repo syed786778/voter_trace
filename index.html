@@ -185,6 +185,16 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
 .qr-wrap canvas,.qr-wrap img{width:60px!important;height:60px!important}
 @media(max-width:600px){.box{padding:18px 16px}.field-v{font-size:14px;padding-right:52px}.field-item{padding:11px 12px}.result-name{font-size:16px}.result-item{padding:14px 16px}.result-tags{gap:5px}.tag{font-size:11px;padding:3px 9px}.sir-hero{padding:20px 18px;border-radius:16px}.sir-hero-title{font-size:21px}}
 
+/* ══ SIR NAV TILES ══ */
+.sir-nav-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px}
+@media(max-width:540px){.sir-nav-grid{grid-template-columns:repeat(2,1fr)}}
+.sir-nav-tile{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:14px 16px;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;cursor:pointer;text-decoration:none;transition:all .2s;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.sir-nav-tile:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.1)}
+.sir-nav-icon{font-size:22px;line-height:1}
+.sir-nav-title{font-size:12.5px;font-weight:700;color:var(--text);line-height:1.3}
+.sir-nav-sub{font-size:11px;color:var(--text3);line-height:1.4;margin-top:1px}
+.sir-nav-arrow{font-size:11px;margin-top:auto;padding-top:6px;font-weight:700}
+
 /* ══ NEW: ACCEPTED DOCUMENTS ══ */
 .docs-intro{font-size:13.5px;color:var(--text2);line-height:1.65;margin-bottom:20px;padding:14px 18px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;display:flex;gap:10px;align-items:flex-start;}
 .docs-intro-icon{font-size:20px;flex-shrink:0;margin-top:1px}
@@ -468,6 +478,53 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
     <div class="sir-hero-sub">A plain-language guide to India's electoral roll revision process — what it is, its history, and how it affects every citizen's right to vote.</div>
   </div>
 
+  <!-- NAV TILES -->
+  <div class="sir-nav-grid">
+
+    <a class="sir-nav-tile" href="#sir-history" onclick="smoothTo('sir-history')" style="border-color:#bfdbfe">
+      <span class="sir-nav-icon">📜</span>
+      <span class="sir-nav-title">History of Electoral Rolls</span>
+      <span class="sir-nav-sub">How India's voter list evolved since 1950</span>
+      <span class="sir-nav-arrow" style="color:#2563eb">↓ Jump</span>
+    </a>
+
+    <a class="sir-nav-tile" href="#sir-schedule" onclick="smoothTo('sir-schedule')" style="border-color:#fde68a">
+      <span class="sir-nav-icon">📅</span>
+      <span class="sir-nav-title">Karnataka SIR 2026 Schedule</span>
+      <span class="sir-nav-sub">Key dates — BLO visits, draft roll, deadlines</span>
+      <span class="sir-nav-arrow" style="color:#d97706">↓ Jump</span>
+    </a>
+
+    <a class="sir-nav-tile" href="#sir-documents" onclick="smoothTo('sir-documents')" style="border-color:#86efac">
+      <span class="sir-nav-icon">📄</span>
+      <span class="sir-nav-title">11 Accepted Documents</span>
+      <span class="sir-nav-sub">What to show the BLO during verification</span>
+      <span class="sir-nav-arrow" style="color:#15803d">↓ Jump</span>
+    </a>
+
+    <a class="sir-nav-tile" href="#sir-bloforms" onclick="smoothTo('sir-bloforms')" style="border-color:#d8b4fe">
+      <span class="sir-nav-icon">✍️</span>
+      <span class="sir-nav-title">How to Fill the BLO Form</span>
+      <span class="sir-nav-sub">Self mapping, progeny, and no-record cases</span>
+      <span class="sir-nav-arrow" style="color:#7c3aed">↓ Jump</span>
+    </a>
+
+    <a class="sir-nav-tile" href="#sir-faq" onclick="smoothTo('sir-faq')" style="border-color:#fdba74">
+      <span class="sir-nav-icon">❓</span>
+      <span class="sir-nav-title">Frequently Asked Questions</span>
+      <span class="sir-nav-sub">Common doubts answered in plain language</span>
+      <span class="sir-nav-arrow" style="color:#c2410c">↓ Jump</span>
+    </a>
+
+    <a class="sir-nav-tile" href="#sir-impact" onclick="smoothTo('sir-impact')" style="border-color:#fda4af">
+      <span class="sir-nav-icon">🗳️</span>
+      <span class="sir-nav-title">How SIR Affects You</span>
+      <span class="sir-nav-sub">Why your name on the roll matters</span>
+      <span class="sir-nav-arrow" style="color:#be123c">↓ Jump</span>
+    </a>
+
+  </div>
+
   <div class="info-grid">
     <div class="info-tile"><div class="info-tile-icon">📋</div><div class="info-tile-title">What is it?</div><div class="info-tile-body">A special drive to update, correct and clean up the voter list — adding eligible new voters, removing deceased or shifted entries, and fixing errors.</div></div>
     <div class="info-tile"><div class="info-tile-icon">📅</div><div class="info-tile-title">When does it happen?</div><div class="info-tile-body">The ECI announces SIR periodically — usually before major elections. A draft list is published, then claims and objections are invited from the public.</div></div>
@@ -475,7 +532,7 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
     <div class="info-tile"><div class="info-tile-icon">🗳️</div><div class="info-tile-title">Why does it matter?</div><div class="info-tile-body">If your name is missing, wrong, or at the wrong polling booth — you cannot vote. SIR is your opportunity to fix that before the rolls are finalised.</div></div>
   </div>
 
-  <div class="box">
+  <div class="box" id="sir-history">
     <div class="box-head">Brief History of Electoral Roll Revision in India</div>
     <div class="sir-timeline">
       <div class="sir-event"><div class="sir-event-year">1950</div><div class="sir-event-text">The Representation of the People Act, 1950 established the legal foundation for preparing and maintaining electoral rolls in India.</div></div>
@@ -488,7 +545,7 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
   </div>
 
   <!-- Karnataka SIR 2026 Schedule -->
-  <div class="box sir-process-wrap">
+  <div class="box sir-process-wrap" id="sir-schedule">
     <div class="sir-process-title">Karnataka SIR 2026 — Official Schedule</div>
     <div class="sir-step"><div class="sir-step-connector"><div class="sir-step-dot" style="background:#4f46e5">1</div><div class="sir-step-line"></div></div><div class="sir-step-body"><div class="sir-step-phase" style="color:#4f46e5">Phase 1</div><div class="sir-step-label">📋 Preparation, Training &amp; Printing</div><div class="sir-step-date">📅 20 June 2026 → 29 June 2026</div></div></div>
     <div class="sir-step"><div class="sir-step-connector"><div class="sir-step-dot" style="background:#0891b2">2</div><div class="sir-step-line"></div></div><div class="sir-step-body"><div class="sir-step-phase" style="color:#0891b2">Phase 2</div><div class="sir-step-label">🏠 House to House Visits by BLOs</div><div class="sir-step-date">📅 30 June 2026 → 29 July 2026</div><div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">Your Booth Level Officer will visit your home to verify residents. Make sure someone is present to respond.</div></div></div>
@@ -504,7 +561,7 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
        NEW SECTION A: 11 ACCEPTED DOCUMENTS
   ═══════════════════════════════════ -->
   <div class="box">
-    <div class="box-head">11 Documents Accepted During SIR — Karnataka 2026</div>
+    <div class="box-head" id="sir-documents">11 Documents Accepted During SIR — Karnataka 2026</div>
     <div class="docs-intro">
       <span class="docs-intro-icon">📌</span>
       <div>When the BLO visits your home or when you file a claim, you must show <strong>at least one document</strong> from the ECI-approved list below. Each document serves as identity, age, address proof — or a combination. <strong>Only one is needed</strong> — bring whichever covers your purpose.</div>
@@ -600,6 +657,7 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
   <!-- ═══════════════════════════════════
        SECTION B: SIR 2026 BLO FIELD FORMS (ACTUAL FORMAT)
   ═══════════════════════════════════ -->
+  <div id="sir-bloforms" style="scroll-margin-top:70px"></div>
 
 
     <!-- HOW TO FILL YOUR BLO FORM -->
@@ -720,7 +778,7 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
     </div>
   </div>
   <div class="box">
-    <div class="box-head">Frequently Asked Questions</div>
+    <div class="box-head" id="sir-faq">Frequently Asked Questions</div>
     <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">How do I know if my name is on the electoral roll?<span class="faq-arrow">▼</span></button><div class="faq-a">Search your name on <strong>electoralsearch.eci.gov.in</strong> or use the Electoral Roll Search tab in this tool to look through the PDF you have. You can also ask your local BLO who visits your area during SIR drives.</div></div>
     <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">My name was removed — what do I do?<span class="faq-arrow">▼</span></button><div class="faq-a">File <strong>Form 6</strong> on voters.eci.gov.in to re-enrol. If you believe it was removed in error, you can also file an objection during the claims period of a SIR drive. Contact your local ERO office with your Aadhaar and proof of residence.</div></div>
     <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">What is the difference between Summary Revision and SIR?<span class="faq-arrow">▼</span></button><div class="faq-a"><strong>Summary Revision</strong> is a desk-based update using existing records — BLOs do not visit every home. It is faster and used for routine quarterly updates.<br><br><strong>Special Intensive Revision (SIR)</strong> involves door-to-door visits by BLOs to physically verify voters at every household. It is more thorough and ordered by the ECI before major election cycles.</div></div>
@@ -730,7 +788,7 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
   </div>
 
   <div class="box">
-    <div class="box-head">How SIR Directly Affects You</div>
+    <div class="box-head" id="sir-impact">How SIR Directly Affects You</div>
     <div style="display:flex;flex-direction:column;gap:12px">
       <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#f8fafc;border-radius:10px;border:1px solid #f1f5f9"><span style="font-size:22px;flex-shrink:0">✅</span><div><div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:3px">Your vote is protected</div><div style="font-size:13px;color:#475569;line-height:1.55">A clean, accurate roll means your vote can only be cast by you. SIR removes ghost entries and duplicates that could dilute the integrity of elections.</div></div></div>
       <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#f8fafc;border-radius:10px;border:1px solid #f1f5f9"><span style="font-size:22px;flex-shrink:0">📍</span><div><div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:3px">Your polling booth may change</div><div style="font-size:13px;color:#475569;line-height:1.55">During SIR, booth boundaries are sometimes reorganised. Always verify your assigned polling booth before election day.</div></div></div>
@@ -785,6 +843,18 @@ function shareTelegram(){const url=encodeURIComponent(document.getElementById('s
 document.getElementById('share-modal').addEventListener('click',function(e){if(e.target===this)closeShare();});
 function makeQR(elementId,url){try{const el=document.getElementById(elementId);if(!el)return;new QRCode(el,{text:url,width:60,height:60,colorDark:'#0f172a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});}catch(e){console.warn('QR:',e);}}
 setTimeout(()=>{makeQR('qr-android','https://play.google.com/store/apps/details?id=in.gov.eci.app');makeQR('qr-ios','https://apps.apple.com/in/app/ecinet/id6745955212');},900);
+function smoothTo(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  const offset=70; // sticky nav height
+  const top=el.getBoundingClientRect().top+window.scrollY-offset;
+  window.scrollTo({top,behavior:'smooth'});
+}
+// Apply scroll-margin-top to all anchor targets so browser # links also clear the nav
+['sir-history','sir-schedule','sir-documents','sir-bloforms','sir-faq','sir-impact'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.style.scrollMarginTop='70px';
+});
 function toggleFaq(btn){const arrow=btn.querySelector('.faq-arrow');const answer=btn.nextElementSibling;const isOpen=answer.classList.contains('open');document.querySelectorAll('.faq-a').forEach(a=>a.classList.remove('open'));document.querySelectorAll('.faq-arrow').forEach(a=>a.classList.remove('open'));if(!isOpen){answer.classList.add('open');arrow.classList.add('open');}}
 </script>
 </body>
