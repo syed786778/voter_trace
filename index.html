@@ -196,6 +196,13 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
 .sir-nav-arrow{font-size:11px;margin-top:auto;padding-top:6px;font-weight:700}
 
 /* ══ NEW: ACCEPTED DOCUMENTS ══ */
+.doc-list-item{display:flex;align-items:flex-start;gap:12px;padding:12px 4px;border-bottom:1px solid #f1f5f9}
+.doc-list-num{flex-shrink:0;width:26px;height:26px;border-radius:7px;background:var(--navy);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.doc-list-body{flex:1;min-width:0}
+.doc-list-title{font-size:13px;font-weight:700;color:var(--text);line-height:1.35;margin-bottom:3px}
+.doc-list-sub{font-size:11.5px;color:var(--text2);line-height:1.5}
+.doc-list-pills{display:flex;flex-wrap:wrap;gap:4px;flex-shrink:0;margin-top:2px}
+@media(max-width:520px){.doc-list-item{flex-wrap:wrap}.doc-list-pills{padding-left:38px}}
 .docs-intro{font-size:13.5px;color:var(--text2);line-height:1.65;margin-bottom:20px;padding:14px 18px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;display:flex;gap:10px;align-items:flex-start;}
 .docs-intro-icon{font-size:20px;flex-shrink:0;margin-top:1px}
 .doc-cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
@@ -560,97 +567,137 @@ details pre{margin-top:8px;background:#f8fafc;border:1px solid var(--border);bor
   <!-- ═══════════════════════════════════
        NEW SECTION A: 11 ACCEPTED DOCUMENTS
   ═══════════════════════════════════ -->
-  <div class="box">
-    <div class="box-head" id="sir-documents">11 Documents Accepted During SIR — Karnataka 2026</div>
-    <div class="docs-intro">
-      <span class="docs-intro-icon">📌</span>
-      <div>When the BLO visits your home or when you file a claim, you must show <strong>at least one document</strong> from the ECI-approved list below. Each document serves as identity, age, address proof — or a combination. <strong>Only one is needed</strong> — bring whichever covers your purpose.</div>
+  <div class="box" id="sir-docs-box">
+    <div class="box-head" id="sir-documents">Documents Accepted During SIR — Official ECI List</div>
+
+    <div style="background:linear-gradient(135deg,#0d1b2a,#1a2e45);border-radius:12px;padding:14px 20px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-start">
+      <span style="font-size:20px;flex-shrink:0;margin-top:1px">📋</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px">List of Indicative (not Exhaustive) Documents</div>
+        <div style="font-size:12px;color:#94a3b8;line-height:1.55">The following documents are accepted by the Election Commission of India during the SIR process. This list is <strong style="color:#fbbf24">indicative, not exhaustive</strong> — other valid government documents may also be accepted at the ERO's discretion.</div>
+      </div>
     </div>
-    <div class="doc-cards-grid">
 
-      <div class="doc-card identity">
-        <div class="doc-card-top"><div class="doc-num">1</div><div class="doc-name">Aadhaar Card / e-Aadhaar</div></div>
-        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill addr">Address</span><span class="doc-pill photo">Photo</span></div>
-        <div class="doc-desc">The most widely accepted document. Both the physical card and printed e-Aadhaar are valid. Covers identity, address and photo in a single document — the easiest to use.</div>
-        <div class="doc-howto">💡 Lost or need update? Visit your nearest Aadhaar Seva Kendra or use the online self-service portal.</div>
-        <a class="doc-howto-link" href="https://myaadhaar.uidai.gov.in" target="_blank" rel="noopener">🔗 myaadhaar.uidai.gov.in →</a>
+    <div style="display:flex;flex-direction:column;gap:0">
+
+      <div class="doc-list-item">
+        <div class="doc-list-num">1</div>
+        <div class="doc-list-body">
+          <div class="doc-list-title">Identity Card / Pension Payment Order</div>
+          <div class="doc-list-sub">Issued to regular employees or pensioners of any Central Govt. / State Govt. / PSU</div>
+        </div>
+        <div class="doc-list-pills"><span class="doc-pill id">Identity</span></div>
       </div>
 
-      <div class="doc-card identity">
-        <div class="doc-card-top"><div class="doc-num">2</div><div class="doc-name">EPIC — Existing Voter ID Card</div></div>
-        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill photo">Photo</span></div>
-        <div class="doc-desc">Your current Voter ID (Electoral Photo Identity Card) is accepted as identity and photo proof. Used when updating or correcting existing entries. Download your e-EPIC anytime from the ECI portal.</div>
-        <a class="doc-howto-link" href="https://voters.eci.gov.in/" target="_blank" rel="noopener">🔗 voters.eci.gov.in →</a>
+      <div class="doc-list-item">
+        <div class="doc-list-num">2</div>
+        <div class="doc-list-body">
+          <div class="doc-list-title">Identity Card / Certificate / Document issued by Government, Local Authorities, Banks, Post Office, LIC or PSUs</div>
+          <div class="doc-list-sub">Must have been issued in India prior to 01.07.1987</div>
+        </div>
+        <div class="doc-list-pills"><span class="doc-pill id">Identity</span><span class="doc-pill addr">Address</span></div>
       </div>
 
-      <div class="doc-card both">
-        <div class="doc-card-top"><div class="doc-num">3</div><div class="doc-name">Indian Passport</div></div>
-        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill age">Age</span><span class="doc-pill addr">Address</span><span class="doc-pill photo">Photo</span></div>
-        <div class="doc-desc">A valid Indian passport is comprehensive proof — identity, age, address and photo all in one. The strongest standalone document available.</div>
-        <div class="doc-howto">💡 Apply for or renew your passport online via the Passport Seva Portal.</div>
-        <a class="doc-howto-link" href="https://passportindia.gov.in" target="_blank" rel="noopener">🔗 passportindia.gov.in →</a>
+      <div class="doc-list-item">
+        <div class="doc-list-num">3</div>
+        <div class="doc-list-body">
+          <div class="doc-list-title">Birth Certificate</div>
+          <div class="doc-list-sub">Issued by the competent authority (Municipal Corporation, Gram Panchayat, hospital, etc.)</div>
+        </div>
+        <div class="doc-list-pills"><span class="doc-pill age">Age / DOB</span></div>
       </div>
 
-      <div class="doc-card identity">
-        <div class="doc-card-top"><div class="doc-num">4</div><div class="doc-name">Driving Licence</div></div>
-        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill age">Age</span><span class="doc-pill photo">Photo</span></div>
-        <div class="doc-desc">A valid driving licence issued by the Karnataka RTO is accepted as identity and age proof with photograph. DigiLocker copies are accepted on par with the physical card.</div>
-        <a class="doc-howto-link" href="https://sarathi.parivahan.gov.in" target="_blank" rel="noopener">🔗 sarathi.parivahan.gov.in →</a>
+      <div class="doc-list-item">
+        <div class="doc-list-num">4</div>
+        <div class="doc-list-body">
+          <div class="doc-list-title">Passport</div>
+          <div class="doc-list-sub">Valid Indian passport — accepted as comprehensive proof of identity, age and address</div>
+        </div>
+        <div class="doc-list-pills"><span class="doc-pill id">Identity</span><span class="doc-pill age">Age</span><span class="doc-pill addr">Address</span><span class="doc-pill photo">Photo</span></div>
       </div>
 
-      <div class="doc-card identity">
-        <div class="doc-card-top"><div class="doc-num">5</div><div class="doc-name">PAN Card</div></div>
-        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill photo">Photo</span></div>
-        <div class="doc-desc">The Permanent Account Number card issued by the Income Tax Department is accepted as photo identity proof. Apply for a new PAN or correct details via NSDL or UTIITSL.</div>
-        <a class="doc-howto-link" href="https://onlineservices.tin.egov-nsdl.com" target="_blank" rel="noopener">🔗 NSDL PAN Services →</a>
+      <div class="doc-list-item">
+        <div class="doc-list-num">5</div>
+        <div class="doc-list-body">
+          <div class="doc-list-title">Matriculation / Educational Certificate</div>
+          <div class="doc-list-sub">Issued by recognised Boards or Universities (SSLC, 10th Marks Card, School TC, degree certificate etc.)</div>
+        </div>
+        <div class="doc-list-pills"><span class="doc-pill age">Age / DOB</span><span class="doc-pill id">Identity</span></div>
       </div>
 
-      <div class="doc-card address">
-        <div class="doc-card-top"><div class="doc-num">6</div><div class="doc-name">Bank / Post Office Passbook with Photo</div></div>
-        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill addr">Address</span><span class="doc-pill photo">Photo</span></div>
-        <div class="doc-desc">A bank or post office passbook that includes your photograph and current address. Useful when you don't have another photo ID that shows your present address.</div>
-        <div class="doc-howto">💡 Request an updated passbook at your bank branch — ensure your current address is recorded correctly.</div>
+      <div class="doc-list-item">
+        <div class="doc-list-num">6</div>
+        <div class="doc-list-body">
+          <div class="doc-list-title">Permanent Residence Certificate</div>
+          <div class="doc-list-sub">Issued by the competent State authority as proof of domicile / permanent address</div>
+        </div>
+        <div class="doc-list-pills"><span class="doc-pill addr">Address</span><span class="doc-pill id">Identity</span></div>
       </div>
 
-      <div class="doc-card identity">
-        <div class="doc-card-top"><div class="doc-num">7</div><div class="doc-name">Central / State Government ID Card</div></div>
-        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill photo">Photo</span></div>
-        <div class="doc-desc">Photo identity cards issued by Central or State government departments, PSUs, or public sector undertakings — including employee IDs from any government service.</div>
-        <div class="doc-howto">💡 Obtain from your employer's HR or administrative department. Must carry a photograph to be valid.</div>
+      <div class="doc-list-item">
+        <div class="doc-list-num">7</div>
+        <div class="doc-list-body">
+          <div class="doc-list-title">Forest Right Certificate</div>
+          <div class="doc-list-sub">Issued under the Scheduled Tribes and Other Traditional Forest Dwellers (Recognition of Forest Rights) Act, 2006</div>
+        </div>
+        <div class="doc-list-pills"><span class="doc-pill id">Identity</span><span class="doc-pill addr">Address</span></div>
       </div>
 
-      <div class="doc-card address">
-        <div class="doc-card-top"><div class="doc-num">8</div><div class="doc-name">MNREGA Job Card</div></div>
-        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill addr">Address</span><span class="doc-pill photo">Photo</span></div>
-        <div class="doc-desc">The Mahatma Gandhi NREGA job card includes the holder's photo and address — especially useful for rural voters who may not have other photo IDs.</div>
-        <div class="doc-howto">💡 Issued by your local Gram Panchayat. Contact your panchayat office to obtain or replace a lost card.</div>
+      <div class="doc-list-item">
+        <div class="doc-list-num">8</div>
+        <div class="doc-list-body">
+          <div class="doc-list-title">OBC / SC / ST or Any Caste Certificate</div>
+          <div class="doc-list-sub">Issued by the competent authority (Tahsildar / Revenue Department)</div>
+        </div>
+        <div class="doc-list-pills"><span class="doc-pill id">Identity</span><span class="doc-pill addr">Address</span></div>
       </div>
 
-      <div class="doc-card identity">
-        <div class="doc-card-top"><div class="doc-num">9</div><div class="doc-name">Health Insurance Smart Card (Arogya Karnataka)</div></div>
-        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill photo">Photo</span></div>
-        <div class="doc-desc">Smart cards issued under the Arogya Karnataka / AB-ArK health scheme are accepted as photo identity proof. Contact your district health department for queries.</div>
-        <a class="doc-howto-link" href="https://arogya.karnataka.gov.in" target="_blank" rel="noopener">🔗 arogya.karnataka.gov.in →</a>
+      <div class="doc-list-item">
+        <div class="doc-list-num">9</div>
+        <div class="doc-list-body">
+          <div class="doc-list-title">National Register of Citizens (NRC)</div>
+          <div class="doc-list-sub">Accepted wherever it exists and is applicable</div>
+        </div>
+        <div class="doc-list-pills"><span class="doc-pill id">Identity</span></div>
       </div>
 
-      <div class="doc-card age-addr">
-        <div class="doc-card-top"><div class="doc-num">10</div><div class="doc-name">Caste / Scheduled Tribe Certificate</div></div>
-        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill addr">Address</span></div>
-        <div class="doc-desc">Certificates issued by the competent authority for Scheduled Castes and Scheduled Tribes carry identity and address details. Issued by the Tahsildar of your taluk through the Nadakacheri portal.</div>
-        <a class="doc-howto-link" href="https://nadakacheri.karnataka.gov.in" target="_blank" rel="noopener">🔗 nadakacheri.karnataka.gov.in →</a>
+      <div class="doc-list-item">
+        <div class="doc-list-num">10</div>
+        <div class="doc-list-body">
+          <div class="doc-list-title">Family Register</div>
+          <div class="doc-list-sub">Prepared by State or Local authorities — documents family members and their details</div>
+        </div>
+        <div class="doc-list-pills"><span class="doc-pill id">Identity</span><span class="doc-pill addr">Address</span></div>
       </div>
 
-      <div class="doc-card identity">
-        <div class="doc-card-top"><div class="doc-num">11</div><div class="doc-name">Photo Certificate from MP / MLA / Gazetted Officer</div></div>
-        <div class="doc-purpose-pills"><span class="doc-pill id">Identity</span><span class="doc-pill photo">Photo</span></div>
-        <div class="doc-desc">A certificate bearing the applicant's photograph, signed and attested by an MP, MLA, or a Gazetted Government Officer. Use this as a last resort when no other photo ID is available.</div>
-        <div class="doc-howto">💡 Your local elected representative or any gazetted officer at a government office can issue this on official letterhead.</div>
+      <div class="doc-list-item">
+        <div class="doc-list-num">11</div>
+        <div class="doc-list-body">
+          <div class="doc-list-title">Land / House Allotment Certificate</div>
+          <div class="doc-list-sub">Any land or house allotment certificate issued by a Government authority</div>
+        </div>
+        <div class="doc-list-pills"><span class="doc-pill addr">Address</span></div>
+      </div>
+
+      <div class="doc-list-item">
+        <div class="doc-list-num">12</div>
+        <div class="doc-list-body">
+          <div class="doc-list-title">Aadhaar Card</div>
+          <div class="doc-list-sub">Subject to the Commission's directions vide letter No. 23/2025-ERS/Vol.II dated 09.09.2025</div>
+        </div>
+        <div class="doc-list-pills"><span class="doc-pill id">Identity</span><span class="doc-pill addr">Address</span><span class="doc-pill photo">Photo</span></div>
+      </div>
+
+          <div class="doc-list-sub">With reference to 01.07.2025 — accepted as proof of identity and residence</div>
+        </div>
+        <div class="doc-list-pills"><span class="doc-pill id">Identity</span><span class="doc-pill addr">Address</span></div>
       </div>
 
     </div>
-    <div class="doc-note-bar">
+
+    <div class="doc-note-bar" style="margin-top:16px">
       <span style="font-size:18px;flex-shrink:0">✅</span>
-      <div><strong>Only one document needed.</strong> Aadhaar alone is sufficient for most situations. For new registrations, also carry a recent passport-size photograph. Documents 1–5 are the most commonly accepted and easiest to produce.</div>
+      <div><strong>Only one document is needed.</strong> Bring whichever is most convenient and covers your purpose. For most people, Aadhaar (doc 12) is the easiest single document to produce. For new registrations, also carry a recent passport-size photograph.</div>
     </div>
   </div>
 
